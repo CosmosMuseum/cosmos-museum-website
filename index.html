@@ -86,8 +86,20 @@
       align-items: center; justify-content: center;
       z-index: 100;
       transition: opacity 0.8s ease;
+      overflow: hidden;
     }
     #loading.hidden { opacity: 0; pointer-events: none; }
+    .loader-stars {
+      position: absolute; inset: 0; overflow: hidden;
+    }
+    .loader-star {
+      position: absolute; width: 2px; height: 2px;
+      background: #fff; border-radius: 50%;
+      animation: loaderTwinkle 3s ease-in-out infinite;
+    }
+    @keyframes loaderTwinkle {
+      0%, 100% { opacity: 0.2; } 50% { opacity: 1; }
+    }
     .loader-title {
       font-family: 'Orbitron', sans-serif;
       font-size: clamp(1.5rem, 4vw, 3rem);
@@ -95,20 +107,209 @@
       background: linear-gradient(90deg, #4fc3f7, #ab47bc, #ef5350, #ff8f00);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       background-size: 300%; animation: shimmer 2s linear infinite;
-      margin-bottom: 2rem; letter-spacing: 4px;
+      margin-bottom: 0.5rem; letter-spacing: 4px;
+      position: relative; z-index: 2;
+    }
+    .loader-tagline {
+      font-size: 0.75rem; letter-spacing: 4px; color: rgba(255,255,255,0.3);
+      margin-bottom: 2rem; text-transform: uppercase; position: relative; z-index: 2;
     }
     @keyframes shimmer { 0%{background-position:0%} 100%{background-position:300%} }
+    .loader-ring-container {
+      position: relative; width: 100px; height: 100px;
+      margin-bottom: 1.5rem; z-index: 2;
+    }
     .loader-ring {
-      width: 80px; height: 80px;
-      border: 3px solid rgba(79,195,247,0.15);
+      width: 100px; height: 100px;
+      border: 3px solid rgba(79,195,247,0.1);
       border-top-color: #4fc3f7;
+      border-right-color: rgba(171,71,188,0.5);
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
+    .loader-ring-inner {
+      position: absolute; top: 12px; left: 12px;
+      width: 76px; height: 76px;
+      border: 2px solid rgba(171,71,188,0.1);
+      border-bottom-color: #ab47bc;
+      border-radius: 50%;
+      animation: spin 1.5s linear infinite reverse;
+    }
+    .loader-pct {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      font-family: 'Orbitron', sans-serif; font-size: 1.1rem; font-weight: 700;
+      color: #4fc3f7; letter-spacing: 1px;
+    }
     @keyframes spin { to { transform: rotate(360deg); } }
     .loader-status {
-      margin-top: 1.5rem; font-size: 0.85rem;
+      margin-top: 0; font-size: 0.8rem;
       color: rgba(255,255,255,0.5); letter-spacing: 2px;
+      position: relative; z-index: 2;
+      min-height: 1.2em;
+    }
+    .loader-step-counter {
+      font-family: 'Orbitron', sans-serif; font-size: 0.65rem;
+      color: rgba(255,255,255,0.25); letter-spacing: 2px;
+      margin-top: 0.6rem; position: relative; z-index: 2;
+    }
+    .loader-steps-list {
+      margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.35rem;
+      align-items: center; position: relative; z-index: 2;
+      max-height: 180px; overflow: hidden;
+    }
+    .loader-step-item {
+      font-size: 0.65rem; letter-spacing: 1.5px;
+      color: rgba(255,255,255,0.15); transition: all 0.4s ease;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .loader-step-item.active {
+      color: rgba(79,195,247,0.8);
+      text-shadow: 0 0 10px rgba(79,195,247,0.3);
+    }
+    .loader-step-item.done {
+      color: rgba(105,240,174,0.5);
+    }
+    .loader-step-check {
+      width: 12px; height: 12px; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.5rem; transition: all 0.4s ease;
+    }
+    .loader-step-item.active .loader-step-check {
+      border-color: #4fc3f7;
+      box-shadow: 0 0 8px rgba(79,195,247,0.4);
+    }
+    .loader-step-item.done .loader-step-check {
+      border-color: #69f0ae; background: rgba(105,240,174,0.15);
+    }
+
+    /* ── WELCOME SCREEN ── */
+    #welcome-screen {
+      position: fixed; inset: 0;
+      background: radial-gradient(ellipse at 30% 40%, rgba(15,10,50,0.98) 0%, rgba(0,0,0,0.99) 100%);
+      display: none; flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 99;
+      overflow: hidden;
+    }
+    #welcome-screen.active { display: flex; }
+    .welcome-bg-stars {
+      position: absolute; inset: 0; overflow: hidden;
+    }
+    .welcome-star {
+      position: absolute; width: 2px; height: 2px;
+      background: #fff; border-radius: 50%;
+      animation: welcomeTwinkle 4s ease-in-out infinite;
+    }
+    @keyframes welcomeTwinkle {
+      0%, 100% { opacity: 0.1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.5); }
+    }
+    .welcome-content {
+      position: relative; z-index: 2;
+      text-align: center;
+      animation: welcomeFadeIn 1s ease-out;
+      max-width: 600px; padding: 2rem;
+    }
+    @keyframes welcomeFadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .welcome-icon {
+      font-size: 3.5rem; margin-bottom: 1rem;
+      animation: welcomeFloat 3s ease-in-out infinite;
+    }
+    @keyframes welcomeFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .welcome-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 900; letter-spacing: 5px;
+      background: linear-gradient(90deg, #4fc3f7, #ab47bc, #ef5350, #ff8f00);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-size: 300%; animation: shimmer 2.5s linear infinite;
+      margin-bottom: 0.5rem;
+    }
+    .welcome-subtitle {
+      font-size: 0.85rem; letter-spacing: 4px;
+      color: rgba(255,255,255,0.4); margin-bottom: 2.5rem;
+      text-transform: uppercase;
+    }
+    .welcome-features {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 0.8rem; margin-bottom: 2.5rem;
+      text-align: left;
+    }
+    .welcome-feature {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px; padding: 0.8rem 1rem;
+      display: flex; align-items: center; gap: 0.7rem;
+      transition: all 0.3s;
+    }
+    .welcome-feature:hover {
+      border-color: rgba(79,195,247,0.3);
+      background: rgba(79,195,247,0.05);
+    }
+    .welcome-feature-icon { font-size: 1.3rem; flex-shrink: 0; }
+    .welcome-feature-text {
+      font-size: 0.75rem; letter-spacing: 1px;
+      color: rgba(255,255,255,0.6); line-height: 1.4;
+    }
+    .welcome-feature-text strong {
+      display: block; color: rgba(255,255,255,0.85);
+      font-size: 0.78rem; margin-bottom: 2px;
+    }
+    .welcome-controls {
+      display: flex; gap: 1rem; justify-content: center;
+      margin-bottom: 1.5rem; flex-wrap: wrap;
+    }
+    .welcome-key {
+      display: flex; align-items: center; gap: 0.4rem;
+      font-size: 0.7rem; color: rgba(255,255,255,0.35);
+    }
+    .welcome-kbd {
+      display: inline-block; padding: 0.2rem 0.5rem;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 4px; font-family: 'Orbitron', sans-serif;
+      font-size: 0.6rem; color: rgba(255,255,255,0.6);
+    }
+    .welcome-launch-btn {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1rem; font-weight: 700;
+      letter-spacing: 4px; padding: 1rem 3rem;
+      background: linear-gradient(135deg, rgba(79,195,247,0.15), rgba(171,71,188,0.15));
+      border: 1px solid rgba(79,195,247,0.4);
+      color: #4fc3f7; border-radius: 40px;
+      cursor: pointer; transition: all 0.4s;
+      position: relative; overflow: hidden;
+      animation: welcomeBtnPulse 2.5s ease-in-out infinite;
+    }
+    .welcome-launch-btn:hover {
+      background: linear-gradient(135deg, rgba(79,195,247,0.3), rgba(171,71,188,0.3));
+      border-color: #4fc3f7;
+      box-shadow: 0 0 30px rgba(79,195,247,0.3), 0 0 60px rgba(79,195,247,0.1);
+      transform: scale(1.05);
+      color: #fff;
+    }
+    @keyframes welcomeBtnPulse {
+      0%, 100% { box-shadow: 0 0 15px rgba(79,195,247,0.15); }
+      50% { box-shadow: 0 0 30px rgba(79,195,247,0.3), 0 0 60px rgba(79,195,247,0.1); }
+    }
+    .welcome-footer {
+      margin-top: 1.5rem; font-size: 0.65rem;
+      color: rgba(255,255,255,0.2); letter-spacing: 2px;
+    }
+    .welcome-footer a {
+      color: rgba(79,195,247,0.5); text-decoration: none;
+    }
+    .welcome-footer a:hover { color: #4fc3f7; }
+    @media (max-width: 600px) {
+      .welcome-features { grid-template-columns: 1fr; }
+      .welcome-controls { gap: 0.5rem; }
     }
 
     /* ── HEADER ── */
@@ -546,8 +747,9 @@
     }
 
     /* ── PROGRESS BAR ── */
-    .loader-progress { width: 200px; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 1.2rem; overflow: hidden; }
-    .loader-progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #4fc3f7, #ab47bc); border-radius: 2px; transition: width 0.3s ease; }
+    .loader-progress { width: 280px; height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; margin-top: 1.2rem; overflow: hidden; position: relative; z-index: 2; }
+    .loader-progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #4fc3f7, #ab47bc, #ef5350); background-size: 200%; animation: progressShimmer 1.5s linear infinite; border-radius: 2px; transition: width 0.3s ease; }
+    @keyframes progressShimmer { 0%{background-position:200%} 100%{background-position:0%} }
 
     /* ── PLANET NAV BUTTON ICONS ── */
     .nav-btn { position: relative; overflow: hidden; }
@@ -1434,12 +1636,77 @@
 </head>
 <body>
 
-<!-- LOADING -->
+<!-- LOADING SCREEN -->
 <div id="loading">
+  <div class="loader-stars" id="loader-stars"></div>
   <div class="loader-title">COSMIC EXPLORER</div>
-  <div class="loader-ring"></div>
+  <div class="loader-tagline">Interactive 3D Solar System</div>
+  <div class="loader-ring-container">
+    <div class="loader-ring"></div>
+    <div class="loader-ring-inner"></div>
+    <div class="loader-pct" id="loader-pct">0%</div>
+  </div>
   <div class="loader-progress"><div class="loader-progress-bar" id="loader-progress"></div></div>
   <div class="loader-status" id="loader-status">INITIALIZING SYSTEMS...</div>
+  <div class="loader-step-counter" id="loader-step-counter">STEP 0 / 14</div>
+  <div class="loader-steps-list" id="loader-steps-list"></div>
+</div>
+
+<!-- WELCOME SCREEN -->
+<div id="welcome-screen">
+  <div class="welcome-bg-stars" id="welcome-stars"></div>
+  <div class="welcome-content">
+    <div class="welcome-icon">🪐</div>
+    <div class="welcome-title">COSMIC EXPLORER</div>
+    <div class="welcome-subtitle">Your journey through the cosmos begins</div>
+
+    <div class="welcome-features">
+      <div class="welcome-feature">
+        <div class="welcome-feature-icon">🌍</div>
+        <div class="welcome-feature-text">
+          <strong>9 Celestial Bodies</strong>
+          Explore every planet with real data &amp; textures
+        </div>
+      </div>
+      <div class="welcome-feature">
+        <div class="welcome-feature-icon">🚀</div>
+        <div class="welcome-feature-text">
+          <strong>Spaceship Mode</strong>
+          Fly freely across the solar system
+        </div>
+      </div>
+      <div class="welcome-feature">
+        <div class="welcome-feature-icon">🌀</div>
+        <div class="welcome-feature-text">
+          <strong>Wormhole Travel</strong>
+          Warp between planets at light speed
+        </div>
+      </div>
+      <div class="welcome-feature">
+        <div class="welcome-feature-icon">☄️</div>
+        <div class="welcome-feature-text">
+          <strong>Asteroid Escape</strong>
+          Survive the asteroid field mini-game
+        </div>
+      </div>
+    </div>
+
+    <div class="welcome-controls">
+      <div class="welcome-key"><span class="welcome-kbd">SCROLL</span> Zoom</div>
+      <div class="welcome-key"><span class="welcome-kbd">DRAG</span> Orbit</div>
+      <div class="welcome-key"><span class="welcome-kbd">CLICK</span> Explore</div>
+      <div class="welcome-key"><span class="welcome-kbd">F</span> Spaceship</div>
+      <div class="welcome-key"><span class="welcome-kbd">T</span> Tour</div>
+    </div>
+
+    <button class="welcome-launch-btn" id="welcome-launch-btn" onclick="launchExperience()">
+      🚀 LAUNCH EXPLORER
+    </button>
+
+    <div class="welcome-footer">
+      Built by <a href="https://github.com/rtm20" target="_blank">Ritesh Meena</a> · Powered by Three.js
+    </div>
+  </div>
 </div>
 
 <!-- HEADER -->
@@ -5822,6 +6089,25 @@ window.toggleMusic = function() {
 // ═══════════════════════════════════════════════════════
 const loaderStatus = document.getElementById('loader-status');
 const loadingEl = document.getElementById('loading');
+const loaderPct = document.getElementById('loader-pct');
+const loaderStepCounter = document.getElementById('loader-step-counter');
+const loaderStepsList = document.getElementById('loader-steps-list');
+
+// Generate background stars for loading screen
+(function initLoaderStars() {
+  const container = document.getElementById('loader-stars');
+  if (!container) return;
+  for (let i = 0; i < 80; i++) {
+    const star = document.createElement('div');
+    star.className = 'loader-star';
+    star.style.left = Math.random() * 100 + '%';
+    star.style.top = Math.random() * 100 + '%';
+    star.style.width = star.style.height = (Math.random() * 2 + 1) + 'px';
+    star.style.animationDelay = (Math.random() * 3) + 's';
+    star.style.animationDuration = (Math.random() * 2 + 2) + 's';
+    container.appendChild(star);
+  }
+})();
 
 const buildQueue = [
   { label: 'DOWNLOADING SATELLITE IMAGERY...', fn: () => loadRealTextures() },
@@ -5840,18 +6126,37 @@ const buildQueue = [
   { label: 'LAUNCHING COMET...', fn: () => buildComet() },
 ];
 
+// Populate step list in loading screen
+buildQueue.forEach((step, i) => {
+  const el = document.createElement('div');
+  el.className = 'loader-step-item';
+  el.id = 'loader-step-' + i;
+  el.innerHTML = '<span class="loader-step-check"></span><span>' + step.label.replace('...', '') + '</span>';
+  if (loaderStepsList) loaderStepsList.appendChild(el);
+});
+
 let qi = 0;
 const progressBar = document.getElementById('loader-progress');
 function processNext() {
   if (qi < buildQueue.length) {
     const step = buildQueue[qi];
     loaderStatus.textContent = step.label;
-    if (progressBar) progressBar.style.width = ((qi / buildQueue.length) * 100) + '%';
+    const pct = Math.round((qi / buildQueue.length) * 100);
+    if (progressBar) progressBar.style.width = pct + '%';
+    if (loaderPct) loaderPct.textContent = pct + '%';
+    if (loaderStepCounter) loaderStepCounter.textContent = 'STEP ' + (qi + 1) + ' / ' + buildQueue.length;
+
+    // Update step list visuals
+    const stepEl = document.getElementById('loader-step-' + qi);
+    if (stepEl) stepEl.classList.add('active');
+    if (qi > 0) {
+      const prevEl = document.getElementById('loader-step-' + (qi - 1));
+      if (prevEl) { prevEl.classList.remove('active'); prevEl.classList.add('done'); prevEl.querySelector('.loader-step-check').textContent = '✓'; }
+    }
+
     qi++;
-    // Use setTimeout to yield to browser between heavy builds
     setTimeout(() => {
       const result = step.fn();
-      // Handle async steps (e.g. texture downloads) that return a Promise
       if (result && typeof result.then === 'function') {
         result.then(() => processNext());
       } else {
@@ -5859,15 +6164,57 @@ function processNext() {
       }
     }, 0);
   } else {
+    // Mark last step done
+    const lastEl = document.getElementById('loader-step-' + (buildQueue.length - 1));
+    if (lastEl) { lastEl.classList.remove('active'); lastEl.classList.add('done'); lastEl.querySelector('.loader-step-check').textContent = '✓'; }
+
     if (progressBar) progressBar.style.width = '100%';
-    loaderStatus.textContent = 'LAUNCH SEQUENCE READY...';
+    if (loaderPct) loaderPct.textContent = '100%';
+    if (loaderStepCounter) loaderStepCounter.textContent = 'ALL SYSTEMS GO';
+    loaderStatus.textContent = 'LAUNCH SEQUENCE READY';
     setTimeout(() => {
       loadingEl.classList.add('hidden');
-      cinematicIntro();
-      // Auto-start music on landing
-      setTimeout(() => { if (!musicPlaying && typeof toggleMusic === 'function') toggleMusic(); }, 800);
       setTimeout(() => loadingEl.remove(), 900);
-    }, 400);
+      showWelcomeScreen();
+    }, 600);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  WELCOME SCREEN
+// ═══════════════════════════════════════════════════════
+function showWelcomeScreen() {
+  const ws = document.getElementById('welcome-screen');
+  if (!ws) return;
+  ws.classList.add('active');
+
+  // Generate background stars for welcome screen
+  const container = document.getElementById('welcome-stars');
+  if (container) {
+    for (let i = 0; i < 120; i++) {
+      const star = document.createElement('div');
+      star.className = 'welcome-star';
+      star.style.left = Math.random() * 100 + '%';
+      star.style.top = Math.random() * 100 + '%';
+      star.style.width = star.style.height = (Math.random() * 2.5 + 0.5) + 'px';
+      star.style.animationDelay = (Math.random() * 4) + 's';
+      star.style.animationDuration = (Math.random() * 3 + 2) + 's';
+      container.appendChild(star);
+    }
+  }
+}
+
+function launchExperience() {
+  const ws = document.getElementById('welcome-screen');
+  if (ws) {
+    ws.style.transition = 'opacity 0.8s ease';
+    ws.style.opacity = '0';
+    setTimeout(() => {
+      ws.remove();
+      cinematicIntro();
+      // Auto-start music
+      setTimeout(() => { if (!musicPlaying && typeof toggleMusic === 'function') toggleMusic(); }, 800);
+    }, 800);
   }
 }
 
