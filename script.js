@@ -4138,6 +4138,7 @@ function showWelcomeScreen() {
   // Parallax effect — elements move opposite to cursor
   const video = document.querySelector('.welcome-bg-video');
   const content = document.querySelector('.welcome-content');
+  const stars = document.querySelector('.welcome-bg-stars');
 
   const onMove = (e) => {
     const rect = ws.getBoundingClientRect();
@@ -4145,10 +4146,13 @@ function showWelcomeScreen() {
     const y = (e.clientY - rect.top) / rect.height - 0.5;
 
     if (video) {
-      video.style.transform = `translate(${x * -20}px, ${y * -20}px)`;
+      video.style.transform = `translate(${x * -8}px, ${y * -8}px)`;
     }
     if (content) {
-      content.style.transform = `translate(${x * -12}px, ${y * -12}px)`;
+      content.style.transform = `translate(${x * -5}px, ${y * -5}px)`;
+    }
+    if (stars) {
+      stars.style.transform = `translate(${x * -12}px, ${y * -12}px)`;
     }
   };
 
@@ -4159,6 +4163,7 @@ function showWelcomeScreen() {
     ws.removeEventListener('mousemove', onMove);
     if (video) video.style.transform = '';
     if (content) content.style.transform = '';
+    if (stars) stars.style.transform = '';
   };
 }
 

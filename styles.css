@@ -248,6 +248,8 @@ canvas {
   height: 100%;
   object-fit: cover;
   z-index: 0;
+  will-change: transform;
+  transition: transform 0.15s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .welcome-bg-overlay {
@@ -261,6 +263,8 @@ canvas {
   position: absolute;
   inset: 0;
   overflow: hidden;
+  will-change: transform;
+  transition: transform 0.15s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .welcome-star {
@@ -278,6 +282,8 @@ canvas {
   animation: welcomeFadeIn 0.8s ease-out;
   max-width: 520px;
   padding: 2rem;
+  will-change: transform;
+  transition: transform 0.15s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 @keyframes welcomeFadeIn {
