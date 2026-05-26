@@ -4131,14 +4131,42 @@ function showWelcomeScreen() {
       star.style.width = star.style.height = (Math.random() * 2.5 + 0.5) + 'px';
       star.style.animationDelay = (Math.random() * 4) + 's';
       star.style.animationDuration = (Math.random() * 3 + 2) + 's';
-      container.appendChild(star);
+    container.appendChild(star);
+      }
     }
   }
+
+  // Parallax effect — elements move opposite to cursor
+  const video = document.querySelector('.welcome-bg-video');
+  const content = document.querySelector('.welcome-content');
+
+  const onMove = (e) => {
+    const rect = ws.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+
+    if (video) {
+      video.style.transform = `translate(${x * -20}px, ${y * -20}px)`;
+    }
+    if (content) {
+      content.style.transform = `translate(${x * -12}px, ${y * -12}px)`;
+    }
+  };
+
+  ws.addEventListener('mousemove', onMove);
+
+  // Store cleanup function on the element so it can be removed later
+  ws._parallaxCleanup = () => {
+    ws.removeEventListener('mousemove', onMove);
+    if (video) video.style.transform = '';
+    if (content) content.style.transform = '';
+  };
 }
 
 function launchExperience() {
   const ws = document.getElementById('welcome-screen');
   if (ws) {
+    if (ws._parallaxCleanup) ws._parallaxCleanup();
     ws.style.transition = 'opacity 0.8s ease';
     ws.style.opacity = '0';
     setTimeout(() => {
