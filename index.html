@@ -64,6 +64,8 @@
   </script>
 
   <link rel="stylesheet" href="styles.css">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body>
 
@@ -122,16 +124,22 @@
 </div>
 
 <!-- ABOUT BUTTON -->
-<button id="about-btn" onclick="document.getElementById('about-overlay').classList.add('active')">✦ Acerca de</button>
+<button id="about-btn" onclick="document.getElementById('about-overlay').classList.add('active')">
+  <i data-lucide="info" class="btn-icon"></i>
+  Acerca de
+</button>
 
 <!-- HEADER GAME BUTTON -->
-<button id="header-game-btn" onclick="launchGame()">🎮 Jugar</button>
+<button id="header-game-btn" onclick="launchGame()">
+  <i data-lucide="gamepad-2" class="btn-icon"></i>
+  Jugar
+</button>
 
 <!-- ABOUT OVERLAY -->
 <div id="about-overlay">
   <div class="about-card">
-    <div class="about-close" onclick="document.getElementById('about-overlay').classList.remove('active')">✕</div>
-    <div class="about-avatar">🚀</div>
+    <div class="about-close" onclick="document.getElementById('about-overlay').classList.remove('active')"><i data-lucide="x"></i></div>
+    <div class="about-avatar"><i data-lucide="rocket" style="width:2rem;height:2rem;stroke:#4fc3f7"></i></div>
     <div class="about-name">Ritesh Meena</div>
     <div class="about-role">Desarrollador de software &amp; entusiasta del espacio</div>
     <div class="about-bio">
@@ -141,10 +149,10 @@
     </div>
     <div class="about-links">
       <a href="https://www.linkedin.com/in/ritesh-meena/" target="_blank" rel="noopener noreferrer" class="about-link">
-        💼 LinkedIn
+        <i data-lucide="linkedin" class="about-link-icon"></i> LinkedIn
       </a>
       <a href="https://github.com/rtm20" target="_blank" rel="noopener noreferrer" class="about-link">
-        🐙 GitHub
+        <i data-lucide="github" class="about-link-icon"></i> GitHub
       </a>
     </div>
     <div style="margin-bottom: 1rem;">
@@ -172,38 +180,52 @@
 
 <!-- CONTROLS PANEL -->
 <div id="controls-panel">
-  <div class="ctrl-row">
-    <span class="ctrl-label">Velocidad</span>
+  <div class="ctrl-row ctrl-row--speed">
+    <i data-lucide="gauge" class="ctrl-row-icon"></i>
     <input type="range" id="speed-slider" min="0" max="5" step="0.1" value="1">
     <span id="speed-val">1×</span>
   </div>
   <div class="ctrl-row">
+    <button class="ctrl-btn" id="music-btn" onclick="toggleMusic()" title="Activar/desactivar banda sonora interestelar">
+      <i data-lucide="music-2"></i>
+    </button>
     <span class="ctrl-label">Música</span>
-    <button class="ctrl-btn" id="music-btn" onclick="toggleMusic()" title="Activar/desactivar banda sonora interestelar">♫</button>
   </div>
   <div class="ctrl-row">
+    <button class="ctrl-btn active" id="orbit-btn" onclick="toggleOrbits()" title="Activar/desactivar órbitas">
+      <i data-lucide="orbit"></i>
+    </button>
     <span class="ctrl-label">Órbitas</span>
-    <button class="ctrl-btn active" id="orbit-btn" onclick="toggleOrbits()" title="Activar/desactivar órbitas">◯</button>
   </div>
   <div class="ctrl-row">
+    <button class="ctrl-btn" id="ship-btn" onclick="toggleShipMode()" title="Modo nave (WASD + ratón)">
+      <i data-lucide="rocket"></i>
+    </button>
     <span class="ctrl-label">Nave</span>
-    <button class="ctrl-btn" id="ship-btn" onclick="toggleShipMode()" title="Modo nave (WASD + ratón)">🚀</button>
   </div>
   <div class="ctrl-row">
+    <button class="ctrl-btn" id="tour-btn" onclick="startGuidedTour()" title="Tour guiado del sistema solar">
+      <i data-lucide="map"></i>
+    </button>
     <span class="ctrl-label">Tour</span>
-    <button class="ctrl-btn" id="tour-btn" onclick="startGuidedTour()" title="Tour guiado del sistema solar">🎙</button>
   </div>
   <div class="ctrl-row">
+    <button class="ctrl-btn" id="photo-btn" onclick="takePhoto()" title="Capturar pantalla (P)">
+      <i data-lucide="camera"></i>
+    </button>
     <span class="ctrl-label">Foto</span>
-    <button class="ctrl-btn" id="photo-btn" onclick="takePhoto()" title="Capturar pantalla (P)">📷</button>
   </div>
   <div class="ctrl-row">
+    <button class="ctrl-btn" id="screensaver-btn" onclick="toggleScreensaver()" title="Modo salvapantallas automático">
+      <i data-lucide="tv-2"></i>
+    </button>
     <span class="ctrl-label">Auto</span>
-    <button class="ctrl-btn" id="screensaver-btn" onclick="toggleScreensaver()" title="Modo salvapantallas automático">🎬</button>
   </div>
   <div class="ctrl-row">
+    <button class="ctrl-btn" id="game-btn" onclick="launchGame()" title="Juego Asteroide Escape (G)">
+      <i data-lucide="gamepad-2"></i>
+    </button>
     <span class="ctrl-label">Juego</span>
-    <button class="ctrl-btn" id="game-btn" onclick="launchGame()" title="Juego Asteroide Escape (G)">🎮</button>
   </div>
 </div>
 
@@ -470,5 +492,19 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/objects/Lensflare.js"></script>
 
 <script src="script.js"></script>
+<script>
+  // Initialize Lucide icons - runs after all DOM and scripts are loaded
+  if (typeof lucide !== 'undefined') {
+    lucide.createIcons();
+  } else {
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+  }
+  // Re-render after any dynamic content changes
+  window.__lucideRefresh = function() {
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  };
+</script>
 </body>
 </html>
