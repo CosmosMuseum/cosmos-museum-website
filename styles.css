@@ -293,7 +293,7 @@ canvas {
 
 .welcome-title {
   font-family: 'Exo 2', sans-serif;
-  font-size: clamp(3.5rem, 8vw, 5.5rem);
+  font-size: clamp(4.5rem, 10vw, 7rem);
   font-weight: 200;
   color: #fff;
   letter-spacing: -0.02em;
