@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
 
-
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,1..1000&display=swap');
 
 *,
@@ -25,7 +25,10 @@ canvas {
   display: block;
 }
 
-button, input, select, textarea {
+button,
+input,
+select,
+textarea {
   font-family: inherit;
 }
 
@@ -574,12 +577,12 @@ p {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 100px;
   z-index: 1;
-  transition: left 0.3s cubic-bezier(0.25, 1, 0.5, 1), 
-              width 0.3s cubic-bezier(0.25, 1, 0.5, 1), 
-              top 0.3s cubic-bezier(0.25, 1, 0.5, 1), 
-              height 0.3s cubic-bezier(0.25, 1, 0.5, 1), 
-              opacity 0.2s ease,
-              background-color 0.25s ease;
+  transition: left 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+    width 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+    top 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+    height 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+    opacity 0.2s ease,
+    background-color 0.25s ease;
   pointer-events: none;
   opacity: 0;
 }
@@ -652,12 +655,15 @@ p {
     top: 0%;
     opacity: 0;
   }
+
   10% {
     opacity: 1;
   }
+
   90% {
     opacity: 1;
   }
+
   100% {
     top: 100%;
     opacity: 0;
@@ -670,26 +676,31 @@ p {
     filter: hue-rotate(90deg) brightness(1.5);
     opacity: 0.8;
   }
+
   15% {
     transform: translateX(-1%) skewX(3deg);
     filter: hue-rotate(0deg) brightness(1);
     opacity: 0.9;
   }
+
   30% {
     transform: translateX(2%) skewX(-3deg);
     filter: hue-rotate(-45deg) brightness(1.3);
     opacity: 0.95;
   }
+
   45% {
     transform: translateX(-0.5%) skewX(1deg);
     filter: brightness(0.8);
     opacity: 0.9;
   }
+
   60% {
     transform: translateX(0.5%) skewX(0);
     filter: brightness(1.2);
     opacity: 1;
   }
+
   100% {
     transform: translateX(0);
     filter: none;
@@ -3191,9 +3202,12 @@ p {
   }
 
   .site-title {
-    font-size: 0.85rem;
-    letter-spacing: 2px;
-  }
+  font-family: "Great Vibes", cursive;
+  font-style: italic;
+  font-weight: 300;
+  font-size: 0.85rem;
+  letter-spacing: 2px;
+}
 
   .site-subtitle {
     font-size: 0.5rem;
@@ -3464,6 +3478,28 @@ p {
   #game-touch-controls {
     padding: 0.5rem 1rem 0.8rem;
   }
+}
+
+/* ── WELCOME IMAGES ── */
+.welcome-images {
+  position: absolute;
+  bottom: -260px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+}
+
+.welcome-img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.welcome-img:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.6);
 }
 
 /* ── TITLE FIRST-LETTER FONT RULES ── */
