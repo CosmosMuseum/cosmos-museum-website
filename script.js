@@ -1053,6 +1053,11 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
+// Planetarium starts hidden for entrance animation
+renderer.domElement.style.transform = 'scale(0.85)';
+renderer.domElement.style.opacity = '0';
+renderer.domElement.style.filter = 'blur(16px)';
+renderer.domElement.style.willChange = 'transform, opacity, filter';
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.005, 5000);
@@ -4195,15 +4200,19 @@ function launchExperience() {
   const ws = document.getElementById('welcome-screen');
   if (ws) {
     if (ws._parallaxCleanup) ws._parallaxCleanup();
-    ws.style.transition = 'transform 0.9s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.9s ease, filter 0.9s ease';
-    ws.style.transform = 'scale(1.15) translateY(-40px) rotateX(8deg)';
+    ws.style.transition = 'opacity 0.6s ease';
     ws.style.opacity = '0';
-    ws.style.filter = 'blur(12px)';
     setTimeout(() => {
       ws.remove();
+      // Entrance animation for the planetarium
+      const canvas = renderer.domElement;
+      canvas.style.transition = 'transform 1s cubic-bezier(0.65, 0, 0.35, 1), opacity 1s ease, filter 1s ease';
+      canvas.style.transform = 'scale(1)';
+      canvas.style.opacity = '1';
+      canvas.style.filter = 'blur(0)';
       cinematicIntro();
       setTimeout(() => { if (!musicPlaying && typeof toggleMusic === 'function') toggleMusic(); }, 800);
-    }, 900);
+    }, 600);
   }
 }
 
