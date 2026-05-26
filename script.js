@@ -4136,7 +4136,6 @@ function showWelcomeScreen() {
   }
 
   // Parallax effect — smooth lerp-based cursor tracking
-  const video = document.querySelector('.welcome-bg-video');
   const content = document.querySelector('.welcome-content');
   const stars = document.querySelector('.welcome-bg-stars');
   const spotlight = document.querySelector('.welcome-spotlight');
@@ -4158,11 +4157,6 @@ function showWelcomeScreen() {
 
     const px = (currentX + 0.5) * 100;
     const py = (currentY + 0.5) * 100;
-
-    // Video parallax
-    if (video) {
-      video.style.transform = `translate3d(${currentX * -60}px, ${currentY * -60}px, 0)`;
-    }
 
     // Content 3D tilt + translate
     if (content) {
@@ -4198,7 +4192,6 @@ function showWelcomeScreen() {
   ws._parallaxCleanup = () => {
     ws.removeEventListener('mousemove', onMove);
     if (rafId) cancelAnimationFrame(rafId);
-    if (video) video.style.transform = '';
     if (content) content.style.transform = '';
     if (stars) stars.style.transform = '';
     if (spotlight) spotlight.style.background = '';

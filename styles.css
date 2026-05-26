@@ -242,17 +242,6 @@ canvas {
   display: flex;
 }
 
-.welcome-bg-video {
-  position: absolute;
-  inset: -10%;
-  width: 120%;
-  height: 120%;
-  object-fit: cover;
-  z-index: 0;
-  will-change: transform;
-  backface-visibility: hidden;
-}
-
 .welcome-spotlight {
   position: absolute;
   inset: 0;
@@ -271,13 +260,6 @@ canvas {
   padding: 2rem;
   will-change: transform;
   backface-visibility: hidden;
-}
-
-.welcome-bg-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  z-index: 1;
 }
 
 .welcome-bg-stars {
