@@ -4223,11 +4223,11 @@ function launchExperience() {
   if (!ws) return;
   if (ws._parallaxCleanup) ws._parallaxCleanup();
 
-  // Welcome scales up fast — revealing planetarium underneath
-  ws.style.transition = 'transform 0.35s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.35s ease, filter 0.35s ease';
-  ws.style.transform = 'scale(1.8)';
+  // Welcome exits with scale + rotate + 3D blur
+  ws.style.transition = 'transform 0.4s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.4s ease, filter 0.4s ease';
+  ws.style.transform = 'scale(1.8) rotateX(12deg) rotateY(8deg)';
   ws.style.opacity = '0';
-  ws.style.filter = 'blur(20px)';
+  ws.style.filter = 'blur(24px)';
 
   setTimeout(() => {
     ws.remove();

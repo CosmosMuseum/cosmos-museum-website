@@ -235,7 +235,8 @@ canvas {
   justify-content: center;
   z-index: 99;
   overflow: hidden;
-  perspective: 1000px;
+  perspective: 1200px;
+  transform-style: preserve-3d;
 }
 
 #welcome-screen.active {
