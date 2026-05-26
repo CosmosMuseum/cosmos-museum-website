@@ -4131,8 +4131,7 @@ function showWelcomeScreen() {
       star.style.width = star.style.height = (Math.random() * 2.5 + 0.5) + 'px';
       star.style.animationDelay = (Math.random() * 4) + 's';
       star.style.animationDuration = (Math.random() * 3 + 2) + 's';
-    container.appendChild(star);
-      }
+      container.appendChild(star);
     }
   }
 
