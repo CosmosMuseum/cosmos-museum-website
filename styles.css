@@ -312,13 +312,8 @@ canvas {
 .welcome-title {
   font-family: 'Orbitron', sans-serif;
   font-size: clamp(2rem, 5vw, 3.5rem);
-  font-weight: 900;
-  letter-spacing: 5px;
-  background: linear-gradient(90deg, #4fc3f7, #ab47bc, #ef5350, #ff8f00);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-size: 300%;
-  animation: shimmer 2.5s linear infinite;
+  font-weight: 300;
+  color: #fff;
   margin-bottom: 0.5rem;
 }
 
