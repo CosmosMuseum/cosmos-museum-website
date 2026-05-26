@@ -258,9 +258,13 @@ canvas {
   position: absolute;
   inset: 0;
   z-index: 1;
-
   background: radial-gradient(ellipse at center, transparent 20%, rgba(0,0,0,0.95) 50%, #000 100%);
   pointer-events: none;
+  transition: background 0.8s ease-out; /* Añadimos una transición suave */
+}
+
+.welcome-bg-gradient:hover {
+  background: transparent; /* El fondo se vuelve transparente al pasar el cursor */
 }
 
 .welcome-spotlight {
