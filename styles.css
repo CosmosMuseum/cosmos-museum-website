@@ -243,9 +243,9 @@ canvas {
 
 .welcome-bg-video {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  inset: -10%;
+  width: 120%;
+  height: 120%;
   object-fit: cover;
   z-index: 0;
   will-change: transform;
