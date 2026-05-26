@@ -235,6 +235,7 @@ canvas {
   justify-content: center;
   z-index: 99;
   overflow: hidden;
+  perspective: 1000px;
 }
 
 #welcome-screen.active {
@@ -250,6 +251,15 @@ canvas {
   z-index: 0;
   will-change: transform;
   backface-visibility: hidden;
+}
+
+.welcome-spotlight {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(600px circle at 50% 50%, rgba(79, 195, 247, 0.08), transparent 60%);
+  transition: background 0.1s;
 }
 
 .welcome-content {

@@ -4139,6 +4139,8 @@ function showWelcomeScreen() {
   const video = document.querySelector('.welcome-bg-video');
   const content = document.querySelector('.welcome-content');
   const stars = document.querySelector('.welcome-bg-stars');
+  const spotlight = document.querySelector('.welcome-spotlight');
+  const features = document.querySelectorAll('.welcome-feature');
 
   let targetX = 0, targetY = 0;
   let currentX = 0, currentY = 0;
@@ -4154,15 +4156,38 @@ function showWelcomeScreen() {
     currentX += (targetX - currentX) * 0.06;
     currentY += (targetY - currentY) * 0.06;
 
+    const px = (currentX + 0.5) * 100;
+    const py = (currentY + 0.5) * 100;
+
+    // Video parallax
     if (video) {
       video.style.transform = `translate3d(${currentX * -60}px, ${currentY * -60}px, 0)`;
     }
+
+    // Content 3D tilt + translate
     if (content) {
-      content.style.transform = `translate3d(${currentX * -40}px, ${currentY * -40}px, 0)`;
+      content.style.transform = `
+        translate3d(${currentX * -40}px, ${currentY * -40}px, 0)
+        rotateX(${currentY * -4}deg)
+        rotateY(${currentX * 4}deg)
+      `;
     }
+
+    // Stars parallax
     if (stars) {
       stars.style.transform = `translate3d(${currentX * -80}px, ${currentY * -80}px, 0)`;
     }
+
+    // Spotlight follows cursor
+    if (spotlight) {
+      spotlight.style.background = `radial-gradient(600px circle at ${px}% ${py}%, rgba(79, 195, 247, 0.08), transparent 60%)`;
+    }
+
+    // Depth cards — each at different speed
+    features.forEach((card, i) => {
+      const depth = 1 + i * 0.3;
+      card.style.transform = `translate3d(${currentX * -15 * depth}px, ${currentY * -15 * depth}px, 0)`;
+    });
 
     rafId = requestAnimationFrame(animate);
   };
@@ -4176,6 +4201,8 @@ function showWelcomeScreen() {
     if (video) video.style.transform = '';
     if (content) content.style.transform = '';
     if (stars) stars.style.transform = '';
+    if (spotlight) spotlight.style.background = '';
+    features.forEach(card => { card.style.transform = ''; });
   };
 }
 
