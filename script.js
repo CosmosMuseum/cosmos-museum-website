@@ -2287,6 +2287,9 @@ function showPlanetPanel(name) {
   // Store current planet name for the modal
   panel.dataset.planet = name;
 
+  // Force reflow so the browser registers the initial blurred state before animating
+  void panel.offsetHeight;
+
   panel.classList.add('open');
   panelOpen = true;
 }
