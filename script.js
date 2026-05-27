@@ -4464,6 +4464,10 @@ function showWelcomeScreen() {
   const content = document.querySelector('.welcome-content');
   const stars = document.querySelector('.welcome-bg-stars');
   const spotlight = document.querySelector('.welcome-spotlight');
+  const earth = document.querySelector('.welcome-earth');
+  const telescope = document.querySelector('.welcome-telescope');
+  const galaxy = document.querySelector('.welcome-galaxy');
+  const footer = document.querySelector('.welcome-images');
 
   let targetX = 0, targetY = 0;
   let currentX = 0, currentY = 0;
@@ -4499,6 +4503,20 @@ function showWelcomeScreen() {
     // Spotlight follows cursor
     if (spotlight) {
       spotlight.style.background = `radial-gradient(600px circle at ${px}% ${py}%, rgba(79, 195, 247, 0.08), transparent 60%)`;
+    }
+
+    // Parallax for decorative images
+    if (earth) {
+      earth.style.transform = `translate3d(${currentX * -50}px, ${currentY * -50}px, 0)`;
+    }
+    if (telescope) {
+      telescope.style.transform = `translate3d(${currentX * -70}px, ${currentY * -70}px, 0)`;
+    }
+    if (galaxy) {
+      galaxy.style.transform = `translate3d(${currentX * -20}px, ${currentY * -20}px, 0)`;
+    }
+    if (footer) {
+      footer.style.transform = `translate3d(${currentX * -15}px, ${currentY * -15}px, 0)`;
     }
 
     rafId = requestAnimationFrame(animate);
