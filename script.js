@@ -4467,7 +4467,6 @@ function showWelcomeScreen() {
   const earth = document.querySelector('.welcome-earth');
   const telescope = document.querySelector('.welcome-telescope');
   const galaxy = document.querySelector('.welcome-galaxy');
-  const footer = document.querySelector('.welcome-images');
 
   let targetX = 0, targetY = 0;
   let currentX = 0, currentY = 0;
@@ -4507,16 +4506,13 @@ function showWelcomeScreen() {
 
     // Parallax for decorative images
     if (earth) {
-      earth.style.transform = `translate3d(${currentX * -50}px, ${currentY * -50}px, 0)`;
+      earth.style.transform = `translate3d(${currentX * -100}px, ${currentY * -100}px, 0)`;
     }
     if (telescope) {
-      telescope.style.transform = `translate3d(${currentX * -70}px, ${currentY * -70}px, 0)`;
+      telescope.style.transform = `translate3d(${currentX * -140}px, ${currentY * -140}px, 0)`;
     }
     if (galaxy) {
-      galaxy.style.transform = `translate3d(${currentX * -20}px, ${currentY * -20}px, 0)`;
-    }
-    if (footer) {
-      footer.style.transform = `translate3d(${currentX * -15}px, ${currentY * -15}px, 0)`;
+      galaxy.style.transform = `translate3d(${currentX * -40}px, ${currentY * -40}px, 0)`;
     }
 
     rafId = requestAnimationFrame(animate);
