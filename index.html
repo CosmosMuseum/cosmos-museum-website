@@ -277,14 +277,17 @@
   <div class="nav-indicator"></div>
 </div>
 
-<!-- PLANET PANEL -->
+<!-- PLANET PANEL (compact) -->
 <div id="planet-panel">
   <div class="panel-close" onclick="closePanel()">✕</div>
-  <div class="panel-hero" id="panel-hero">
-    <canvas class="panel-hero-bg" id="panel-hero-canvas" width="480" height="220"></canvas>
-    <div class="panel-planet-visual" id="panel-planet-visual"></div>
-  </div>
   <div class="panel-body" id="panel-body"></div>
+  <div class="panel-footer-btn" id="panel-footer-btn" onclick="openPlanetModal()">Saber más</div>
+</div>
+
+<!-- PLANET MODAL (full-screen) -->
+<div id="planet-modal" onclick="if(event.target===this)closePlanetModal()">
+  <div class="modal-close" onclick="closePlanetModal()">✕</div>
+  <div class="modal-content" id="modal-content"></div>
 </div>
 
 <!-- SPACESHIP HUD -->

@@ -2258,24 +2258,43 @@ function showPlanetPanel(name) {
   if (!d) return;
 
   panel.style.setProperty('--planet-color', d.cssColor);
-  panel.style.setProperty('--planet-glow', hexToRgba(d.cssColor, 0.6));
 
-  // Hero visual
-  const visual = document.getElementById('panel-planet-visual');
-  visual.style.background = buildPlanetGradient(name, d);
-  if (d.ringColor && !d.thinRings) {
-    visual.style.boxShadow = `0 0 60px ${hexToRgba(d.cssColor, 0.7)}, 0 0 120px ${hexToRgba(d.cssColor, 0.2)}`;
-  }
+  // Short description (first paragraph before the life section)
+  const shortDesc = d.description.split('<br><br>')[0];
 
-  // Hero background
-  drawHeroBg(d);
-
-  // Body
   const body = document.getElementById('panel-body');
   body.innerHTML = `
     <div class="panel-name">${d.name}</div>
     <div class="panel-type">${d.type}</div>
-    <div class="panel-desc">${d.description}</div>
+    <div class="panel-desc">${shortDesc}</div>
+  `;
+
+  // Store current planet name for the modal
+  panel.dataset.planet = name;
+
+  panel.classList.add('open');
+  panelOpen = true;
+}
+
+window.closePanel = function() {
+  panel.classList.remove('open');
+  panelOpen = false;
+};
+
+// ── PLANET MODAL (full-screen details) ──
+let currentPlanetData = null;
+
+window.openPlanetModal = function() {
+  const name = panel.dataset.planet;
+  const d = PLANET_DATA[name];
+  if (!d) return;
+  currentPlanetData = d;
+
+  const content = document.getElementById('modal-content');
+  content.innerHTML = `
+    <div class="modal-name" style="--planet-color:${d.cssColor}">${d.name}</div>
+    <div class="modal-type">${d.type}</div>
+    <div class="modal-desc">${d.description}</div>
 
     <div class="section-title">Physical Properties</div>
     <div class="stats-grid">
@@ -2385,16 +2404,19 @@ function showPlanetPanel(name) {
     <div style="height:2rem"></div>
   `;
 
-  panel.classList.add('open');
-  panelOpen = true;
+  document.getElementById('planet-modal').classList.add('active');
 
   // Animate atmosphere bars
   setTimeout(() => {
-    document.querySelectorAll('.atmo-fill').forEach(el => {
+    document.querySelectorAll('#modal-content .atmo-fill').forEach(el => {
       el.style.width = el.dataset.pct + '%';
     });
   }, 100);
-}
+};
+
+window.closePlanetModal = function() {
+  document.getElementById('planet-modal').classList.remove('active');
+};
 
 function hexToRgba(hex, a) {
   const r = parseInt(hex.slice(1,3),16);

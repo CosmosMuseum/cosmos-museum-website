@@ -584,248 +584,405 @@ p {
   display: none;
 }
 
-/* ── PLANET INFO PANEL ── */
+/* ── PLANET INFO PANEL (compact, left-bottom) ── */
 #planet-panel {
   position: fixed;
-  top: 0;
-  right: 0;
-  width: min(480px, 100vw);
-  height: 100vh;
-  background: rgba(5, 5, 20, 0.85);
-  backdrop-filter: blur(20px);
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  bottom: 6rem;
+  left: 1rem;
+  width: min(340px, 80vw);
+  background: rgba(5, 5, 20, 0.8);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.2rem 1.5rem 1rem;
   z-index: 30;
-  transform: translateX(100%);
-  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-  overflow-y: auto;
-  overflow-x: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(79, 195, 247, 0.3) transparent;
-}
-
-#planet-panel::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--planet-color, #4fc3f7);
-  box-shadow: 0 0 10px var(--planet-color, #4fc3f7), 0 0 20px var(--planet-color, #4fc3f7);
+  transform: translateY(30px);
   opacity: 0;
   pointer-events: none;
-  z-index: 100;
-}
-
-#planet-panel.open::after {
-  animation: laserSweep 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 #planet-panel.open {
-  transform: translateX(0);
-  animation: panelGlitch 0.4s ease-out;
-}
-
-@keyframes laserSweep {
-  0% {
-    top: 0%;
-    opacity: 0;
-  }
-
-  10% {
-    opacity: 1;
-  }
-
-  90% {
-    opacity: 1;
-  }
-
-  100% {
-    top: 100%;
-    opacity: 0;
-  }
-}
-
-@keyframes panelGlitch {
-  0% {
-    transform: translateX(10%);
-    filter: hue-rotate(90deg) brightness(1.5);
-    opacity: 0.8;
-  }
-
-  15% {
-    transform: translateX(-1%) skewX(3deg);
-    filter: hue-rotate(0deg) brightness(1);
-    opacity: 0.9;
-  }
-
-  30% {
-    transform: translateX(2%) skewX(-3deg);
-    filter: hue-rotate(-45deg) brightness(1.3);
-    opacity: 0.95;
-  }
-
-  45% {
-    transform: translateX(-0.5%) skewX(1deg);
-    filter: brightness(0.8);
-    opacity: 0.9;
-  }
-
-  60% {
-    transform: translateX(0.5%) skewX(0);
-    filter: brightness(1.2);
-    opacity: 1;
-  }
-
-  100% {
-    transform: translateX(0);
-    filter: none;
-  }
-}
-
-/* ── TELEMETRY HUD ── */
-#telemetry-hud {
-  position: fixed;
-  bottom: 1.5rem;
-  left: 1.5rem;
-  background: rgba(8, 8, 28, 0.75);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 0.6rem 0.9rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  z-index: 10;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-  pointer-events: none;
-  min-width: 180px;
-}
-
-.tel-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.tel-label {
-  font-family: inherit;
-  font-size: 0.62rem;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.35);
-  letter-spacing: 0.5px;
-}
-
-.tel-val {
-  font-family: inherit;
-  font-size: 0.68rem;
-  font-weight: 300;
-  color: #fff;
-  text-align: right;
-}
-
-#planet-panel::-webkit-scrollbar {
-  width: 4px;
-}
-
-#planet-panel::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-#planet-panel::-webkit-scrollbar-thumb {
-  background: rgba(79, 195, 247, 0.3);
-  border-radius: 2px;
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .panel-close {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
-  width: 36px;
-  height: 36px;
+  top: 0.6rem;
+  right: 0.8rem;
+  width: 28px;
+  height: 28px;
   background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.4);
+  transition: all 0.25s;
+  z-index: 5;
+}
+
+.panel-close:hover {
+  background: rgba(239, 83, 80, 0.2);
+  border-color: rgba(239, 83, 80, 0.4);
+  color: #ef5350;
+}
+
+.panel-body {
+  padding: 0;
+}
+
+.panel-body .panel-name {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin-bottom: 0.15rem;
+  color: var(--planet-color, #4fc3f7);
+}
+
+.panel-body .panel-type {
+  font-size: 0.6rem;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.panel-body .panel-desc {
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 0.6rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Saber más button */
+.panel-footer-btn {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--planet-color, #4fc3f7);
+  cursor: pointer;
+  padding: 0.35rem 0;
+  transition: opacity 0.2s;
+}
+
+.panel-footer-btn:hover {
+  opacity: 0.8;
+}
+
+/* ── PLANET MODAL (full-screen) ── */
+#planet-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+  backdrop-filter: blur(12px);
+  z-index: 100;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 3rem 1rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  overflow-y: auto;
+}
+
+#planet-modal.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-close {
+  position: fixed;
+  top: 1rem;
+  right: 1.5rem;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   color: rgba(255, 255, 255, 0.6);
-  transition: all 0.3s;
-  z-index: 5;
+  transition: all 0.25s;
+  z-index: 110;
 }
 
-.panel-close:hover {
-  background: rgba(239, 83, 80, 0.2);
+.modal-close:hover {
+  background: rgba(239, 83, 80, 0.25);
   border-color: rgba(239, 83, 80, 0.5);
   color: #ef5350;
 }
 
-.panel-hero {
-  position: relative;
-  height: 220px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+.modal-content {
+  max-width: 640px;
+  width: 100%;
+  padding-bottom: 3rem;
 }
 
-.panel-hero-bg {
-  position: absolute;
-  inset: 0;
-  opacity: 0.3;
-}
-
-.panel-planet-visual {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  box-shadow: 0 0 60px var(--planet-glow, rgba(79, 195, 247, 0.6)),
-    0 0 120px var(--planet-glow, rgba(79, 195, 247, 0.2));
-  position: relative;
-  z-index: 2;
-  animation: float-planet 4s ease-in-out infinite;
-  flex-shrink: 0;
-}
-
-@keyframes float-planet {
-
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-12px);
-  }
-}
-
-.panel-planet-ring {
-  position: absolute;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.panel-body {
-  padding: 1.5rem;
-}
-
-.panel-name {
-  font-size: 2rem;
+.modal-content .modal-name {
+  font-size: 2.2rem;
   font-weight: 900;
   letter-spacing: 3px;
   margin-bottom: 0.3rem;
-  background: linear-gradient(90deg, var(--planet-color, #4fc3f7), #fff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--planet-color, #4fc3f7);
 }
 
-.panel-type {
+.modal-content .modal-type {
   font-size: 0.72rem;
   letter-spacing: 3px;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+.modal-content .modal-desc {
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.65);
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Reuse existing inner panel styles for modal */
+#planet-modal .section-title {
+  font-size: 0.65rem;
+  letter-spacing: 3px;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  margin: 1.5rem 0 0.75rem;
+}
+
+#planet-modal .stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+#planet-modal .stat-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 0.7rem 1rem;
+}
+
+#planet-modal .stat-label {
+  font-size: 0.6rem;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+  margin-bottom: 0.2rem;
+}
+
+#planet-modal .stat-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+#planet-modal .temp-gauge {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+#planet-modal .temp-value {
+  font-size: 2rem;
+  font-weight: 200;
+}
+
+#planet-modal .temp-label {
+  font-size: 0.6rem;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.3);
+  margin-bottom: 0.5rem;
+}
+
+#planet-modal .temp-range {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+}
+
+#planet-modal .temp-range-item {
+  text-align: center;
+}
+
+#planet-modal .temp-range-label {
+  font-size: 0.55rem;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+#planet-modal .temp-range-val {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+#planet-modal .orbital-speed {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 0.7rem 1rem;
+  margin-top: 1rem;
+}
+
+#planet-modal .moon-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 0.7rem 1rem;
+}
+
+#planet-modal .moon-count {
+  font-size: 2rem;
+  font-weight: 200;
+  color: var(--planet-color, #4fc3f7);
+}
+
+#planet-modal .moon-label {
+  font-size: 0.6rem;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+}
+
+#planet-modal .moon-names {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+#planet-modal .atmo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+#planet-modal .atmo-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 0.5rem 0.8rem;
+}
+
+#planet-modal .atmo-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  margin-bottom: 0.25rem;
+}
+
+#planet-modal .atmo-name { color: rgba(255, 255, 255, 0.6); }
+#planet-modal .atmo-pct  { color: var(--planet-color, #4fc3f7); font-weight: 600; }
+
+#planet-modal .atmo-bar {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+#planet-modal .atmo-fill {
+  height: 100%;
+  background: var(--planet-color, #4fc3f7);
+  border-radius: 2px;
+  width: 0;
+  transition: width 1s ease;
+}
+
+#planet-modal .fact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+#planet-modal .fact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+}
+
+#planet-modal .fact-icon {
+  flex-shrink: 0;
+  font-size: 1rem;
+  margin-top: 1px;
+}
+
+#planet-modal .mission-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+#planet-modal .mission-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+}
+
+#planet-modal .mission-year {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--planet-color, #4fc3f7);
+  min-width: 3.2rem;
+}
+
+#planet-modal .mission-name {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+}
+
+#planet-modal .mission-agency {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+@media (max-width: 600px) {
+  #planet-panel {
+    bottom: 5rem;
+    left: 0.5rem;
+    width: calc(100vw - 1rem);
+  }
+
+  .modal-content .modal-name {
+    font-size: 1.5rem;
+  }
+}
   margin-bottom: 1.2rem;
 }
 
