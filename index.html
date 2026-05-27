@@ -120,25 +120,8 @@
   </div>
 </div>
 
-<!-- HEADER -->
-<div id="header">
-  <div>
-    <div class="site-title">Solaryn</div>
-    <div class="site-subtitle">Sistema Solar Interactivo</div>
-  </div>
-</div>
-
-<!-- ABOUT BUTTON -->
-<button id="about-btn" onclick="document.getElementById('about-overlay').classList.add('active')">
-  <i data-lucide="info" class="btn-icon"></i>
-  Acerca de
-</button>
-
-<!-- HEADER GAME BUTTON -->
-<button id="header-game-btn" onclick="launchGame()">
-  <i data-lucide="gamepad-2" class="btn-icon"></i>
-  Jugar
-</button>
+<!-- HEADER (empty, kept for layout continuity) -->
+<div id="header" style="display:none"></div>
 
 <!-- ABOUT OVERLAY -->
 <div id="about-overlay">
@@ -231,6 +214,24 @@
       <i data-lucide="gamepad-2"></i>
     </button>
     <span class="ctrl-label">Juego</span>
+  </div>
+  <div class="ctrl-row">
+    <button class="ctrl-btn" id="sidebar-map-btn" onclick="toggleMinimap()" title="Mapa del sistema solar">
+      <i data-lucide="map"></i>
+    </button>
+    <span class="ctrl-label">Mapa</span>
+  </div>
+  <div class="ctrl-row">
+    <button class="ctrl-btn" id="sidebar-play-btn" onclick="launchGame()" title="Jugar asteroide escape">
+      <i data-lucide="play"></i>
+    </button>
+    <span class="ctrl-label">Jugar</span>
+  </div>
+  <div class="ctrl-row">
+    <button class="ctrl-btn" id="sidebar-about-btn" onclick="document.getElementById('about-overlay').classList.add('active')" title="Acerca de Solaryn">
+      <i data-lucide="info"></i>
+    </button>
+    <span class="ctrl-label">Acerca de</span>
   </div>
 </div>
 

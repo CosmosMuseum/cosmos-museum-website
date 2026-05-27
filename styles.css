@@ -436,36 +436,7 @@ p {
   }
 }
 
-/* ── HEADER ── */
-#header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  padding: 1.2rem 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  z-index: 10;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent);
-  pointer-events: none;
-}
 
-.site-title {
-  font-size: clamp(1rem, 2.5vw, 1.6rem);
-  font-weight: 900;
-  letter-spacing: 4px;
-  background: linear-gradient(90deg, #4fc3f7, #ab47bc);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.site-subtitle {
-  font-size: 0.7rem;
-  letter-spacing: 3px;
-  color: rgba(255, 255, 255, 0.4);
-  margin-top: 2px;
-}
 
 /* ── HINT ── */
 #hint {
@@ -479,7 +450,6 @@ p {
   border-radius: 30px;
   padding: 0.6rem 1.4rem;
   font-size: 0.8rem;
-  letter-spacing: 2px;
   color: rgba(255, 255, 255, 0.6);
   animation: pulse-hint 2.5s ease-in-out infinite;
   z-index: 10;
@@ -1145,23 +1115,10 @@ p {
   top: 5rem;
   left: 1rem;
   font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.2);
-  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.6);
   z-index: 10;
   line-height: 1.8;
   pointer-events: none;
-}
-
-/* Title look (session start) without touching HTML */
-#controls-hint::before {
-  content: 'Solaryn';
-  display: block;
-  font-weight: 200;
-  font-size: 0.95rem;
-  letter-spacing: -0.02em;
-  color: rgba(255, 255, 255, 0.9);
-  line-height: 1.1;
-  margin-bottom: 0.35rem;
 }
 
 /* Zoom level indicator */
@@ -1226,7 +1183,7 @@ p {
   display: flex;
   align-items: center;
   gap: 0.55rem;
-  background: rgba(8, 8, 28, 0.75);
+  background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.07);
@@ -1236,8 +1193,8 @@ p {
 }
 
 .ctrl-row:hover {
-  border-color: rgba(79, 195, 247, 0.2);
-  background: rgba(8, 8, 28, 0.9);
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .ctrl-row--speed {
@@ -1905,9 +1862,9 @@ p {
   right: 1rem;
   width: 160px;
   height: 160px;
-  background: rgba(5, 5, 20, 0.6);
+  background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(79, 195, 247, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 50%;
   z-index: 15;
   overflow: hidden;

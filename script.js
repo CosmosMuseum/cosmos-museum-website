@@ -1099,16 +1099,16 @@ const composer = new THREE.EffectComposer(renderer);
 composer.addPass(new THREE.RenderPass(scene, camera));
 const bloomPass = new THREE.UnrealBloomPass(
   new THREE.Vector2(window.innerWidth, window.innerHeight),
-  0.3,   // strength
+  0.15,  // strength
   0.5,   // radius
-  0.85   // threshold — only sun + bright highlights bloom
+  0.88   // threshold — only sun + bright highlights bloom
 );
 composer.addPass(bloomPass);
 
 // Lighting
 const ambientLight = new THREE.AmbientLight(0x111122, 1.2);
 scene.add(ambientLight);
-const sunLight = new THREE.PointLight(0xfff4e0, 2.0, 1000);
+const sunLight = new THREE.PointLight(0xfff4e0, 1.2, 1000);
 sunLight.position.set(0, 0, 0);
 sunLight.castShadow = true;
 sunLight.shadow.mapSize.width = 2048;
@@ -2782,6 +2782,11 @@ window.toggleOrbits = function() {
   });
   const btn = document.getElementById('orbit-btn');
   if (btn) btn.classList.toggle('active', orbitsVisible);
+};
+
+window.toggleMinimap = function() {
+  const el = document.getElementById('minimap');
+  if (el) el.style.display = el.style.display === 'none' ? '' : 'none';
 };
 
 // ═══════════════════════════════════════════════════════
