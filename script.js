@@ -1086,8 +1086,7 @@ const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerH
 camera.position.set(0, 40, 120);
 
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.08;
+controls.enableDamping = false;
 controls.minDistance = 0.3;
 controls.maxDistance = 500;
 controls.enablePan = true;
