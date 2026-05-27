@@ -1324,11 +1324,23 @@ p {
   position: fixed;
   top: 5rem;
   left: 1rem;
-  font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+  color: #fff;
   z-index: 10;
-  line-height: 1.8;
+  line-height: 1.6;
   pointer-events: none;
+  letter-spacing: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.hint-project-name {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 1.4rem;
+  letter-spacing: -0.05em;
+  margin-bottom: 0.5rem;
+  color: #fff;
+  font-weight: 500;
 }
 
 /* Zoom level indicator */
