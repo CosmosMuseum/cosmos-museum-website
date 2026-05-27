@@ -2476,6 +2476,7 @@ function initPlanetModalEffects() {
   }
 
   const spotlight = pm.querySelector('.welcome-spotlight');
+  const bgImage = document.getElementById('modal-bg-image');
   let targetX = 0, targetY = 0;
   let currentX = 0, currentY = 0;
 
@@ -2491,6 +2492,10 @@ function initPlanetModalEffects() {
       currentY += (targetY - currentY) * 0.06;
       const px = (currentX + 0.5) * 100;
       const py = (currentY + 0.5) * 100;
+
+      if (bgImage) {
+        bgImage.style.transform = `translate3d(${currentX * -15}px, ${currentY * -15}px, 0)`;
+      }
 
       if (spotlight) {
         spotlight.style.background = `radial-gradient(600px circle at ${px}% ${py}%, rgba(79, 195, 247, 0.08), transparent 60%)`;

@@ -717,6 +717,8 @@ p {
   inset: 0;
   background: #000;
   z-index: 100;
+  perspective: 1200px;
+  transform-style: preserve-3d;
   display: flex;
   align-items: flex-start;
   justify-content: center;
