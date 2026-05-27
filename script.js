@@ -1099,16 +1099,16 @@ const composer = new THREE.EffectComposer(renderer);
 composer.addPass(new THREE.RenderPass(scene, camera));
 const bloomPass = new THREE.UnrealBloomPass(
   new THREE.Vector2(window.innerWidth, window.innerHeight),
-  0.15,  // strength
+  0.05,  // strength
   0.5,   // radius
-  0.88   // threshold — only sun + bright highlights bloom
+  0.92   // threshold
 );
 composer.addPass(bloomPass);
 
 // Lighting
 const ambientLight = new THREE.AmbientLight(0x111122, 1.2);
 scene.add(ambientLight);
-const sunLight = new THREE.PointLight(0xfff4e0, 1.2, 1000);
+const sunLight = new THREE.PointLight(0xfff4e0, 0.6, 1000);
 sunLight.position.set(0, 0, 0);
 sunLight.castShadow = true;
 sunLight.shadow.mapSize.width = 2048;
@@ -1664,14 +1664,14 @@ function buildSun() {
 
   // Corona layers
   for (let i = 0; i < 4; i++) {
-    const s = 6 + i * 2;
-    const sprite = createGlowSprite(0xFF8C00, s * 2);
-    sprite.material.opacity = 0.07 - i * 0.015;
+    const s = 6 + i * 1.5;
+    const sprite = createGlowSprite(0xFF8C00, s * 1.5);
+    sprite.material.opacity = 0.04 - i * 0.008;
     group.add(sprite);
   }
   // Outer bright glow
-  const bright = createGlowSprite(0xFFEE88, 14);
-  bright.material.opacity = 0.12;
+  const bright = createGlowSprite(0xFFEE88, 10);
+  bright.material.opacity = 0.06;
   group.add(bright);
 
   // ── LENS FLARE ──
@@ -1679,9 +1679,9 @@ function buildSun() {
   flareCanvas.width = flareCanvas.height = 256;
   const fctx = flareCanvas.getContext('2d');
   const fgrd = fctx.createRadialGradient(128, 128, 0, 128, 128, 128);
-  fgrd.addColorStop(0, 'rgba(255,248,220,1)');
-  fgrd.addColorStop(0.15, 'rgba(255,220,150,0.6)');
-  fgrd.addColorStop(0.4, 'rgba(255,180,80,0.12)');
+  fgrd.addColorStop(0, 'rgba(255,248,220,0.6)');
+  fgrd.addColorStop(0.15, 'rgba(255,220,150,0.3)');
+  fgrd.addColorStop(0.4, 'rgba(255,180,80,0.06)');
   fgrd.addColorStop(1, 'rgba(255,100,0,0)');
   fctx.fillStyle = fgrd;
   fctx.fillRect(0, 0, 256, 256);
@@ -1691,18 +1691,18 @@ function buildSun() {
   flare2Canvas.width = flare2Canvas.height = 64;
   const f2ctx = flare2Canvas.getContext('2d');
   const f2grd = f2ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-  f2grd.addColorStop(0, 'rgba(120,180,255,0.6)');
-  f2grd.addColorStop(0.5, 'rgba(100,150,255,0.15)');
+  f2grd.addColorStop(0, 'rgba(120,180,255,0.3)');
+  f2grd.addColorStop(0.5, 'rgba(100,150,255,0.08)');
   f2grd.addColorStop(1, 'rgba(80,120,255,0)');
   f2ctx.fillStyle = f2grd;
   f2ctx.fillRect(0, 0, 64, 64);
   const flare2Tex = new THREE.CanvasTexture(flare2Canvas);
   const lensflare = new THREE.Lensflare();
-  lensflare.addElement(new THREE.LensflareElement(flareTex, 600, 0, new THREE.Color(0xFFF8DC)));
+  lensflare.addElement(new THREE.LensflareElement(flareTex, 300, 0, new THREE.Color(0xFFF8DC)));
+  lensflare.addElement(new THREE.LensflareElement(flare2Tex, 40, 0.3));
+  lensflare.addElement(new THREE.LensflareElement(flare2Tex, 60, 0.4));
+  lensflare.addElement(new THREE.LensflareElement(flare2Tex, 30, 0.5));
   lensflare.addElement(new THREE.LensflareElement(flare2Tex, 60, 0.6));
-  lensflare.addElement(new THREE.LensflareElement(flare2Tex, 90, 0.7));
-  lensflare.addElement(new THREE.LensflareElement(flare2Tex, 50, 0.9));
-  lensflare.addElement(new THREE.LensflareElement(flare2Tex, 100, 1.0));
   group.add(lensflare);
 
   scene.add(group);
