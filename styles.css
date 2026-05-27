@@ -241,7 +241,7 @@ p {
 #welcome-screen {
   position: fixed;
   inset: 0;
-  background: #000 url('img/bg.jpg') center center / cover no-repeat;
+  background: #000;
   display: none;
   flex-direction: column;
   align-items: center;

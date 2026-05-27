@@ -4467,6 +4467,7 @@ function showWelcomeScreen() {
   const earth = document.querySelector('.welcome-earth');
   const telescope = document.querySelector('.welcome-telescope');
   const galaxy = document.querySelector('.welcome-galaxy');
+  const bgImage = document.querySelector('.welcome-bg-image');
 
   let targetX = 0, targetY = 0;
   let currentX = 0, currentY = 0;
@@ -4484,6 +4485,11 @@ function showWelcomeScreen() {
 
     const px = (currentX + 0.5) * 100;
     const py = (currentY + 0.5) * 100;
+
+    // Background parallax (deepest layer, subtlest)
+    if (bgImage) {
+      bgImage.style.transform = `translate3d(${currentX * -15}px, ${currentY * -15}px, 0)`;
+    }
 
     // Content 3D tilt + translate
     if (content) {
@@ -4505,14 +4511,14 @@ function showWelcomeScreen() {
     }
 
     // Parallax for decorative images
+    if (galaxy) {
+      galaxy.style.transform = `translate3d(${currentX * -25}px, ${currentY * -25}px, 0)`;
+    }
     if (earth) {
-      earth.style.transform = `translate3d(${currentX * -100}px, ${currentY * -100}px, 0)`;
+      earth.style.transform = `translate3d(${currentX * -60}px, ${currentY * -60}px, 0)`;
     }
     if (telescope) {
-      telescope.style.transform = `translate3d(${currentX * -140}px, ${currentY * -140}px, 0)`;
-    }
-    if (galaxy) {
-      galaxy.style.transform = `translate3d(${currentX * -40}px, ${currentY * -40}px, 0)`;
+      telescope.style.transform = `translate3d(${currentX * -80}px, ${currentY * -80}px, 0)`;
     }
 
     rafId = requestAnimationFrame(animate);
