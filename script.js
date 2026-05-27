@@ -2241,13 +2241,6 @@ window.resetView = function() {
   hint.classList.remove('hidden');
 };
 
-window.closePanel = function() {
-  panel.classList.remove('open');
-  panelOpen = false;
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  currentFocus = null;
-};
-
 function easeInOut(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
 
 // ═══════════════════════════════════════════════════════
@@ -2262,11 +2255,13 @@ function showPlanetPanel(name) {
   // Short description (first paragraph before the life section)
   const shortDesc = d.description.split('<br><br>')[0];
 
+  // Build panel content
   const body = document.getElementById('panel-body');
   body.innerHTML = `
     <div class="panel-name">${d.name}</div>
     <div class="panel-type">${d.type}</div>
     <div class="panel-desc">${shortDesc}</div>
+    <div class="panel-footer-btn" onclick="openPlanetModal()">Saber más</div>
   `;
 
   // Store current planet name for the modal
@@ -2279,6 +2274,8 @@ function showPlanetPanel(name) {
 window.closePanel = function() {
   panel.classList.remove('open');
   panelOpen = false;
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  currentFocus = null;
 };
 
 // ── PLANET MODAL (full-screen details) ──
