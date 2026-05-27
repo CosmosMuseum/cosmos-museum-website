@@ -3467,6 +3467,55 @@ p {
   animation: welcomeFadeIn 1s ease-out 0.5s both;
 }
 
+.welcome-telescope {
+  position: absolute;
+  right: 2%;
+  bottom: 25%;
+  width: min(180px, 16vw);
+  height: auto;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.5;
+  border-radius: 12px;
+  filter: drop-shadow(0 0 30px rgba(200, 180, 255, 0.15));
+  animation: welcomeFadeIn 1s ease-out 0.6s both;
+}
+
+.welcome-sun {
+  position: absolute;
+  top: 2%;
+  right: 3%;
+  width: min(140px, 12vw);
+  height: auto;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.35;
+  border-radius: 50%;
+  filter: drop-shadow(0 0 50px rgba(255, 200, 50, 0.3));
+  animation: welcomeFadeIn 1s ease-out 0.7s both;
+}
+
+.welcome-images {
+  position: absolute;
+  bottom: -260px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+}
+
+.welcome-img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.welcome-img:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.6);
+}
+
 /* ── TITLE FIRST-LETTER FONT RULES ── */
 .loader-title,
 .welcome-title,
