@@ -1087,13 +1087,13 @@ camera.position.set(0, 40, 120);
 
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
-controls.dampingFactor = 0.04;
+controls.dampingFactor = 0.08;
 controls.minDistance = 0.3;
 controls.maxDistance = 500;
 controls.enablePan = true;
-controls.panSpeed = 0.5;
-controls.zoomSpeed = 1.2;
-controls.rotateSpeed = 0.6;
+controls.panSpeed = 1.5;
+controls.zoomSpeed = 3.0;
+controls.rotateSpeed = 2.0;
 
 // ── POST-PROCESSING (Bloom) ──
 const composer = new THREE.EffectComposer(renderer);
