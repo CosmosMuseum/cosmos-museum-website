@@ -1367,13 +1367,13 @@ function createTextSprite(text, opts) {
   const color = opts.color || '#ffffff';
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
-  ctx.font = `bold ${fontSize}px Orbitron, sans-serif`;
+  ctx.font = `italic ${fontSize}px 'Playfair Display', Georgia, serif`;
   const metrics = ctx.measureText(text);
   const pad = 20;
   canvas.width = Math.ceil(metrics.width + pad * 2);
   canvas.height = Math.ceil(fontSize * 1.6 + pad * 2);
   // Re-set font after resize
-  ctx.font = `bold ${fontSize}px Orbitron, sans-serif`;
+  ctx.font = `italic ${fontSize}px 'Playfair Display', Georgia, serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   // Glow effect
@@ -1712,7 +1712,7 @@ function buildSun() {
   // Sun floating label
   const sunLabel = createTextSprite('\u2606 Sun', {
     fontSize: 36,
-    color: '#FDB813',
+    color: '#ffffff',
     glowColor: '#FF8C00',
     scale: 3.0,
   });
@@ -1830,7 +1830,7 @@ function buildPlanet(key) {
   const esName = { Sun:'Sol', Mercury:'Mercurio', Venus:'Venus', Earth:'Tierra', Mars:'Marte', Jupiter:'Júpiter', Saturn:'Saturno', Uranus:'Urano', Neptune:'Neptuno', Moon:'Luna' }[key] || key;
   const nameLabel = createTextSprite(esName, {
     fontSize: 36,
-    color: data.cssColor,
+    color: '#ffffff',
     glowColor: data.cssColor,
     scale: Math.max(data.radius * 1.2, 1.5),
   });
@@ -2291,15 +2291,14 @@ function showPlanetPanel(name) {
   gsap.killTweensOf(panel);
 
   // Set initial state
-  gsap.set(panel, { opacity: 0, y: 40, scale: 0.92, filter: 'blur(8px)' });
+  gsap.set(panel, { opacity: 0, scaleX: 0, filter: 'blur(10px)', transformOrigin: '0 50%' });
 
   // Animate in
   gsap.to(panel, {
     opacity: 1,
-    y: 0,
-    scale: 1,
+    scaleX: 1,
     filter: 'blur(0px)',
-    duration: 0.7,
+    duration: 0.8,
     ease: 'power3.out',
     onStart: () => { panel.classList.add('open'); }
   });
