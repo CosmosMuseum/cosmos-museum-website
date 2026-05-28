@@ -1875,6 +1875,9 @@ function buildPlanet(key) {
 
   // Floating name label
   const esName = { Sun: 'Sol', Mercury: 'Mercurio', Venus: 'Venus', Earth: 'Tierra', Mars: 'Marte', Jupiter: 'Júpiter', Saturn: 'Saturno', Uranus: 'Urano', Neptune: 'Neptuno', Moon: 'Luna' }[key] || key;
+
+  // Floating name label
+  const esName = { Sun: 'Sol', Mercury: 'Mercurio', Venus: 'Venus', Earth: 'Tierra', Mars: 'Marte', Jupiter: 'Júpiter', Saturn: 'Saturno', Uranus: 'Urano', Neptune: 'Neptuno', Moon: 'Luna' }[key] || key;
   const nameLabel = createTextSprite(esName, {
     fontSize: 36,
     color: '#ffffff',
@@ -1996,6 +1999,7 @@ function buildPlanet(key) {
 
   planetObjects[key] = {
     group, mesh, data, angle,
+    border,
     isTerrestrial,
     baseDisplacementScale: (useRealEarth) ? 0 : (isTerrestrial && !useRealTex ? data.radius * 0.035 : 0),
     baseNormalScale: (useRealEarth) ? 3.0 : (isTerrestrial && !useRealTex ? 1.2 : 0),
@@ -2266,16 +2270,10 @@ window.focusPlanet = function (name) {
   Object.keys(planetObjects).forEach(key => {
     if (key === 'Sun' || key === 'Moon' || key.includes('_clouds')) return;
     const po = planetObjects[key];
-    if (!po || !po.group) return;
+    if (!po) return;
     const isFocused = (key === name);
-    po.group.children.forEach(child => {
-      if (child.userData && child.userData.isBorderRing) {
-        child.visible = !isFocused;
-      }
-      if (child.isSprite) {
-        child.material.opacity = isFocused ? 0.05 : 0.35;
-      }
-    });
+    if (po.border) po.border.visible = !isFocused;
+    if (po.mesh) po.mesh.material.emissiveIntensity = isFocused ? 0.02 : (po.data.emissiveIntensity || 0.08);
   });
 
   // Particle burst at planet position
@@ -2316,15 +2314,9 @@ window.resetView = function () {
   Object.keys(planetObjects).forEach(key => {
     if (key === 'Sun' || key === 'Moon' || key.includes('_clouds')) return;
     const po = planetObjects[key];
-    if (!po || !po.group) return;
-    po.group.children.forEach(child => {
-      if (child.userData && child.userData.isBorderRing) {
-        child.visible = true;
-      }
-      if (child.isSprite) {
-        child.material.opacity = 0.35;
-      }
-    });
+    if (!po) return;
+    if (po.border) po.border.visible = true;
+    if (po.mesh) po.mesh.material.emissiveIntensity = po.data.emissiveIntensity || 0.08;
   });
 
   cameraStartPos.copy(camera.position);
