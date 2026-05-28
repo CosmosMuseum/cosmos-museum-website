@@ -1099,9 +1099,9 @@ const composer = new THREE.EffectComposer(renderer);
 composer.addPass(new THREE.RenderPass(scene, camera));
 const bloomPass = new THREE.UnrealBloomPass(
   new THREE.Vector2(window.innerWidth, window.innerHeight),
-  0.05,  // strength
-  0.5,   // radius
-  0.92   // threshold
+  0.03,  // strength
+  0.4,   // radius
+  0.94   // threshold
 );
 composer.addPass(bloomPass);
 
@@ -1111,8 +1111,8 @@ scene.add(ambientLight);
 const sunLight = new THREE.PointLight(0xfff4e0, 0.6, 1000);
 sunLight.position.set(0, 0, 0);
 sunLight.castShadow = true;
-sunLight.shadow.mapSize.width = 4096;
-sunLight.shadow.mapSize.height = 4096;
+sunLight.shadow.mapSize.width = 2048;
+sunLight.shadow.mapSize.height = 2048;
 sunLight.shadow.bias = -0.00003;
 sunLight.shadow.normalBias = 0.015;
 if (sunLight.shadow.camera) {
@@ -1184,7 +1184,7 @@ function loadRealTextures() {
 let starUniforms;
 function createStarfield() {
   const geo = new THREE.BufferGeometry();
-  const count = 15000;
+  const count = 10000;
   const pos = new Float32Array(count * 3);
   const sizes = new Float32Array(count);
   const phase = new Float32Array(count);
@@ -1502,8 +1502,8 @@ function createAtmosphereScattering(radius, color, intensity) {
       // Optical depth along view ray
       float opticalDepth(vec3 rayOrigin, vec3 rayDir, float rayLen) {
         float sampled = 0.0;
-        float steps = 8.0;
-        for (float i = 0.0; i < 8.0; i++) {
+        float steps = 4.0;
+        for (float i = 0.0; i < 4.0; i++) {
           vec3 samplePos = rayOrigin + rayDir * (rayLen * (i + 0.5) / steps);
           float h = length(samplePos) - 1.0;
           sampled += exp(-h * 3.5);
@@ -1607,7 +1607,7 @@ function buildNebulaBackground() {
   scene.add(new THREE.Mesh(geo, mat));
 
   // ── 3D NEBULA DUST CLOUDS (volumetric gas) ──
-  const dustCount = 5000;
+  const dustCount = 2500;
   const dustGeo = new THREE.BufferGeometry();
   const dustPos = new Float32Array(dustCount * 3);
   const dustSizes = new Float32Array(dustCount);
@@ -1674,7 +1674,7 @@ function buildNebulaBackground() {
   nebulaParticles.push(dustPoints);
 
   // ── BRIGHT GLOWING STARDUST (sparkle particles) ──
-  const sparkleCount = 1200;
+  const sparkleCount = 600;
   const sparkleGeo = new THREE.BufferGeometry();
   const sparklePos = new Float32Array(sparkleCount * 3);
   const sparkleSizes = new Float32Array(sparkleCount);
@@ -2094,7 +2094,7 @@ function createRockGeometry() {
 }
 
 function buildAsteroidBelt() {
-  const count = 8000;
+  const count = 4000;
   const rockGeo = createRockGeometry();
   const rockMat = new THREE.MeshPhongMaterial({ color: 0x998877, shininess: 5 });
   const mesh = new THREE.InstancedMesh(rockGeo, rockMat, count);
@@ -2117,7 +2117,7 @@ function buildAsteroidBelt() {
 
 // ── KUIPER BELT ──
 function buildKuiperBelt() {
-  const count = 8000;
+  const count = 4000;
   const rockGeo = createRockGeometry();
   const rockMat = new THREE.MeshPhongMaterial({ color: 0x667788, shininess: 3 });
   const mesh = new THREE.InstancedMesh(rockGeo, rockMat, count);
