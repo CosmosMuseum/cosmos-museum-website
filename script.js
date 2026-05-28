@@ -1840,6 +1840,18 @@ function buildPlanet(key) {
   if (data.axialTilt) mesh.rotation.z = data.axialTilt;
   group.add(mesh);
 
+  // Border ring (visible from far, hidden on focus)
+  const borderGeo = new THREE.SphereGeometry(data.radius + 0.2, 48, 48);
+  const borderMat = new THREE.MeshBasicMaterial({
+    color: parseInt(data.glowColor.replace('#', ''), 16),
+    transparent: true,
+    opacity: 0.15,
+    side: THREE.BackSide,
+  });
+  const border = new THREE.Mesh(borderGeo, borderMat);
+  border.userData.isBorderRing = true;
+  group.add(border);
+
   // Planet glow sprite
   const hex = parseInt(data.glowColor.replace('#', ''), 16);
   const glow = createGlowSprite(hex, data.radius * 4);
@@ -2235,6 +2247,18 @@ window.focusPlanet = function (name) {
   if (activeBtn) activeBtn.classList.add('active');
   if (window.updateNavScale) window.updateNavScale();
 
+  // Hide borders on all, show on non-focused
+  Object.keys(planetObjects).forEach(key => {
+    if (key === 'Sun' || key === 'Moon' || key.includes('_clouds')) return;
+    const po = planetObjects[key];
+    if (!po || !po.group) return;
+    po.group.children.forEach(child => {
+      if (child.userData && child.userData.isBorderRing) {
+        child.visible = (key !== name);
+      }
+    });
+  });
+
   // Particle burst at planet position
   const pObj = planetObjects[name];
   const worldPos = new THREE.Vector3();
@@ -2268,6 +2292,19 @@ window.focusPlanet = function (name) {
 window.resetView = function () {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   currentFocus = null;
+
+  // Show all borders again
+  Object.keys(planetObjects).forEach(key => {
+    if (key === 'Sun' || key === 'Moon' || key.includes('_clouds')) return;
+    const po = planetObjects[key];
+    if (!po || !po.group) return;
+    po.group.children.forEach(child => {
+      if (child.userData && child.userData.isBorderRing) {
+        child.visible = true;
+      }
+    });
+  });
+
   cameraStartPos.copy(camera.position);
   cameraStartTarget.copy(controls.target);
   cameraTarget = new THREE.Vector3(0, 0, 0);
