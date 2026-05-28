@@ -496,17 +496,15 @@ p {
   bottom: 1.5rem;
   left: 50%;
   transform: translateX(-50%);
-  width: 420px;
-  max-width: 90vw;
   z-index: 10;
   overflow: hidden;
 }
 
 .nav-track {
   display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.5rem 0;
+  align-items: flex-end;
+  gap: 0.2rem;
+  padding: 0.5rem 1rem;
   overflow-x: auto;
   scrollbar-width: none;
   cursor: grab;
@@ -523,25 +521,49 @@ p {
 }
 
 .nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
   background: transparent;
   border: none;
   padding: 0;
   cursor: pointer;
   flex-shrink: 0;
   outline: none;
-  transition: transform 0.3s ease;
+  transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.nav-planet-name {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 0.6rem;
+  font-weight: 400;
+  letter-spacing: -0.06em;
+  color: rgba(255, 255, 255, 0.4);
+  transition: color 0.4s ease, opacity 0.4s ease;
+  opacity: 0.6;
+  white-space: nowrap;
+}
+
+.nav-btn.active .nav-planet-name {
+  color: #fff;
+  opacity: 1;
 }
 
 .nav-orb {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   overflow: hidden;
-  border: 2px solid rgba(255, 255, 255, 0.15);
-  transition: width 0.3s ease, height 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  transition: width 0.5s cubic-bezier(0.25, 1, 0.5, 1),
+              height 0.5s cubic-bezier(0.25, 1, 0.5, 1),
+              border-color 0.4s ease,
+              box-shadow 0.4s ease;
 }
 
 .nav-orb img {
@@ -552,8 +574,8 @@ p {
 }
 
 .nav-btn.active .nav-orb {
-  border-color: rgba(255, 255, 255, 0.8);
-  box-shadow: 0 0 16px rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
 }
 
 /* ── TOOLTIP ── */
@@ -3372,13 +3394,13 @@ p {
   }
 
   /* Planet nav — horizontal scroll instead of wrap */
-  #planet-nav {
-    width: 320px;
+  .nav-orb {
+    width: 30px;
+    height: 30px;
   }
 
-  .nav-orb {
-    width: 40px;
-    height: 40px;
+  .nav-planet-name {
+    font-size: 0.5rem;
   }
 
   /* Header */
@@ -3634,13 +3656,16 @@ p {
 
   /* Landscape phone */
   #planet-nav {
-    width: 280px;
     bottom: 0.8rem;
   }
 
   .nav-orb {
-    width: 34px;
-    height: 34px;
+    width: 26px;
+    height: 26px;
+  }
+
+  .nav-planet-name {
+    font-size: 0.45rem;
   }
 
   .ghud-top {
