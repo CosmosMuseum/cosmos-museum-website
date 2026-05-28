@@ -560,10 +560,12 @@ p {
   border-radius: 50%;
   overflow: hidden;
   border: 1.5px solid rgba(255, 255, 255, 0.1);
+  filter: grayscale(100%);
   transition: width 0.5s cubic-bezier(0.25, 1, 0.5, 1),
               height 0.5s cubic-bezier(0.25, 1, 0.5, 1),
               border-color 0.4s ease,
-              box-shadow 0.4s ease;
+              box-shadow 0.4s ease,
+              filter 0.4s ease;
 }
 
 .nav-orb img {
@@ -576,6 +578,7 @@ p {
 .nav-btn.active .nav-orb {
   border-color: rgba(255, 255, 255, 0.6);
   box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+  filter: grayscale(0%);
 }
 
 /* ── TOOLTIP ── */
