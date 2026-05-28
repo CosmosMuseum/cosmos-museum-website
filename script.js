@@ -1996,20 +1996,32 @@ function buildPlanet(key) {
 // ── ASTEROID BELT ──
 function createDotTexture() {
   const c = document.createElement('canvas');
-  c.width = c.height = 32;
+  c.width = c.height = 64;
   const ctx = c.getContext('2d');
-  const g = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
-  g.addColorStop(0, 'rgba(255,255,255,1)');
-  g.addColorStop(0.3, 'rgba(255,255,255,0.6)');
-  g.addColorStop(0.7, 'rgba(255,255,255,0.1)');
-  g.addColorStop(1, 'rgba(255,255,255,0)');
+  // Rocky asteroid look
+  const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+  g.addColorStop(0, 'rgba(200,180,160,1)');
+  g.addColorStop(0.25, 'rgba(160,140,120,0.9)');
+  g.addColorStop(0.5, 'rgba(120,100,80,0.5)');
+  g.addColorStop(0.8, 'rgba(80,60,40,0.15)');
+  g.addColorStop(1, 'rgba(40,30,20,0)');
   ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 32, 32);
+  ctx.fillRect(0, 0, 64, 64);
+  // Surface noise
+  for (let i = 0; i < 20; i++) {
+    const x = 16 + Math.random() * 32;
+    const y = 16 + Math.random() * 32;
+    const r = 1 + Math.random() * 3;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${80 + Math.random() * 60},${60 + Math.random() * 50},${40 + Math.random() * 40},${0.3 + Math.random() * 0.4})`;
+    ctx.fill();
+  }
   return new THREE.CanvasTexture(c);
 }
 
 function buildAsteroidBelt() {
-  const count = 2500;
+  const count = 3000;
   const geo = new THREE.BufferGeometry();
   const pos = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
@@ -2022,14 +2034,14 @@ function buildAsteroidBelt() {
   }
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   const dot = createDotTexture();
-  const mat = new THREE.PointsMaterial({ color: 0x887766, map: dot, size: 0.25, sizeAttenuation: true, transparent: true, opacity: 0.6 });
+  const mat = new THREE.PointsMaterial({ color: 0xcca888, map: dot, size: 0.5, sizeAttenuation: true, transparent: true, opacity: 0.85, blending: THREE.NormalBlending });
   scene.add(new THREE.Points(geo, mat));
 }
 // Asteroid belt built via deferred queue below
 
 // ── KUIPER BELT ──
 function buildKuiperBelt() {
-  const count = 1500;
+  const count = 2000;
   const geo = new THREE.BufferGeometry();
   const pos = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
@@ -2042,7 +2054,7 @@ function buildKuiperBelt() {
   }
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   const dot = createDotTexture();
-  const mat = new THREE.PointsMaterial({ color: 0x445566, map: dot, size: 0.2, sizeAttenuation: true, transparent: true, opacity: 0.4 });
+  const mat = new THREE.PointsMaterial({ color: 0x6688aa, map: dot, size: 0.4, sizeAttenuation: true, transparent: true, opacity: 0.7, blending: THREE.NormalBlending });
   scene.add(new THREE.Points(geo, mat));
 }
 // Kuiper belt built via deferred queue below
