@@ -1852,6 +1852,7 @@ function buildPlanet(key) {
   });
   const border = new THREE.Mesh(borderGeo, borderMat);
   border.userData.isBorderRing = true;
+  border.raycast = () => {};
   group.add(border);
 
   // Planet glow sprite
