@@ -1994,68 +1994,60 @@ function buildPlanet(key) {
 // Planets built via deferred queue below
 
 // ── ASTEROID BELT ──
-function createDotTexture() {
-  const c = document.createElement('canvas');
-  c.width = c.height = 64;
-  const ctx = c.getContext('2d');
-  // Rocky asteroid look
-  const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-  g.addColorStop(0, 'rgba(200,180,160,1)');
-  g.addColorStop(0.25, 'rgba(160,140,120,0.9)');
-  g.addColorStop(0.5, 'rgba(120,100,80,0.5)');
-  g.addColorStop(0.8, 'rgba(80,60,40,0.15)');
-  g.addColorStop(1, 'rgba(40,30,20,0)');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 64, 64);
-  // Surface noise
-  for (let i = 0; i < 20; i++) {
-    const x = 16 + Math.random() * 32;
-    const y = 16 + Math.random() * 32;
-    const r = 1 + Math.random() * 3;
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(${80 + Math.random() * 60},${60 + Math.random() * 50},${40 + Math.random() * 40},${0.3 + Math.random() * 0.4})`;
-    ctx.fill();
+function createRockGeometry() {
+  const geo = new THREE.IcosahedronGeometry(0.12, 0);
+  const pos = geo.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    pos.setX(i, pos.getX(i) * (0.7 + Math.random() * 0.6));
+    pos.setY(i, pos.getY(i) * (0.7 + Math.random() * 0.6));
+    pos.setZ(i, pos.getZ(i) * (0.7 + Math.random() * 0.6));
   }
-  return new THREE.CanvasTexture(c);
+  geo.computeVertexNormals();
+  return geo;
 }
 
 function buildAsteroidBelt() {
   const count = 3000;
-  const geo = new THREE.BufferGeometry();
-  const pos = new Float32Array(count * 3);
+  const rockGeo = createRockGeometry();
+  const rockMat = new THREE.MeshPhongMaterial({ color: 0x998877, shininess: 5 });
+  const mesh = new THREE.InstancedMesh(rockGeo, rockMat, count);
+  const dummy = new THREE.Object3D();
   for (let i = 0; i < count; i++) {
     const r = 43 + Math.random() * 8;
     const a = Math.random() * Math.PI * 2;
     const y = (Math.random() - 0.5) * 1.5;
-    pos[i * 3] = Math.cos(a) * r;
-    pos[i * 3 + 1] = y;
-    pos[i * 3 + 2] = Math.sin(a) * r;
+    dummy.position.set(Math.cos(a) * r, y, Math.sin(a) * r);
+    dummy.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+    const s = 0.4 + Math.random() * 1.2;
+    dummy.scale.set(s, s, s);
+    dummy.updateMatrix();
+    mesh.setMatrixAt(i, dummy.matrix);
   }
-  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  const dot = createDotTexture();
-  const mat = new THREE.PointsMaterial({ color: 0xcca888, map: dot, size: 0.5, sizeAttenuation: true, transparent: true, opacity: 0.85, blending: THREE.NormalBlending });
-  scene.add(new THREE.Points(geo, mat));
+  mesh.instanceMatrix.needsUpdate = true;
+  scene.add(mesh);
 }
 // Asteroid belt built via deferred queue below
 
 // ── KUIPER BELT ──
 function buildKuiperBelt() {
   const count = 2000;
-  const geo = new THREE.BufferGeometry();
-  const pos = new Float32Array(count * 3);
+  const rockGeo = createRockGeometry();
+  const rockMat = new THREE.MeshPhongMaterial({ color: 0x667788, shininess: 3 });
+  const mesh = new THREE.InstancedMesh(rockGeo, rockMat, count);
+  const dummy = new THREE.Object3D();
   for (let i = 0; i < count; i++) {
     const r = 122 + Math.random() * 18;
     const a = Math.random() * Math.PI * 2;
     const y = (Math.random() - 0.5) * 4;
-    pos[i * 3] = Math.cos(a) * r;
-    pos[i * 3 + 1] = y;
-    pos[i * 3 + 2] = Math.sin(a) * r;
+    dummy.position.set(Math.cos(a) * r, y, Math.sin(a) * r);
+    dummy.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+    const s = 0.3 + Math.random() * 0.9;
+    dummy.scale.set(s, s, s);
+    dummy.updateMatrix();
+    mesh.setMatrixAt(i, dummy.matrix);
   }
-  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  const dot = createDotTexture();
-  const mat = new THREE.PointsMaterial({ color: 0x6688aa, map: dot, size: 0.4, sizeAttenuation: true, transparent: true, opacity: 0.7, blending: THREE.NormalBlending });
-  scene.add(new THREE.Points(geo, mat));
+  mesh.instanceMatrix.needsUpdate = true;
+  scene.add(mesh);
 }
 // Kuiper belt built via deferred queue below
 
