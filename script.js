@@ -1247,19 +1247,6 @@ function createStarfield() {
 }
 scene.add(createStarfield());
 
-// ── MILKY WAY BACKGROUND ──
-textureLoader.load('img/textures/8k_stars_milky_way.jpg', (milkyTex) => {
-  const skyGeo = new THREE.SphereGeometry(800, 64, 64);
-  const skyMat = new THREE.MeshBasicMaterial({
-    map: milkyTex,
-    side: THREE.BackSide,
-    depthWrite: false,
-  });
-  const sky = new THREE.Mesh(skyGeo, skyMat);
-  sky.renderOrder = -1;
-  scene.add(sky);
-});
-
 // ── PLANETS & OBJECTS ──
 const planetObjects = {};
 const orbitLines = [];
@@ -4583,6 +4570,18 @@ const buildQueue = [
   { label: 'Sembrando reliquias rocosas...', fn: () => buildAsteroidBelt() },
   { label: 'Esparciendo ecos en el cinturón oscuro...', fn: () => buildKuiperBelt() },
   { label: 'Liberando al cometa solitario...', fn: () => buildComet() },
+  { label: 'Tejiendo la Vía Láctea...', fn: () => {
+    return new Promise((resolve) => {
+      textureLoader.load('img/textures/8k_stars_milky_way.jpg', (milkyTex) => {
+        const skyGeo = new THREE.SphereGeometry(800, 64, 64);
+        const skyMat = new THREE.MeshBasicMaterial({ map: milkyTex, side: THREE.BackSide, depthWrite: false });
+        const sky = new THREE.Mesh(skyGeo, skyMat);
+        sky.renderOrder = -1;
+        scene.add(sky);
+        resolve();
+      }, undefined, () => resolve());
+    });
+  }},
 ];
 
 // Populate step list in loading screen
