@@ -2007,7 +2007,7 @@ function createRockGeometry() {
 }
 
 function buildAsteroidBelt() {
-  const count = 3000;
+  const count = 4000;
   const rockGeo = createRockGeometry();
   const rockMat = new THREE.MeshPhongMaterial({ color: 0x998877, shininess: 5 });
   const mesh = new THREE.InstancedMesh(rockGeo, rockMat, count);
@@ -2018,7 +2018,7 @@ function buildAsteroidBelt() {
     const y = (Math.random() - 0.5) * 1.5;
     dummy.position.set(Math.cos(a) * r, y, Math.sin(a) * r);
     dummy.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
-    const s = 0.4 + Math.random() * 1.2;
+    const s = 0.2 + Math.random() * 1.8;
     dummy.scale.set(s, s, s);
     dummy.updateMatrix();
     mesh.setMatrixAt(i, dummy.matrix);
@@ -2030,7 +2030,7 @@ function buildAsteroidBelt() {
 
 // ── KUIPER BELT ──
 function buildKuiperBelt() {
-  const count = 2000;
+  const count = 4000;
   const rockGeo = createRockGeometry();
   const rockMat = new THREE.MeshPhongMaterial({ color: 0x667788, shininess: 3 });
   const mesh = new THREE.InstancedMesh(rockGeo, rockMat, count);
@@ -2041,7 +2041,7 @@ function buildKuiperBelt() {
     const y = (Math.random() - 0.5) * 4;
     dummy.position.set(Math.cos(a) * r, y, Math.sin(a) * r);
     dummy.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
-    const s = 0.3 + Math.random() * 0.9;
+    const s = 0.15 + Math.random() * 2.0;
     dummy.scale.set(s, s, s);
     dummy.updateMatrix();
     mesh.setMatrixAt(i, dummy.matrix);
