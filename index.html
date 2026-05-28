@@ -284,51 +284,68 @@
     <div class="nav-track">
       <button class="nav-btn" data-planet="Sun" onclick="focusPlanet('Sun')">
         <span class="nav-planet-name">Sol</span>
-        <span class="nav-orb"><img src="img/earth.png" alt="Sun"></span>
+        <span class="nav-orb"><img src="img/sun.jpg" alt="Sun"></span>
       </button>
       <button class="nav-btn" data-planet="Mercury" onclick="focusPlanet('Mercury')">
         <span class="nav-planet-name">Mercurio</span>
-        <span class="nav-orb"><img src="img/earth.png" alt="Mercury"></span>
+        <span class="nav-orb"><img src="img/mercury.jpg" alt="Mercury"></span>
       </button>
       <button class="nav-btn" data-planet="Venus" onclick="focusPlanet('Venus')">
         <span class="nav-planet-name">Venus</span>
-        <span class="nav-orb"><img src="img/earth.png" alt="Venus"></span>
+        <span class="nav-orb"><img src="img/venus.jpg" alt="Venus"></span>
       </button>
       <button class="nav-btn" data-planet="Earth" onclick="focusPlanet('Earth')">
         <span class="nav-planet-name">Tierra</span>
-        <span class="nav-orb"><img src="img/earth.png" alt="Earth"></span>
+        <span class="nav-orb"><img src="img/earth.jpg" alt="Earth"></span>
       </button>
       <button class="nav-btn" data-planet="Mars" onclick="focusPlanet('Mars')">
         <span class="nav-planet-name">Marte</span>
-        <span class="nav-orb"><img src="img/earth.png" alt="Mars"></span>
+        <span class="nav-orb"><img src="img/mars.jpg" alt="Mars"></span>
       </button>
       <button class="nav-btn" data-planet="Jupiter" onclick="focusPlanet('Jupiter')">
         <span class="nav-planet-name">Jupiter</span>
-        <span class="nav-orb"><img src="img/earth.png" alt="Jupiter"></span>
+        <span class="nav-orb"><img src="img/jupiter.jpg" alt="Jupiter"></span>
       </button>
       <button class="nav-btn" data-planet="Saturn" onclick="focusPlanet('Saturn')">
         <span class="nav-planet-name">Saturno</span>
-        <span class="nav-orb"><img src="img/earth.png" alt="Saturn"></span>
+        <span class="nav-orb"><img src="img/saturn.jpg" alt="Saturn"></span>
       </button>
       <button class="nav-btn" data-planet="Uranus" onclick="focusPlanet('Uranus')">
         <span class="nav-planet-name">Urano</span>
-        <span class="nav-orb"><img src="img/earth.png" alt="Uranus"></span>
+        <span class="nav-orb"><img src="img/uranus.jpg" alt="Uranus"></span>
       </button>
       <button class="nav-btn" data-planet="Neptune" onclick="focusPlanet('Neptune')">
         <span class="nav-planet-name">Neptuno</span>
-        <span class="nav-orb"><img src="img/earth.png" alt="Neptune"></span>
+        <span class="nav-orb"><img src="img/neptune.jpg" alt="Neptune"></span>
       </button>
     </div>
   </div>
   <div class="nav-controls">
     <button class="nav-ctrl-btn" onclick="navPlanet(-1)" title="Anterior">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" fill="none" style="transform:scaleX(-1)"><path d="M31.7261 15.9148C25.2964 15.9148 20.0781 10.5769 20.0781 3.99988" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10"/><path d="M31.7261 15.9149C25.2964 15.9149 20.0781 21.2528 20.0781 27.8298" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10"/><path d="M32 15.9147L0 15.9147" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" fill="none"
+        style="transform:scaleX(-1)">
+        <path d="M31.7261 15.9148C25.2964 15.9148 20.0781 10.5769 20.0781 3.99988" stroke="currentColor"
+          stroke-width="1.2" stroke-miterlimit="10" />
+        <path d="M31.7261 15.9149C25.2964 15.9149 20.0781 21.2528 20.0781 27.8298" stroke="currentColor"
+          stroke-width="1.2" stroke-miterlimit="10" />
+        <path d="M32 15.9147L0 15.9147" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" />
+      </svg>
     </button>
     <button class="nav-ctrl-btn nav-ctrl-reset" onclick="resetView()" title="Reiniciar">
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+        <path d="M3 3v5h5" />
+      </svg>
     </button>
     <button class="nav-ctrl-btn" onclick="navPlanet(1)" title="Siguiente">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" fill="none"><path d="M31.7261 15.9148C25.2964 15.9148 20.0781 10.5769 20.0781 3.99988" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10"/><path d="M31.7261 15.9149C25.2964 15.9149 20.0781 21.2528 20.0781 27.8298" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10"/><path d="M32 15.9147L0 15.9147" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" fill="none">
+        <path d="M31.7261 15.9148C25.2964 15.9148 20.0781 10.5769 20.0781 3.99988" stroke="currentColor"
+          stroke-width="1.2" stroke-miterlimit="10" />
+        <path d="M31.7261 15.9149C25.2964 15.9149 20.0781 21.2528 20.0781 27.8298" stroke="currentColor"
+          stroke-width="1.2" stroke-miterlimit="10" />
+        <path d="M32 15.9147L0 15.9147" stroke="currentColor" stroke-width="1.2" stroke-miterlimit="10" />
+      </svg>
     </button>
   </div>
 
