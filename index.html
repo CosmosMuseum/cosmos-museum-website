@@ -200,7 +200,7 @@
       ← → — Fluir | 1-9 — Trascender
     </p>
     <p>
-      F — Navegar | T — Sinfonía<br>
+      F — Navegar<br>
     </p>
     <p>
       P — Capturar | M — Melodía
@@ -231,11 +231,6 @@
     <div class="ctrl-row">
       <button class="ctrl-btn" id="ship-btn" onclick="toggleShipMode()" title="Vuelo libre (WASD + ratón)">
         Vuelo <i data-lucide="rocket"></i>
-      </button>
-    </div>
-    <div class="ctrl-row">
-      <button class="ctrl-btn" id="tour-btn" onclick="startGuidedTour()" title="Sinfonía guiada del universo">
-        Sinfonía <i data-lucide="map"></i>
       </button>
     </div>
     <div class="ctrl-row">
@@ -393,17 +388,6 @@
   </div>
   <div class="wh-dest-label" id="wh-dest-label">
     Destino<br><span class="wh-dest-name" id="wh-dest-name"></span>
-  </div>
-
-  <!-- GUIDED TOUR -->
-  <div id="tour-overlay">
-    <div class="tour-title" id="tour-title"></div>
-    <div class="tour-text" id="tour-text"></div>
-    <div class="tour-progress" id="tour-progress"></div>
-    <div class="tour-nav">
-      <button class="tour-btn end" onclick="endTour()">Finalizar tour</button>
-      <button class="tour-btn" onclick="nextTourStep()">Siguiente →</button>
-    </div>
   </div>
 
   <!-- PHOTO FLASH -->

@@ -2956,7 +2956,6 @@ window.navPlanet = function (dir) {
 window.addEventListener('keydown', e => {
   if (shipMode) return; // Ship mode has its own keydown handler
   if (e.key === 'Escape') {
-    if (tourActive) { endTour(); return; }
     if (screensaverMode) { toggleScreensaver(); return; }
     if (panelOpen) closePanel();
     else resetView();
@@ -2974,10 +2973,6 @@ window.addEventListener('keydown', e => {
   if (e.key === 'p' || e.key === 'P') takePhoto();
   if (e.key === 'f' || e.key === 'F') toggleShipMode();
   if (e.key === 'g' || e.key === 'G') launchGame();
-  if (e.key === 't' || e.key === 'T') startGuidedTour();
-  if (e.key === 'n' || e.key === 'N') {
-    if (tourActive) nextTourStep();
-  }
 });
 
 // ═══════════════════════════════════════════════════════
@@ -3816,73 +3811,6 @@ renderer.domElement.addEventListener('dblclick', e => {
 // ═══════════════════════════════════════════════════════
 //  GUIDED TOUR — auto-pilot narrated journey
 // ═══════════════════════════════════════════════════════
-let tourActive = false, tourStep = 0;
-const tourSteps = [
-  { target: 'Sun', title: '☆ El Sol', text: 'Bienvenido! Nuestro viaje comienza en el corazón del sistema solar — un horno termonuclear que contiene el 99.86% de toda la masa. Su superficie está a 5,500°C, pero el núcleo alcanza 15 millones de grados.' },
-  { target: 'Mercury', title: '☿ Mercurio', text: 'El planeta más cercano al Sol y el más pequeño. Un día en Mercurio dura 59 días terrestres, y las temperaturas oscilan entre -180°C de noche y 430°C de día — el rango más extremo de cualquier planeta.' },
-  { target: 'Venus', title: '♀ Venus', text: 'A menudo llamado el gemelo de la Tierra en tamaño, pero salvajemente diferente. Su gruesa atmósfera de CO₂ atrapa el calor tan eficazmente que la superficie alcanza 462°C — más caliente que Mercurio a pesar de estar más lejos del Sol.' },
-  { target: 'Earth', title: '🌍 La Tierra', text: 'Nuestro pálido punto azul. El único mundo conocido que alberga vida, con océanos de agua líquida que cubren el 71% de la superficie. Su campo magnético nos protege de la radiación solar mortal.' },
-  { target: 'Mars', title: '♂ Marte', text: 'El Planeta Rojo, coloreado por el óxido de hierro. Hogar del Monte Olimpo — la montaña más alta del sistema solar con 21.9 km — y Valles Marineris, un cañón que se extiende por 4,000 km.' },
-  { target: 'Jupiter', title: '♃ Júpiter', text: 'El rey de los planetas. Tan masivo que 1,300 Tierras cabrían dentro. La Gran Mancha Roja es una tormenta que ha durado al menos 400 años, más ancha que nuestro planeta entero.' },
-  { target: 'Saturn', title: '♄ Saturno', text: 'La joya del sistema solar. Sus icónicos anillos están hechos de miles de millones de trozos de hielo y roca, desde tamaño polvo hasta tamaño casa. Saturno es tan ligero que flotaría en el agua.' },
-  { target: 'Uranus', title: '♅ Urano', text: 'El gigante de hielo que rueda de lado — inclinado 98° desde su plano orbital, probablemente por una colisión antigua. Su color azul-verdoso proviene del metano en la atmósfera que absorbe la luz roja.' },
-  { target: 'Neptune', title: '♆ Neptuno', text: 'El planeta más lejano, descubierto mediante matemáticas antes de ser visto. Los vientos alcanzan 2,100 km/h — los más rápidos del sistema solar. Tarda 165 años en orbitar el Sol una vez.' },
-];
-
-window.startGuidedTour = function () {
-  if (tourActive) { endTour(); return; }
-  tourActive = true; tourStep = 0;
-  document.getElementById('tour-btn').classList.add('active');
-  playTourStep();
-  unlockAchievement('tour', '🎙', 'Guía cósmico', 'Iniciaste el tour guiado del sistema solar');
-};
-
-window.endTour = function () {
-  tourActive = false;
-  document.getElementById('tour-overlay').classList.remove('active');
-  document.getElementById('tour-btn').classList.remove('active');
-};
-
-window.nextTourStep = function () {
-  if (!tourActive) return;
-  tourStep++;
-  if (tourStep >= tourSteps.length) {
-    endTour();
-    unlockAchievement('grandtour', '🪐', 'Gran tour completado', 'Visitaste todos los planetas en el tour guiado');
-    return;
-  }
-  playTourStep();
-};
-
-function playTourStep() {
-  const step = tourSteps[tourStep];
-  focusPlanet(step.target);
-  const overlay = document.getElementById('tour-overlay');
-  document.getElementById('tour-title').textContent = step.title;
-  document.getElementById('tour-text').textContent = step.text;
-  // Progress dots
-  const progEl = document.getElementById('tour-progress');
-  progEl.innerHTML = tourSteps.map((_, i) =>
-    `<div class="tour-dot ${i === tourStep ? 'active' : ''} ${i < tourStep ? 'active' : ''}"></div>`
-  ).join('');
-  overlay.classList.remove('active');
-  // Re-trigger animation
-  setTimeout(() => overlay.classList.add('active'), 50);
-
-  // Narration sound effect — gentle chime
-  if (audioCtx) {
-    const now = audioCtx.currentTime;
-    [523.25, 659.25, 783.99].forEach((f, i) => {
-      const o = audioCtx.createOscillator(); o.type = 'sine'; o.frequency.value = f;
-      const g = audioCtx.createGain();
-      g.gain.setValueAtTime(0, now + i * 0.08);
-      g.gain.linearRampToValueAtTime(0.06, now + i * 0.08 + 0.05);
-      g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.8);
-      o.connect(g); g.connect(audioCtx.destination);
-      o.start(now + i * 0.08); o.stop(now + i * 0.08 + 1);
-    });
-  }
-}
 
 // ═══════════════════════════════════════════════════════
 //  PHOTO MODE — capture screenshot with cinematic frame

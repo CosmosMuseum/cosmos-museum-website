@@ -2017,110 +2017,6 @@ a.ctrl-btn {
   opacity: 0;
 }
 
-/* ── GUIDED TOUR ── */
-#tour-overlay {
-  display: none;
-  position: fixed;
-  bottom: 6rem;
-  left: 50%;
-  transform: translateX(-50%);
-  background: transparent;
-  border: none;
-  border-radius: 16px;
-  padding: 1.2rem 2rem;
-  max-width: 500px;
-  text-align: center;
-  z-index: 35;
-  animation: fadeSlideUp 0.6s ease;
-}
-
-#tour-overlay.active {
-  display: block;
-}
-
-@keyframes fadeSlideUp {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-}
-
-.tour-title {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-weight: 400;
-  font-size: 1.1rem;
-  color: #fff;
-  margin-bottom: 0.5rem;
-  letter-spacing: 0;
-}
-
-.tour-text {
-  font-size: 0.85rem;
-  font-weight: 300;
-  color: rgba(255, 255, 255, 0.75);
-  line-height: 1.6;
-}
-
-.tour-progress {
-  display: flex;
-  gap: 4px;
-  justify-content: center;
-  margin-top: 0.8rem;
-}
-
-.tour-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
-  transition: all 0.3s;
-}
-
-.tour-dot.active {
-  background: #4fc3f7;
-  box-shadow: 0 0 8px rgba(79, 195, 247, 0.5);
-}
-
-.tour-nav {
-  display: flex;
-  gap: 0.8rem;
-  justify-content: center;
-  margin-top: 0.8rem;
-}
-
-.tour-btn {
-  background: rgba(79, 195, 247, 0.15);
-  border: 1px solid rgba(79, 195, 247, 0.3);
-  color: #4fc3f7;
-  padding: 0.4rem 1.2rem;
-  border-radius: 20px;
-  font-size: 0.65rem;
-  letter-spacing: 1px;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.tour-btn:hover {
-  background: rgba(79, 195, 247, 0.3);
-  border-color: #4fc3f7;
-}
-
-.tour-btn.end {
-  background: rgba(239, 83, 80, 0.15);
-  border-color: rgba(239, 83, 80, 0.3);
-  color: #ef5350;
-}
-
-.tour-btn.end:hover {
-  background: rgba(239, 83, 80, 0.3);
-}
-
 /* ── PHOTO MODE ── */
 #photo-flash {
   display: none;
@@ -3518,13 +3414,6 @@ a.ctrl-btn {
 
   .about-name {
     font-size: 1.1rem;
-  }
-
-  /* Tour overlay */
-  #tour-overlay {
-    width: 90%;
-    max-width: 500px;
-    bottom: 4.5rem;
   }
 
   /* Hint bar */
