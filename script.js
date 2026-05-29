@@ -2393,32 +2393,25 @@ function showPlanetPanel(name) {
   // Store current planet name for the modal
   panel.dataset.planet = name;
 
-  // Make sure it is displayed before animating
-  panel.style.display = 'block';
-
   // Cancel any pending close animation
   if (closePanelTimeout) {
     clearTimeout(closePanelTimeout);
     closePanelTimeout = null;
   }
 
-  // Use requestAnimationFrame to ensure the display: block is processed
-  // before adding the .open class, otherwise the CSS transition is skipped.
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      panel.classList.remove('closing');
-      panel.classList.add('open');
-      panelOpen = true;
-    });
-  });
+  // Transition in — no display toggling needed, CSS handles opacity/filter/transform
+  panel.classList.remove('closing');
+  panel.offsetHeight; // force reflow so transition restarts cleanly
+  panel.classList.add('open');
+  panelOpen = true;
 }
 
 window.closePanel = function () {
   panelOpen = false;
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   currentFocus = null;
-  
-  // Freeze animated characters to static text so the parent blur transition doesn't lag
+
+  // Freeze animated characters so parent blur/opacity transition is smooth
   document.querySelectorAll('.panel-char').forEach(el => {
     el.style.opacity = '1';
     el.style.filter = 'none';
@@ -2426,19 +2419,14 @@ window.closePanel = function () {
     el.style.animation = 'none';
   });
 
-  // Remove .open immediately so the CSS blur/opacity transition triggers
+  // Remove .open — the CSS transition handles the blur/fade out automatically
   panel.classList.remove('open');
-  panel.classList.add('closing');
-  
+
   if (closePanelTimeout) clearTimeout(closePanelTimeout);
-  
   closePanelTimeout = setTimeout(() => {
-    if (!panelOpen) {
-      panel.classList.remove('closing');
-      panel.style.display = 'none';
-    }
+    panel.classList.remove('closing');
     closePanelTimeout = null;
-  }, 600);
+  }, 650);
 };
 
 // ── PLANET MODAL (full-screen details) ──

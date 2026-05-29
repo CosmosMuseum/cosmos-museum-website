@@ -664,7 +664,7 @@ p {
   filter: blur(8px);
   transform: translateY(10px);
   transition: opacity 0.6s ease, filter 0.6s ease, transform 0.6s ease;
-  display: none;
+  /* NO display:none — transitions can't animate across display changes */
 }
 
 #planet-panel.open {
