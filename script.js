@@ -2417,13 +2417,16 @@ window.closePanel = function () {
   panelOpen = false;
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   currentFocus = null;
+  
+  // Remove .open immediately so the CSS blur/opacity transition triggers
+  panel.classList.remove('open');
   panel.classList.add('closing');
   
   if (closePanelTimeout) clearTimeout(closePanelTimeout);
   
   closePanelTimeout = setTimeout(() => {
     if (!panelOpen) {
-      panel.classList.remove('open', 'closing');
+      panel.classList.remove('closing');
       panel.style.display = 'none';
     }
     closePanelTimeout = null;
