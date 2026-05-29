@@ -2198,6 +2198,10 @@ renderer.domElement.addEventListener('mousedown', () => {
   hint.classList.add('hidden');
   clearTimeout(hintTimeout);
 });
+renderer.domElement.addEventListener('mousemove', () => {
+  hint.classList.add('hidden');
+  clearTimeout(hintTimeout);
+});
 renderer.domElement.addEventListener('mouseup', () => {
   renderer.domElement.style.cursor = 'grab';
   clearTimeout(hintTimeout);
