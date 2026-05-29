@@ -71,7 +71,7 @@
   }
   </script>
 
-  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="stylesheet" href="styles.css?v=2">
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
@@ -190,11 +190,22 @@
   <!-- CONTROLS HINT -->
   <div id="controls-hint">
     <div class="hint-project-name">Sinfonía Cósmica</div>
-    <p>Arrastrar — Contemplar | SCROLL — Acercarse</p>
-    <p>CLICK — Descubrir | Doble clic — Viaje estelar</p>
-    <p>← → — Fluir | 1-9 — Trascender</p>
-    <p>F — Navegar | T — Sinfonía</p>
-    <p>P — Capturar | M — Melodía</p>
+    <p>
+      Arrastrar — Contemplar | SCROLL — Acercarse
+    </p>
+    <p>
+      CLICK — Descubrir | Doble clic — Viaje estelar
+    </p>
+    <p>
+      ← → — Fluir | 1-9 — Trascender
+    </p>
+    <p>
+      F — Navegar | T — Sinfonía<br>
+    </p>
+    <p>
+      P — Capturar | M — Melodía
+    </p>
+  </div>
   </div>
 
   <!-- ZOOM INDICATOR -->
@@ -262,7 +273,8 @@
   </div>
 
   <!-- HINT -->
-  <div id="hint">✦ Arrastra para explorar · Doble clic para trascender el espacio</div>
+  <div id="hint">✦ Haz clic para descubrir · Doble clic para trascender el espacio · Escribe MURPH para un eco del
+    pasado</div>
 
   <!-- TOOLTIP -->
   <div id="tooltip"></div>
@@ -625,9 +637,8 @@
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/objects/Lensflare.js"></script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"></script>
 
-  <script src="script.js?v=3"></script>
+  <script src="script.js"></script>
   <script>
     // Initialize Lucide icons - runs after all DOM and scripts are loaded
     if (typeof lucide !== 'undefined') {

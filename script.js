@@ -2157,25 +2157,6 @@ const tooltip = document.getElementById('tooltip');
 const hint = document.getElementById('hint');
 const panel = document.getElementById('planet-panel');
 
-let hintHideTimer = null;
-controls.addEventListener('start', () => {
-  if (hint && !hint.classList.contains('hidden')) {
-    hint.style.opacity = '0';
-    hint.style.filter = 'blur(8px)';
-    hint.style.transform = 'translateX(-50%) scale(0.9)';
-  }
-  clearTimeout(hintHideTimer);
-});
-controls.addEventListener('end', () => {
-  hintHideTimer = setTimeout(() => {
-    if (hint && !hint.classList.contains('hidden')) {
-      hint.style.opacity = '';
-      hint.style.filter = '';
-      hint.style.transform = '';
-    }
-  }, 2000);
-});
-
 function getClickableMeshes() {
   const meshes = [];
   Object.values(planetObjects).forEach(p => {
@@ -2540,25 +2521,6 @@ window.openPlanetModal = function () {
   modal.offsetHeight;
   modal.classList.add('active');
 
-  const scrollArea = modal.querySelector('.modal-scroll-area');
-  if (scrollArea) scrollArea.scrollTop = 0;
-
-  if (window._modalLenis) { window._modalLenis.destroy(); window._modalLenis = null; }
-
-  if (scrollArea && typeof Lenis !== 'undefined') {
-    window._modalLenis = new Lenis({
-      wrapper: scrollArea,
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-    });
-    function lenisRaf(time) {
-      window._modalLenis.raf(time);
-      requestAnimationFrame(lenisRaf);
-    }
-    requestAnimationFrame(lenisRaf);
-  }
-
   setTimeout(() => {
     document.querySelectorAll('#modal-content .atmo-fill').forEach(el => {
       el.style.width = el.dataset.pct + '%';
@@ -2568,7 +2530,6 @@ window.openPlanetModal = function () {
 
 window.closePlanetModal = function () {
   document.getElementById('planet-modal').classList.remove('active');
-  if (window._modalLenis) { window._modalLenis.destroy(); window._modalLenis = null; }
 };
 
 function initPlanetModalEffects() {

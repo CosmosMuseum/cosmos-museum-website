@@ -458,9 +458,9 @@ p {
 /* ── HINT ── */
 #hint {
   position: fixed;
-  bottom: 10rem;
+  bottom: 6rem;
   left: 50%;
-  transform: translateX(-50%) scale(0.9);
+  transform: translateX(-50%);
   background: rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -468,47 +468,19 @@ p {
   padding: 0.6rem 1.4rem;
   font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.6);
+  animation: pulse-hint 2.5s ease-in-out infinite;
   z-index: 10;
   pointer-events: none;
-  opacity: 0;
-  filter: blur(8px);
-  animation: hintPulseIn 1.5s ease forwards;
-  transition: opacity 0.4s ease, filter 0.4s ease, transform 0.4s ease;
+  transition: opacity 0.5s;
 }
 
 #hint.hidden {
   opacity: 0;
-  filter: blur(8px);
-  transform: translateX(-50%) scale(0.9);
-}
-
-@keyframes hintPulseIn {
-  0% {
-    opacity: 0;
-    filter: blur(8px);
-    transform: translateX(-50%) scale(0.9);
-  }
-  50% {
-    opacity: 1;
-    filter: blur(0);
-    transform: translateX(-50%) scale(1);
-  }
-  70% {
-    opacity: 1;
-    filter: blur(0);
-    transform: translateX(-50%) scale(1.03);
-  }
-  100% {
-    opacity: 1;
-    filter: blur(0);
-    transform: translateX(-50%) scale(1);
-  }
 }
 
 @keyframes pulse-hint {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
-}
+
+  0%,
   100% {
     box-shadow: 0 0 0 rgba(79, 195, 247, 0);
   }
@@ -690,22 +662,13 @@ p {
   opacity: 0;
   pointer-events: none;
   filter: blur(20px);
-  transform: translateY(30px);
-  transition: opacity 0.6s ease, filter 0.6s ease, transform 0.6s ease;
+  transition: opacity 0.8s ease, filter 0.8s ease;
 }
 
 #planet-panel.open {
   pointer-events: auto;
   opacity: 1;
   filter: blur(0);
-  transform: translateY(0);
-}
-
-#planet-panel.closing {
-  pointer-events: none;
-  opacity: 0;
-  filter: blur(20px);
-  transform: translateY(30px);
 }
 
 .panel-close {
@@ -861,23 +824,6 @@ p {
   transform-style: preserve-3d;
 }
 
-.modal-scroll-area::-webkit-scrollbar {
-  width: 5px;
-}
-
-.modal-scroll-area::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.modal-scroll-area::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.35);
-  border-radius: 10px;
-}
-
-.modal-scroll-area::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
-}
-
 .modal-close {
   position: fixed;
   top: 1rem;
@@ -891,7 +837,7 @@ p {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 0.75rem;
+  font-size: 1.2rem;
   color: rgba(255, 255, 255, 0.6);
   transition: all 0.25s;
   z-index: 110;
@@ -1474,9 +1420,9 @@ p {
 /* Controls hint */
 #controls-hint {
   position: fixed;
-  top: 1.5rem;
+  top: 5rem;
   left: 1rem;
-  font-size: 0.6rem;
+  font-size: 0.85rem;
   color: #fff;
   z-index: 10;
   line-height: 1.6;
@@ -1486,7 +1432,7 @@ p {
 }
 
 #controls-hint p {
-  font-size: 0.55rem;
+  font-size: 17px;
   margin-bottom: 0;
 }
 
@@ -1728,13 +1674,13 @@ a.ctrl-btn {
 /* ── KEYBOARD HINTS ── */
 #controls-hint {
   position: fixed;
-  top: 1.5rem;
+  top: 5rem;
   left: 1rem;
-  font-size: 0.6rem;
-  color: #fff;
-  letter-spacing: 0;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.2);
+  letter-spacing: 1px;
   z-index: 10;
-  line-height: 1.6;
+  line-height: 1.8;
   pointer-events: none;
 }
 
@@ -2245,7 +2191,7 @@ a.ctrl-btn {
 /* ── MINIMAP ── */
 #minimap {
   position: fixed;
-  top: 1.5rem;
+  top: 5rem;
   right: 1rem;
   width: 160px;
   height: 160px;
