@@ -2391,6 +2391,9 @@ function showPlanetPanel(name) {
   // Store current planet name for the modal
   panel.dataset.planet = name;
 
+  // Make sure it is displayed before animating
+  panel.style.display = 'block';
+
   // Remove closing class if present
   panel.classList.remove('closing');
   panel.offsetHeight; // force reflow
@@ -2405,6 +2408,9 @@ window.closePanel = function () {
   panel.classList.add('closing');
   setTimeout(() => {
     panel.classList.remove('open', 'closing');
+    if (!panelOpen) {
+      panel.style.display = 'none';
+    }
   }, 800);
 };
 

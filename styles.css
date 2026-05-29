@@ -663,6 +663,7 @@ p {
   pointer-events: none;
   filter: blur(20px);
   transition: opacity 0.8s ease, filter 0.8s ease;
+  display: none;
 }
 
 #planet-panel.open {
