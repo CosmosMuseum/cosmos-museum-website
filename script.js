@@ -2899,11 +2899,13 @@ function animate() {
       
       hint.style.opacity = '0';
       hint.style.filter = 'blur(6px)';
+      hint.style.transform = 'translateX(-50%) scale(0.9)';
       hint.changeTimeout = setTimeout(() => {
         hint.textContent = newText;
         hint.style.color = 'rgba(255, 255, 255, 0.6)'; // Always use default color
         hint.style.opacity = '1';
         hint.style.filter = 'blur(0px)';
+        hint.style.transform = 'translateX(-50%) scale(1)';
       }, 500); // Wait for CSS opacity transition
     };
 
