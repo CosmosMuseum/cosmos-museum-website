@@ -1420,11 +1420,11 @@ p {
 /* Controls hint */
 #controls-hint {
   position: fixed;
-  top: 0.75rem;
+  top: 0.3rem;
   left: 1rem;
-  font-size: 0.6rem;
-  font-weight: 200;
-  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.55rem;
+  font-weight: 100;
+  color: rgba(255, 255, 255, 0.7);
   z-index: 10;
   line-height: 1.5;
   pointer-events: none;
@@ -1679,9 +1679,10 @@ a.ctrl-btn {
 /* ── KEYBOARD HINTS ── */
 #controls-hint {
   position: fixed;
-  top: 1.5rem;
+  top: 0.3rem;
   left: 1rem;
-  font-size: 0.7rem;
+  font-size: 0.55rem;
+  font-weight: 100;
   color: rgba(255, 255, 255, 0.2);
   letter-spacing: 1px;
   z-index: 10;
