@@ -2430,7 +2430,7 @@ window.closePanel = function () {
       panel.style.display = 'none';
     }
     closePanelTimeout = null;
-  }, 800);
+  }, 600);
 };
 
 // ── PLANET MODAL (full-screen details) ──
