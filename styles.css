@@ -704,6 +704,7 @@ p {
 
 .panel-body {
   padding: 0;
+  padding-top: 3rem;
 }
 
 .panel-body .panel-name {
