@@ -3,39 +3,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,1..1000&display=swap');
 
-.loader-title::first-letter,
-.welcome-title::first-letter,
-.welcome-launch-btn::first-letter,
-.nav-planet-name::first-letter,
-.panel-body .panel-name::first-letter,
-.panel-footer-btn::first-letter,
-.modal-content .modal-name::first-letter,
-.modal-name-char:first-child,
-.hint-project-name::first-letter,
-.speed-label::first-letter,
-.ctrl-btn::first-letter,
-.tour-title::first-letter,
-.ach-title::first-letter,
-.game-title::first-letter,
-.game-final-score::first-letter,
-.game-final-label::first-letter,
-.game-high-score::first-letter,
-.game-mission-title::first-letter,
-.ghud-level-name::first-letter,
-.glvl-title::first-letter,
-.gvic-title::first-letter,
-.about-name::first-letter,
-.ghud-score::first-letter,
-.gvic-stat-val::first-letter,
-.gvic-stat-label::first-letter,
-.stat-value::first-letter,
-.moon-count::first-letter,
-.temp-value::first-letter,
-.wh-dest-name::first-letter {
-  font-family: 'Great Vibes', cursive;
-  margin-right: 0.15em;
-}
-
 *,
 *::before,
 *::after {
@@ -938,6 +905,7 @@ p {
 
 /* Reuse existing inner panel styles for modal */
 #planet-modal .section-title {
+  font-family: 'Playfair Display', serif;
   font-size: 0.65rem;
   letter-spacing: 3px;
   color: rgba(255, 255, 255, 0.3);
@@ -967,6 +935,7 @@ p {
 }
 
 #planet-modal .stat-value {
+  font-family: 'Playfair Display', serif;
   font-size: 0.85rem;
   font-weight: 600;
   color: #fff;
@@ -981,6 +950,7 @@ p {
 }
 
 #planet-modal .temp-value {
+  font-family: 'Playfair Display', serif;
   font-size: 2rem;
   font-weight: 200;
 }
@@ -1035,6 +1005,7 @@ p {
 }
 
 #planet-modal .moon-count {
+  font-family: 'Playfair Display', serif;
   font-size: 2rem;
   font-weight: 200;
   color: var(--planet-color, #4fc3f7);
@@ -1211,6 +1182,7 @@ p {
 }
 
 .stat-value {
+  font-family: 'Playfair Display', serif;
   font-size: 0.9rem;
   font-weight: 700;
   color: var(--planet-color, #4fc3f7);
@@ -1223,6 +1195,7 @@ p {
 }
 
 .section-title {
+  font-family: 'Playfair Display', serif;
   font-size: 0.7rem;
   letter-spacing: 3px;
   color: rgba(255, 255, 255, 0.35);
@@ -1320,6 +1293,7 @@ p {
 }
 
 .moon-count {
+  font-family: 'Playfair Display', serif;
   font-size: 2.5rem;
   font-weight: 900;
   color: var(--planet-color, #4fc3f7);
@@ -1989,6 +1963,7 @@ a.ctrl-btn {
 }
 
 .wh-dest-name {
+  font-family: 'Playfair Display', serif;
   font-size: clamp(1.2rem, 3vw, 2.2rem);
   font-weight: 700;
   color: #fff;
@@ -2211,7 +2186,7 @@ a.ctrl-btn {
 .ach-text {}
 
 .ach-title {
-  font-family: 'Great Vibes', cursive;
+  font-family: 'Playfair Display', serif;
   font-size: 1.1rem;
   color: #fff;
   letter-spacing: 1px;
@@ -2317,6 +2292,7 @@ a.ctrl-btn {
 }
 
 .ghud-score {
+  font-family: 'Playfair Display', serif;
   font-size: 1.4rem;
   color: #4fc3f7;
   letter-spacing: 3px;
@@ -2490,6 +2466,7 @@ a.ctrl-btn {
 }
 
 .game-title {
+  font-family: 'Playfair Display', serif;
   font-weight: 900;
   font-size: clamp(1.8rem, 5vw, 3.5rem);
   letter-spacing: 6px;
@@ -2530,6 +2507,7 @@ a.ctrl-btn {
 }
 
 .game-final-score {
+  font-family: 'Playfair Display', serif;
   font-size: 2.5rem;
   color: #FFD700;
   letter-spacing: 4px;
@@ -2545,6 +2523,7 @@ a.ctrl-btn {
 }
 
 .game-final-label {
+  font-family: 'Playfair Display', serif;
   font-size: 0.65rem;
   color: rgba(255, 255, 255, 0.3);
   letter-spacing: 4px;
@@ -2593,6 +2572,7 @@ a.ctrl-btn {
 }
 
 .game-mission-title {
+  font-family: 'Playfair Display', serif;
   font-size: 0.65rem;
   color: #4fc3f7;
   letter-spacing: 3px;
@@ -2632,6 +2612,7 @@ a.ctrl-btn {
 }
 
 .ghud-level-name {
+  font-family: 'Playfair Display', serif;
   font-size: 0.7rem;
   color: #ab47bc;
   letter-spacing: 3px;
@@ -2681,6 +2662,7 @@ a.ctrl-btn {
 }
 
 .glvl-title {
+  font-family: 'Playfair Display', serif;
   font-size: clamp(1rem, 3vw, 2rem);
   color: #69f0ae;
   letter-spacing: 6px;
@@ -2736,6 +2718,7 @@ a.ctrl-btn {
 }
 
 .gvic-title {
+  font-family: 'Playfair Display', serif;
   font-weight: 900;
   font-size: clamp(1.5rem, 4vw, 3rem);
   letter-spacing: 6px;
@@ -2766,6 +2749,7 @@ a.ctrl-btn {
 }
 
 .gvic-stat-val {
+  font-family: 'Playfair Display', serif;
   font-size: 1.5rem;
   color: #FFD700;
   letter-spacing: 2px;
@@ -2773,6 +2757,7 @@ a.ctrl-btn {
 }
 
 .gvic-stat-label {
+  font-family: 'Playfair Display', serif;
   font-size: 0.55rem;
   color: rgba(255, 255, 255, 0.35);
   letter-spacing: 2px;
@@ -2953,6 +2938,7 @@ a.ctrl-btn {
 }
 
 .about-name {
+  font-family: 'Playfair Display', serif;
   font-size: 1.5rem;
   font-weight: 900;
   letter-spacing: 3px;
@@ -3518,7 +3504,7 @@ a.ctrl-btn {
   }
 
   .site-title {
-    font-family: "Great Vibes", cursive;
+    font-family: 'Playfair Display', serif;
     font-style: italic;
     font-weight: 300;
     font-size: 0.85rem;
