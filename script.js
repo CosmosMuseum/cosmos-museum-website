@@ -4462,9 +4462,7 @@ window.toggleMusic = function () {
 // ═══════════════════════════════════════════════════════
 const loadingEl = document.getElementById('loading');
 const presentsEl = document.getElementById('intro-presents');
-const presentsTitle = document.getElementById('presents-title');
-const presentsSubtitle = document.getElementById('presents-subtitle');
-const presentsTagline = document.getElementById('presents-tagline');
+const presentsText = document.getElementById('presents-text');
 
 const buildQueue = [
   { fn: () => loadRealTextures() },
@@ -4500,9 +4498,23 @@ function splitTextToChars(el, text, delay = 0.03) {
 
 function showPresents() {
   phase = 'presents';
-  splitTextToChars(presentsTitle, '✦ Sinfonía Cósmica');
-  splitTextToChars(presentsSubtitle, 'presenta');
-  splitTextToChars(presentsTagline, 'Un viaje más allá de las estrellas');
+  presentsText.innerHTML = '';
+
+  const line1 = document.createElement('div');
+  line1.className = 'presents-line';
+  splitTextToChars(line1, '✦ Sinfonía Cósmica', 0.03);
+
+  const line2 = document.createElement('div');
+  line2.className = 'presents-line';
+  splitTextToChars(line2, 'presenta', 0.03);
+
+  const line3 = document.createElement('div');
+  line3.className = 'presents-line presents-tagline';
+  splitTextToChars(line3, 'Un viaje más allá de las estrellas', 0.03);
+
+  presentsText.appendChild(line1);
+  presentsText.appendChild(line2);
+  presentsText.appendChild(line3);
 
   loadingEl.classList.add('hidden');
   setTimeout(() => {

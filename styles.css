@@ -103,29 +103,14 @@ p {
   pointer-events: none;
 }
 
-.presents-title {
+.presents-text {
   font-family: 'Playfair Display', serif;
   font-style: italic;
   font-size: clamp(1.8rem, 4.5vw, 3.2rem);
   font-weight: 400;
   color: #fff;
   letter-spacing: -0.01em;
-  line-height: 1.2;
-  text-align: center;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0;
-}
-
-.presents-subtitle {
-  font-family: 'Playfair Display', serif;
-  font-style: normal;
-  font-size: clamp(0.85rem, 2vw, 1.2rem);
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.45);
-  letter-spacing: 0.02em;
-  margin-top: 1rem;
+  line-height: 1.4;
   text-align: center;
   display: flex;
   flex-wrap: wrap;
@@ -134,18 +119,11 @@ p {
 }
 
 .presents-tagline {
+  color: rgba(255, 255, 255, 0.35);
   font-family: 'Google Sans Flex', sans-serif;
   font-style: normal;
   font-size: clamp(0.8rem, 1.8vw, 1.1rem);
   font-weight: 300;
-  color: rgba(255, 255, 255, 0.35);
-  letter-spacing: -0.01em;
-  margin-top: 0.6rem;
-  text-align: center;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0;
 }
 
 .presents-char {
