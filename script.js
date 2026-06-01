@@ -1794,7 +1794,7 @@ function buildPlanet(key) {
       side: THREE.FrontSide, opacity: realTextures.earth_clouds ? 0.65 : 0.95,
     });
     const cloudMesh = new THREE.Mesh(cloudGeo, cloudMat);
-    cloudMesh.userData.isCloudLayer = true;
+    cloudMesh.userData = { isCloudLayer: true, name: key };
     if (data.axialTilt) cloudMesh.rotation.z = data.axialTilt;
     group.add(cloudMesh);
     planetObjects['Earth_clouds'] = cloudMesh;
