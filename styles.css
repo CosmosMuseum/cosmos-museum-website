@@ -3600,7 +3600,7 @@ a.ctrl-btn {
   pointer-events: none;
   opacity: 0;
   transform: translateY(30px);
-  animation: elemFadeIn 0.8s ease-out 1s forwards;
+  animation: elemFadeIn 0.8s ease-out 0.3s forwards;
 }
 
 .welcome-img {
