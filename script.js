@@ -4668,27 +4668,20 @@ function launchExperience() {
 
 // ── CINEMATIC INTRO FLYTHROUGH ──
 function cinematicIntro() {
-  const startPos = new THREE.Vector3(-200, 60, 250);
+  const startPos = new THREE.Vector3(-60, 100, 250);
   const endPos = new THREE.Vector3(0, 40, 120);
-  const finalTgt = new THREE.Vector3(0, 0, 0);
-
+  const startTgt = new THREE.Vector3(0, 0, 80);
+  const endTgt = new THREE.Vector3(0, 0, 0);
   camera.position.copy(startPos);
-  controls.target.set(0, 0, 0);
+  controls.target.copy(startTgt);
   controls.update();
-
   let t = 0;
-  const TOTAL_FRAMES = 120;
-  let introAnimTime = 0;
-
   function introStep() {
-    t++;
-    const p = t / TOTAL_FRAMES;
-
-    if (t >= TOTAL_FRAMES) {
+    t += 0.006;
+    if (t >= 1) {
       camera.position.copy(endPos);
-      controls.target.copy(finalTgt);
+      controls.target.copy(endTgt);
       controls.update();
-      bloomPass.strength = 0.05;
       uiOverlays.forEach(el => {
         if (el) {
           el.style.opacity = '1';
@@ -4698,49 +4691,29 @@ function cinematicIntro() {
       animate();
       return;
     }
-
-    const ease = p < 0.5 ? 2 * p * p : -1 + (4 - 2 * p) * p;
-
-    // Zoom with rotation
-    const angle = ease * Math.PI * 0.5;
-    const radius = startPos.length() * (1 - ease) + endPos.length() * ease;
-    camPos.x = Math.cos(angle) * radius * 0.4;
-    camPos.z = Math.sin(angle) * radius * 0.8;
-    camPos.y = startPos.y * (1 - ease) + endPos.y * ease;
-    camera.position.copy(camPos);
-
-    controls.target.lerp(finalTgt, 0.08);
+    const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+    camera.position.lerpVectors(startPos, endPos, ease);
+    controls.target.lerpVectors(startTgt, endTgt, ease);
     controls.update();
-
-    bloomPass.strength = 0.05 + (1 - p) * 0.15;
-
-    // Update planets during intro
-    introAnimTime += 0.005;
-    ['Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune'].forEach(key => {
-      const po = planetObjects[key];
-      if (!po) return;
-      const d = po.data;
-      po.angle = (po.angle || 0) + d.orbitalSpeed;
-      po.group.position.x = Math.cos(po.angle) * d.distance;
-      po.group.position.z = Math.sin(po.angle) * d.distance;
-      if (po.mesh) po.mesh.rotation.y += d.rotationSpeed;
-      if (key === 'Earth' && planetObjects['Earth_clouds']) {
-        planetObjects['Earth_clouds'].rotation.y += d.rotationSpeed * 0.7;
-      }
-    });
-
-    if (starUniforms) starUniforms.uTime.value += 0.008;
+    if (starUniforms) starUniforms.uTime.value += 0.005;
     updateShootingStars();
+    if (cometGroup) {
+      const cd = cometGroup.userData;
+      cd.angle += cd.orbitSpeed;
+      cometGroup.position.x = Math.cos(cd.angle) * cd.orbitRadius;
+      cometGroup.position.z = Math.sin(cd.angle) * cd.orbitRadius;
+      cometGroup.position.y = Math.sin(cd.angle * 0.7) * cd.orbitRadius * cd.inclination;
+      cometGroup.lookAt(0, 0, 0);
+      cometGroup.rotateY(Math.PI);
+    }
     const sunPO = planetObjects['Sun'];
     if (sunPO) {
-      const pulse = 1 + Math.sin(t * 0.15) * 0.02;
+      const pulse = 1 + Math.sin(t * 10) * 0.01;
       sunPO.mesh.scale.set(pulse, pulse, pulse);
     }
-
     composer.render();
     requestAnimationFrame(introStep);
   }
-  const camPos = new THREE.Vector3();
   requestAnimationFrame(introStep);
 }
 
