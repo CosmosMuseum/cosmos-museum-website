@@ -236,7 +236,8 @@ p {
 @keyframes welcomeFadeIn {
   from {
     opacity: 0;
-    transform: translateY(20px) scale(0.98);
+    filter: blur(12px);
+    transform: scale(1.05);
   }
 
   to {

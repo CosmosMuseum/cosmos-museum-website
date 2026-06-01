@@ -4570,8 +4570,8 @@ function animateChars(el, startDelay) {
 
 function showPresents() {
   phase = 'presents';
-  splitTextToChars(presentsTitle, 'Sinfonía Cósmica presenta');
-  splitTextToChars(presentsSubtitle, 'Un viaje más allá de las estrellas');
+  splitTextToChars(presentsTitle, '✦ Sinfonía Cósmica');
+  splitTextToChars(presentsSubtitle, 'presenta');
 
   loadingEl.classList.add('hidden');
   setTimeout(() => {
