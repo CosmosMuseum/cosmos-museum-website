@@ -4068,7 +4068,7 @@ function doScreensaverStep() {
 
   focusPlanet(target);
 
-  screensaverTimer = setTimeout(() => doScreensaverStep(), 5000);
+  screensaverTimer = setTimeout(() => doScreensaverStep(), 10000);
 }
 
 // ═══════════════════════════════════════════════════════
