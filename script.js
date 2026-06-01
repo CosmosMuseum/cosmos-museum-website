@@ -4516,7 +4516,7 @@ function showPresents() {
           phase = 'welcome';
         }
       }, 1000);
-    }, 5500);
+    }, 3500);
   }, 1000);
 }
 
