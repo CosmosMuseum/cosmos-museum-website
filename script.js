@@ -2129,6 +2129,8 @@ function getClickableMeshes() {
 renderer.domElement.addEventListener('mousemove', (e) => {
   mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  window._mouseParallaxX = mouse.x;
+  window._mouseParallaxY = mouse.y;
 
   raycaster.setFromCamera(mouse, camera);
   const hits = raycaster.intersectObjects(getClickableMeshes());
@@ -2699,6 +2701,14 @@ function animate() {
 
   // Background galaxy follows camera
   if (window._bgMesh) window._bgMesh.position.copy(camera.position);
+
+  // Mouse parallax effect on camera
+  if (!isCameraAnimating && !shipMode && window._mouseParallaxX !== undefined) {
+    const px = (window._mouseParallaxX || 0) * 3;
+    const py = (window._mouseParallaxY || 0) * 2;
+    camera.position.x += (px - camera.position.x * 0.001) * 0.02;
+    camera.position.y += (py - camera.position.y * 0.001) * 0.02;
+  }
 
   // Sun pulse
   if (planetObjects.Sun && planetObjects.Sun.group.userData._pulse) {
