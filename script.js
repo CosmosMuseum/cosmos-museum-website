@@ -4462,7 +4462,7 @@ window.toggleMusic = function () {
 // ═══════════════════════════════════════════════════════
 const loadingEl = document.getElementById('loading');
 const introTitle = document.getElementById('intro-title');
-splitTextToChars(introTitle, '✦ Sinfonía Cósmica', 0.03);
+splitTextToChars(introTitle, '✦ Museo del Cosmos', 0.03);
 const presentsEl = document.getElementById('intro-presents');
 const presentsText = document.getElementById('presents-text');
 
@@ -4500,7 +4500,7 @@ function splitTextToChars(el, text, delay = 0.03) {
 
 function showPresents() {
   phase = 'presents';
-  splitTextToChars(presentsText, '✦ Sinfonía Cósmica presenta Un viaje más allá de las estrellas', 0.02);
+  splitTextToChars(presentsText, '✦ Museo del Cosmos presenta Un viaje más allá de las estrellas', 0.02);
 
   loadingEl.classList.add('hidden');
   setTimeout(() => {
