@@ -4505,18 +4505,34 @@ function showPresents() {
     loadingEl.remove();
     presentsEl.classList.add('active');
 
+    // After animation + read time, reverse characters out
     setTimeout(() => {
-      presentsEl.classList.add('hidden');
+      const chars = presentsText.querySelectorAll('.presents-char');
+      const total = chars.length;
+      chars.forEach((ch, i) => {
+        setTimeout(() => {
+          ch.style.animation = 'none';
+          ch.style.transition = 'opacity 0.4s ease, filter 0.4s ease, transform 0.4s ease';
+          ch.style.opacity = '0';
+          ch.style.filter = 'blur(10px)';
+          ch.style.transform = 'translateY(-20px)';
+        }, (total - i) * 30);
+      });
+
+      // After all chars reversed, hide screen and show welcome
       setTimeout(() => {
-        presentsEl.remove();
-        if (buildDone) {
-          showWelcomeScreen();
-          phase = 'welcome';
-        } else {
-          phase = 'welcome';
-        }
-      }, 1000);
-    }, 3500);
+        presentsEl.classList.add('hidden');
+        setTimeout(() => {
+          presentsEl.remove();
+          if (buildDone) {
+            showWelcomeScreen();
+            phase = 'welcome';
+          } else {
+            phase = 'welcome';
+          }
+        }, 1000);
+      }, total * 20 + 400);
+    }, 3000);
   }, 1000);
 }
 
