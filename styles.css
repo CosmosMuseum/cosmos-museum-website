@@ -71,25 +71,84 @@ p {
   animation: introFadeIn 1.2s ease-out 0.3s forwards;
 }
 
-.intro-presents {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-size: clamp(1rem, 2.5vw, 1.5rem);
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.4);
-  letter-spacing: 0.3em;
-  text-transform: lowercase;
-  margin-top: 0.8rem;
-  opacity: 0;
-  transform: translateY(20px);
-  animation: introFadeIn 1s ease-out 1s forwards;
-}
-
 @keyframes introFadeIn {
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* ── INTRO PRESENTS SCREEN ── */
+#intro-presents {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1s ease;
+}
+
+#intro-presents.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#intro-presents.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.presents-title {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: clamp(1.8rem, 4.5vw, 3.2rem);
+  font-weight: 400;
+  color: #fff;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  text-align: center;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0;
+}
+
+.presents-subtitle {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: clamp(0.85rem, 2vw, 1.2rem);
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.15em;
+  margin-top: 1rem;
+  text-align: center;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0;
+}
+
+.presents-char {
+  display: inline-block;
+  opacity: 0;
+  filter: blur(12px);
+  transform: scale(1.6);
+  transition: opacity 0.5s ease, filter 0.5s ease, transform 0.5s ease;
+}
+
+.presents-char.visible {
+  opacity: 1;
+  filter: blur(0);
+  transform: scale(1);
+}
+
+.presents-char.space {
+  width: 0.3em;
 }
 
 /* ── WELCOME SCREEN ── */

@@ -4526,6 +4526,9 @@ window.toggleMusic = function () {
 //  INTRO + DEFERRED LOADING — build one body per frame to stay responsive
 // ═══════════════════════════════════════════════════════
 const loadingEl = document.getElementById('loading');
+const presentsEl = document.getElementById('intro-presents');
+const presentsTitle = document.getElementById('presents-title');
+const presentsSubtitle = document.getElementById('presents-subtitle');
 
 const buildQueue = [
   { fn: () => loadRealTextures() },
@@ -4546,14 +4549,50 @@ const buildQueue = [
 
 let qi = 0;
 let buildDone = false;
-let introDone = false;
+let phase = 'loading'; // loading -> presents -> welcome
 
-function finishIntro() {
-  if (buildDone) {
-    loadingEl.classList.add('hidden');
-    setTimeout(() => { loadingEl.remove(); showWelcomeScreen(); }, 1000);
+function splitTextToChars(el, text) {
+  el.innerHTML = '';
+  for (let i = 0; i < text.length; i++) {
+    const span = document.createElement('span');
+    span.className = 'presents-char' + (text[i] === ' ' ? ' space' : '');
+    span.textContent = text[i] === ' ' ? '\u00A0' : text[i];
+    el.appendChild(span);
   }
-  introDone = true;
+}
+
+function animateChars(el, startDelay) {
+  const chars = el.querySelectorAll('.presents-char');
+  chars.forEach((ch, i) => {
+    setTimeout(() => ch.classList.add('visible'), startDelay + i * 60);
+  });
+}
+
+function showPresents() {
+  phase = 'presents';
+  splitTextToChars(presentsTitle, 'Sinfonía Cósmica presenta');
+  splitTextToChars(presentsSubtitle, 'Un viaje más allá de las estrellas');
+
+  loadingEl.classList.add('hidden');
+  setTimeout(() => {
+    loadingEl.remove();
+    presentsEl.classList.add('active');
+    animateChars(presentsTitle, 300);
+    animateChars(presentsSubtitle, 1200);
+
+    setTimeout(() => {
+      presentsEl.classList.add('hidden');
+      setTimeout(() => {
+        presentsEl.remove();
+        if (buildDone) {
+          showWelcomeScreen();
+          phase = 'welcome';
+        } else {
+          phase = 'welcome';
+        }
+      }, 1000);
+    }, 2500);
+  }, 1000);
 }
 
 function processNext() {
@@ -4570,9 +4609,8 @@ function processNext() {
     }, 0);
   } else {
     buildDone = true;
-    if (introDone) {
-      loadingEl.classList.add('hidden');
-      setTimeout(() => { loadingEl.remove(); showWelcomeScreen(); }, 1000);
+    if (phase === 'welcome' || (phase === 'presents' && presentsEl && presentsEl.classList.contains('hidden'))) {
+      showWelcomeScreen();
     }
   }
 }
@@ -4756,10 +4794,10 @@ function cinematicIntro() {
   requestAnimationFrame(introStep);
 }
 
-// Kick off: start building planets in background + 2-second intro timer
+// Kick off: start building planets in background + intro sequence
 requestAnimationFrame(() => {
   processNext();
-  setTimeout(finishIntro, 2000);
+  setTimeout(showPresents, 2000);
 });
 
 // ═══════════════════════════════════════════════════════════════
