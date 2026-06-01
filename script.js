@@ -4529,6 +4529,7 @@ const loadingEl = document.getElementById('loading');
 const presentsEl = document.getElementById('intro-presents');
 const presentsTitle = document.getElementById('presents-title');
 const presentsSubtitle = document.getElementById('presents-subtitle');
+const presentsTagline = document.getElementById('presents-tagline');
 
 const buildQueue = [
   { fn: () => loadRealTextures() },
@@ -4572,13 +4573,15 @@ function showPresents() {
   phase = 'presents';
   splitTextToChars(presentsTitle, '✦ Sinfonía Cósmica');
   splitTextToChars(presentsSubtitle, 'presenta');
+  splitTextToChars(presentsTagline, 'Un viaje más allá de las estrellas');
 
   loadingEl.classList.add('hidden');
   setTimeout(() => {
     loadingEl.remove();
     presentsEl.classList.add('active');
     animateChars(presentsTitle, 300);
-    animateChars(presentsSubtitle, 1200);
+    animateChars(presentsSubtitle, 1000);
+    animateChars(presentsTagline, 1600);
 
     setTimeout(() => {
       presentsEl.classList.add('hidden');

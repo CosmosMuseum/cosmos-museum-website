@@ -120,12 +120,27 @@ p {
 
 .presents-subtitle {
   font-family: 'Playfair Display', serif;
-  font-style: italic;
+  font-style: normal;
   font-size: clamp(0.85rem, 2vw, 1.2rem);
   font-weight: 400;
   color: rgba(255, 255, 255, 0.45);
   letter-spacing: 0.02em;
   margin-top: 1rem;
+  text-align: center;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0;
+}
+
+.presents-tagline {
+  font-family: 'Google Sans Flex', sans-serif;
+  font-style: normal;
+  font-size: clamp(0.8rem, 1.8vw, 1.1rem);
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.05em;
+  margin-top: 0.6rem;
   text-align: center;
   display: flex;
   flex-wrap: wrap;
