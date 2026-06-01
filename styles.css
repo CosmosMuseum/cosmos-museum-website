@@ -61,7 +61,7 @@ p {
 .intro-title {
   font-family: 'Playfair Display', serif;
   font-style: italic;
-  font-size: clamp(4.5rem, 10vw, 7rem);
+  font-size: clamp(1.8rem, 4.5vw, 3.2rem);
   font-weight: 400;
   color: #fff;
   letter-spacing: -0.02em;
@@ -124,7 +124,7 @@ p {
   font-size: clamp(0.85rem, 2vw, 1.2rem);
   font-weight: 400;
   color: rgba(255, 255, 255, 0.45);
-  letter-spacing: 0.15em;
+  letter-spacing: 0.02em;
   margin-top: 1rem;
   text-align: center;
   display: flex;
@@ -258,7 +258,7 @@ p {
 .welcome-title {
   font-family: 'Playfair Display', serif;
   font-style: italic;
-  font-size: clamp(4.5rem, 10vw, 7rem);
+  font-size: clamp(1.8rem, 4.5vw, 3.2rem);
   font-weight: 400;
   color: #fff;
   letter-spacing: -0.02em;

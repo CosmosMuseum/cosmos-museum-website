@@ -4591,7 +4591,7 @@ function showPresents() {
           phase = 'welcome';
         }
       }, 1000);
-    }, 2500);
+    }, 4000);
   }, 1000);
 }
 
