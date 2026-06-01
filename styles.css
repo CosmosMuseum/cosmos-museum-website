@@ -247,6 +247,20 @@ p {
   }
 }
 
+@keyframes elemFadeIn {
+  from {
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 0.7;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
 .welcome-title {
   font-family: 'Playfair Display', serif;
   font-style: italic;
@@ -264,7 +278,7 @@ p {
   color: rgba(255, 255, 255, 0.531);
   max-width: 450px;
   margin: 0 auto 3rem;
-  font-weight: 200;
+  font-weight: 100;
   letter-spacing: 0.2px;
 }
 
@@ -3542,9 +3556,10 @@ a.ctrl-btn {
   height: auto;
   z-index: 2;
   pointer-events: none;
-  opacity: 0.7;
-  filter: drop-shadow(0 0 60px rgba(79, 195, 247, 0.25));
-  animation: fadeInOnly 1s ease-out 0.3s both;
+  opacity: 0;
+  filter: drop-shadow(0 0 60px rgba(79, 195, 247, 0.25)) blur(10px);
+  transform: translateY(30px);
+  animation: elemFadeIn 0.8s ease-out 0.5s forwards;
 }
 
 .welcome-galaxy {
@@ -3569,9 +3584,10 @@ a.ctrl-btn {
   height: auto;
   z-index: 2;
   pointer-events: none;
-  opacity: 0.5;
-  filter: drop-shadow(0 0 30px rgba(200, 180, 255, 0.15));
-  animation: fadeInOnly 1s ease-out 0.6s both;
+  opacity: 0;
+  filter: drop-shadow(0 0 30px rgba(200, 180, 255, 0.15)) blur(10px);
+  transform: translateY(30px);
+  animation: elemFadeIn 0.8s ease-out 0.7s forwards;
 }
 
 .welcome-images {
@@ -3582,6 +3598,9 @@ a.ctrl-btn {
   display: flex;
   flex-direction: column;
   pointer-events: none;
+  opacity: 0;
+  transform: translateY(30px);
+  animation: elemFadeIn 0.8s ease-out 1s forwards;
 }
 
 .welcome-img {
