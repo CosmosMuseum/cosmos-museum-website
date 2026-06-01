@@ -4523,75 +4523,42 @@ window.toggleMusic = function () {
 };
 
 // ═══════════════════════════════════════════════════════
-//  DEFERRED LOADING — build one body per frame to stay responsive
+//  INTRO + DEFERRED LOADING — build one body per frame to stay responsive
 // ═══════════════════════════════════════════════════════
-const loaderStatus = document.getElementById('loader-status');
 const loadingEl = document.getElementById('loading');
-const loaderPct = document.getElementById('loader-pct');
-const loaderStepCounter = document.getElementById('loader-step-counter');
-const loaderStepsList = document.getElementById('loader-steps-list');
-
-// Generate background stars for loading screen
-(function initLoaderStars() {
-  const container = document.getElementById('loader-stars');
-  if (!container) return;
-  for (let i = 0; i < 80; i++) {
-    const star = document.createElement('div');
-    star.className = 'loader-star';
-    star.style.left = Math.random() * 100 + '%';
-    star.style.top = Math.random() * 100 + '%';
-    star.style.width = star.style.height = (Math.random() * 2 + 1) + 'px';
-    star.style.animationDelay = (Math.random() * 3) + 's';
-    star.style.animationDuration = (Math.random() * 2 + 2) + 's';
-    container.appendChild(star);
-  }
-})();
 
 const buildQueue = [
-  { label: 'Tejiendo el velo estelar...', fn: () => loadRealTextures() },
-  { label: 'Pintando el lienzo del cosmos...', fn: () => buildNebulaBackground() },
-  { label: 'Encendiendo el fuego primordial...', fn: () => buildSun() },
-  { label: 'Despertando a Mercurio...', fn: () => buildPlanet('Mercury') },
-  { label: 'Coronando a Venus...', fn: () => buildPlanet('Venus') },
-  { label: 'Dando aliento a la Tierra...', fn: () => buildPlanet('Earth') },
-  { label: 'Esculpiendo los desiertos de Marte...', fn: () => buildPlanet('Mars') },
-  { label: 'Invocando las tormentas de Júpiter...', fn: () => buildPlanet('Jupiter') },
-  { label: 'Cristalizando los anillos de Saturno...', fn: () => buildPlanet('Saturn') },
-  { label: 'Silenciando los hielos de Urano...', fn: () => buildPlanet('Uranus') },
-  { label: 'Sumérgiendose en el abismo de Neptuno...', fn: () => buildPlanet('Neptune') },
-  { label: 'Sembrando reliquias rocosas...', fn: () => buildAsteroidBelt() },
-  { label: 'Esparciendo ecos en el cinturón oscuro...', fn: () => buildKuiperBelt() },
-  { label: 'Liberando al cometa solitario...', fn: () => buildComet() },
+  { fn: () => loadRealTextures() },
+  { fn: () => buildNebulaBackground() },
+  { fn: () => buildSun() },
+  { fn: () => buildPlanet('Mercury') },
+  { fn: () => buildPlanet('Venus') },
+  { fn: () => buildPlanet('Earth') },
+  { fn: () => buildPlanet('Mars') },
+  { fn: () => buildPlanet('Jupiter') },
+  { fn: () => buildPlanet('Saturn') },
+  { fn: () => buildPlanet('Uranus') },
+  { fn: () => buildPlanet('Neptune') },
+  { fn: () => buildAsteroidBelt() },
+  { fn: () => buildKuiperBelt() },
+  { fn: () => buildComet() },
 ];
 
-// Populate step list in loading screen
-buildQueue.forEach((step, i) => {
-  const el = document.createElement('div');
-  el.className = 'loader-step-item';
-  el.id = 'loader-step-' + i;
-  el.innerHTML = '<span class="loader-step-check"></span><span>' + step.label.replace('...', '') + '</span>';
-  if (loaderStepsList) loaderStepsList.appendChild(el);
-});
-
 let qi = 0;
-const progressBar = document.getElementById('loader-progress');
+let buildDone = false;
+let introDone = false;
+
+function finishIntro() {
+  if (buildDone) {
+    loadingEl.classList.add('hidden');
+    setTimeout(() => { loadingEl.remove(); showWelcomeScreen(); }, 1000);
+  }
+  introDone = true;
+}
+
 function processNext() {
   if (qi < buildQueue.length) {
     const step = buildQueue[qi];
-    loaderStatus.textContent = step.label;
-    const pct = Math.round((qi / buildQueue.length) * 100);
-    if (progressBar) progressBar.style.width = pct + '%';
-    if (loaderPct) loaderPct.textContent = pct + '%';
-    if (loaderStepCounter) loaderStepCounter.textContent = 'STEP ' + (qi + 1) + ' / ' + buildQueue.length;
-
-    // Update step list visuals
-    const stepEl = document.getElementById('loader-step-' + qi);
-    if (stepEl) stepEl.classList.add('active');
-    if (qi > 0) {
-      const prevEl = document.getElementById('loader-step-' + (qi - 1));
-      if (prevEl) { prevEl.classList.remove('active'); prevEl.classList.add('done'); prevEl.querySelector('.loader-step-check').textContent = '✓'; }
-    }
-
     qi++;
     setTimeout(() => {
       const result = step.fn();
@@ -4602,19 +4569,11 @@ function processNext() {
       }
     }, 0);
   } else {
-    // Mark last step done
-    const lastEl = document.getElementById('loader-step-' + (buildQueue.length - 1));
-    if (lastEl) { lastEl.classList.remove('active'); lastEl.classList.add('done'); lastEl.querySelector('.loader-step-check').textContent = '✓'; }
-
-    if (progressBar) progressBar.style.width = '100%';
-    if (loaderPct) loaderPct.textContent = '100%';
-    if (loaderStepCounter) loaderStepCounter.textContent = 'ALL SYSTEMS GO';
-    loaderStatus.textContent = 'LAUNCH SEQUENCE READY';
-    setTimeout(() => {
+    buildDone = true;
+    if (introDone) {
       loadingEl.classList.add('hidden');
-      setTimeout(() => loadingEl.remove(), 900);
-      showWelcomeScreen();
-    }, 600);
+      setTimeout(() => { loadingEl.remove(); showWelcomeScreen(); }, 1000);
+    }
   }
 }
 
@@ -4797,10 +4756,10 @@ function cinematicIntro() {
   requestAnimationFrame(introStep);
 }
 
-// Kick off deferred loading after the loading screen renders
+// Kick off: start building planets in background + 2-second intro timer
 requestAnimationFrame(() => {
-  loaderStatus.textContent = 'Inicializando sistemas...';
-  setTimeout(processNext, 100);
+  processNext();
+  setTimeout(finishIntro, 2000);
 });
 
 // ═══════════════════════════════════════════════════════════════

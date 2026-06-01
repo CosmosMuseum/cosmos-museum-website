@@ -39,17 +39,17 @@ p {
   font-weight: 200;
 }
 
-/* ── LOADING ── */
+/* ── INTRO SCREEN ── */
 #loading {
   position: fixed;
   inset: 0;
-  background: radial-gradient(ellipse at center, #0a0a2e 0%, #000 100%);
+  background: #000;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   z-index: 100;
-  transition: opacity 0.8s ease;
+  transition: opacity 1s ease;
   overflow: hidden;
 }
 
@@ -58,185 +58,38 @@ p {
   pointer-events: none;
 }
 
-.loader-stars {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-}
-
-.loader-star {
-  position: absolute;
-  width: 2px;
-  height: 2px;
-  background: #fff;
-  border-radius: 50%;
-  animation: loaderTwinkle 3s ease-in-out infinite;
-}
-
-@keyframes loaderTwinkle {
-
-  0%,
-  100% {
-    opacity: 0.2;
-  }
-
-  50% {
-    opacity: 1;
-  }
-}
-
-.loader-title {
+.intro-title {
   font-family: 'Playfair Display', serif;
   font-style: italic;
-  font-size: clamp(1.5rem, 4vw, 3rem);
+  font-size: clamp(4.5rem, 10vw, 7rem);
   font-weight: 400;
-  background: linear-gradient(90deg, #4fc3f7, #ab47bc, #ef5350, #ff8f00);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-size: 300%;
-  animation: shimmer 2s linear infinite;
-  margin-bottom: 0.5rem;
-  letter-spacing: 4px;
-  position: relative;
-  z-index: 2;
+  color: #fff;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  opacity: 0;
+  transform: translateY(30px);
+  animation: introFadeIn 1.2s ease-out 0.3s forwards;
 }
 
-.loader-tagline {
-  font-size: 0.75rem;
-  letter-spacing: 4px;
-  color: rgba(255, 255, 255, 0.3);
-  margin-bottom: 2rem;
-  position: relative;
-  z-index: 2;
+.intro-presents {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: clamp(1rem, 2.5vw, 1.5rem);
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.3em;
+  text-transform: lowercase;
+  margin-top: 0.8rem;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: introFadeIn 1s ease-out 1s forwards;
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: 0%
-  }
-
-  100% {
-    background-position: 300%
-  }
-}
-
-.loader-ring-container {
-  position: relative;
-  width: 100px;
-  height: 100px;
-  margin-bottom: 1.5rem;
-  z-index: 2;
-}
-
-.loader-ring {
-  width: 100px;
-  height: 100px;
-  border: 3px solid rgba(79, 195, 247, 0.1);
-  border-top-color: #4fc3f7;
-  border-right-color: rgba(171, 71, 188, 0.5);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-.loader-ring-inner {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  width: 76px;
-  height: 76px;
-  border: 2px solid rgba(171, 71, 188, 0.1);
-  border-bottom-color: #ab47bc;
-  border-radius: 50%;
-  animation: spin 1.5s linear infinite reverse;
-}
-
-.loader-pct {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #4fc3f7;
-  letter-spacing: 1px;
-}
-
-@keyframes spin {
+@keyframes introFadeIn {
   to {
-    transform: rotate(360deg);
+    opacity: 1;
+    transform: translateY(0);
   }
-}
-
-.loader-status {
-  margin-top: 0;
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.5);
-  letter-spacing: 2px;
-  position: relative;
-  z-index: 2;
-  min-height: 1.2em;
-}
-
-.loader-step-counter {
-  font-size: 0.65rem;
-  color: rgba(255, 255, 255, 0.25);
-  letter-spacing: 2px;
-  margin-top: 0.6rem;
-  position: relative;
-  z-index: 2;
-}
-
-.loader-steps-list {
-  margin-top: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  align-items: center;
-  position: relative;
-  z-index: 2;
-  max-height: 180px;
-  overflow: hidden;
-}
-
-.loader-step-item {
-  font-size: 0.65rem;
-  letter-spacing: 1.5px;
-  color: rgba(255, 255, 255, 0.15);
-  transition: all 0.4s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.loader-step-item.active {
-  color: rgba(79, 195, 247, 0.8);
-  text-shadow: 0 0 10px rgba(79, 195, 247, 0.3);
-}
-
-.loader-step-item.done {
-  color: rgba(105, 240, 174, 0.5);
-}
-
-.loader-step-check {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.5rem;
-  transition: all 0.4s ease;
-}
-
-.loader-step-item.active .loader-step-check {
-  border-color: #4fc3f7;
-  box-shadow: 0 0 8px rgba(79, 195, 247, 0.4);
-}
-
-.loader-step-item.done .loader-step-check {
-  border-color: #69f0ae;
-  background: rgba(105, 240, 174, 0.15);
 }
 
 /* ── WELCOME SCREEN ── */
