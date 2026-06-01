@@ -1065,6 +1065,7 @@ const uiOverlays = [
   document.getElementById('controls-panel'),
   document.getElementById('hint'),
   document.getElementById('planet-nav'),
+  document.querySelector('.nav-controls'),
   document.getElementById('controls-hint'),
   document.getElementById('planet-panel'),
   document.getElementById('about-btn'),
@@ -3794,7 +3795,7 @@ function triggerWormhole(targetPlanet, callback) {
 
 // Double-click a planet to wormhole-travel to it
 renderer.domElement.addEventListener('dblclick', e => {
-  if (shipMode || wormholeActive) return;
+  if (shipMode) return;
   const mouse = new THREE.Vector2(
     (e.clientX / window.innerWidth) * 2 - 1,
     -(e.clientY / window.innerHeight) * 2 + 1
@@ -3811,21 +3812,8 @@ renderer.domElement.addEventListener('dblclick', e => {
   if (hits.length > 0) {
     const target = hits[0].object.userData.name || hits[0].object.parent?.userData?.name;
     if (target) {
-      triggerWormhole(target, () => {
-        const po = planetObjects[target];
-        if (!po) return;
-        const wp = new THREE.Vector3();
-        if (target === 'Sun') wp.set(0, 0, 0);
-        else po.group.getWorldPosition(wp);
-        const data = PLANET_DATA[target];
-        const dist = data.radius * 4 + 5;
-        camera.position.copy(wp).add(new THREE.Vector3(dist, dist * 0.35, dist));
-        controls.target.copy(wp);
-        controls.update();
-        currentFocus = target;
-        showPlanetPanel(target);
-      });
-      unlockAchievement('wormhole', '🌀', 'Navegante de agujero de gusano', 'Usaste el viaje por agujero de gusano por primera vez');
+      showPlanetPanel(target);
+      openPlanetModal();
     }
   }
 });
