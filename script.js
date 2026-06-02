@@ -2411,9 +2411,7 @@ const emojiToSvg = {
 };
 
 function replaceEmojis(html) {
-  return html.replace(/([\u{1F300}-\u{1FAFF}\u2600-\u27BF\u2B50\u2604\u26A1\u26C4\u26C5\u2B55])/gu, (match) => {
-    return emojiToSvg[match] || match;
-  });
+  return html.replace(/[\u{1F300}-\u{1FAFF}\u2600-\u27BF\u2B50\u2604\u26A1\u26C4\u26C5\u2B55]/gu, '');
 }
 
 window.openPlanetModal = function () {
@@ -2517,8 +2515,7 @@ window.openPlanetModal = function () {
     <div class="fact-list">
       ${d.facts.map(f => `
         <div class="fact-item">
-          <span class="fact-icon">${replaceEmojis(f.icon)}</span>
-          <span>${replaceEmojis(f.text)}</span>
+          <span>${f.text}</span>
         </div>
       `).join('')}
     </div>
