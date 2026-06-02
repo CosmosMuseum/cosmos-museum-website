@@ -65,7 +65,7 @@ p {
 .intro-title {
   font-family: 'Playfair Display', serif;
   font-style: italic;
-  font-size: clamp(1.2rem, 3vw, 2rem);
+  font-size: clamp(0.7rem, 1.8vw, 1.1rem);
   font-weight: 300;
   color: #fff;
   letter-spacing: -0.04em;
@@ -111,7 +111,7 @@ p {
 .presents-text {
   font-family: 'Playfair Display', serif;
   font-style: italic;
-  font-size: clamp(1.2rem, 3vw, 2rem);
+  font-size: clamp(0.7rem, 1.8vw, 1.1rem);
   font-weight: 300;
   color: #fff;
   letter-spacing: -0.04em;

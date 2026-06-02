@@ -2061,23 +2061,20 @@ function updateShootingStars() {
 let cometGroup, cometTrail;
 function buildComet() {
   cometGroup = new THREE.Group();
-  // Comet nucleus — bigger and brighter
+  // Comet nucleus
   const nucleusGeo = new THREE.SphereGeometry(0.6, 16, 16);
   const nucleusMat = new THREE.MeshBasicMaterial({ color: 0xeeeeff });
   cometGroup.add(new THREE.Mesh(nucleusGeo, nucleusMat));
-  // Coma glow — much bigger
+  // Coma glow
   const coma = createGlowSprite(0x88bbff, 8);
   coma.material.opacity = 0.7;
   cometGroup.add(coma);
-  // Second inner glow
   const innerComa = createGlowSprite(0xffffff, 3);
   innerComa.material.opacity = 0.5;
   cometGroup.add(innerComa);
-  // Tail particles — more visible
+  // Tail particles — simple and visible
   const tailCount = 2000;
   const tailPos = new Float32Array(tailCount * 3);
-  const tailSizes = new Float32Array(tailCount);
-  const tailLengths = new Float32Array(tailCount);
   for (let i = 0; i < tailCount; i++) {
     const t = Math.random();
     const dist = t * 25 + 0.5;
@@ -2087,51 +2084,21 @@ function buildComet() {
     tailPos[i * 3] = -dist;
     tailPos[i * 3 + 1] = Math.cos(angle) * r;
     tailPos[i * 3 + 2] = Math.sin(angle) * r;
-    tailSizes[i] = 0.2 + Math.random() * 0.5;
-    tailLengths[i] = 0.5 + Math.random() * 3.0;
   }
   const tailGeo = new THREE.BufferGeometry();
   tailGeo.setAttribute('position', new THREE.BufferAttribute(tailPos, 3));
-  tailGeo.setAttribute('aSize', new THREE.BufferAttribute(tailSizes, 1));
-  tailGeo.setAttribute('aLength', new THREE.BufferAttribute(tailLengths, 1));
-  const tailMat = new THREE.ShaderMaterial({
-    uniforms: { uTime: { value: 0 } },
-    vertexShader: `
-      attribute float aSize;
-      attribute float aLength;
-      varying float vAlpha;
-      varying float vLength;
-      void main() {
-        vLength = aLength;
-        vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = aSize * (250.0 / -mvPos.z);
-        vAlpha = 1.0 - smoothstep(0.0, 25.0, -position.x);
-        gl_Position = projectionMatrix * mvPos;
-      }
-    `,
-    fragmentShader: `
-      varying float vAlpha;
-      varying float vLength;
-      void main() {
-        vec2 uv = gl_PointCoord - 0.5;
-        float d = length(uv);
-        if (d > 0.5) discard;
-        float streak = 1.0 - smoothstep(0.0, 0.5, d);
-        streak = pow(streak, 1.5);
-        float stretch = 1.0 - abs(uv.x) * 2.0 * vLength;
-        stretch = max(stretch, 0.0);
-        float glow = streak * (0.5 + stretch * 0.5);
-        vec3 col = mix(vec3(0.5, 0.7, 1.0), vec3(0.9, 0.95, 1.0), streak);
-        gl_FragColor = vec4(col, vAlpha * glow * 0.7);
-      }
-    `,
+  const tailMat = new THREE.PointsMaterial({
+    color: 0xaaddff,
+    size: 0.5,
     transparent: true,
-    depthWrite: false,
+    opacity: 0.7,
     blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    sizeAttenuation: true,
   });
   cometTrail = new THREE.Points(tailGeo, tailMat);
   cometGroup.add(cometTrail);
-  // Floating label — bigger
+  // Floating label
   const cometLabel = createTextSprite('☄ Cometa Halley', {
     fontSize: 40,
     color: '#aaddff',
