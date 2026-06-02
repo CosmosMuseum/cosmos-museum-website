@@ -4580,8 +4580,8 @@ function showWelcomeScreen() {
   const content = document.querySelector('.welcome-content');
   const stars = document.querySelector('.welcome-bg-stars');
   const spotlight = document.querySelector('.welcome-spotlight');
-  const earth = document.querySelector('.welcome-earth');
-  const telescope = document.querySelector('.welcome-telescope');
+  const earthWrap = document.querySelector('.welcome-earth-wrap');
+  const telescopeWrap = document.querySelector('.welcome-telescope-wrap');
   const galaxy = document.querySelector('.welcome-galaxy');
   const bgImage = document.querySelector('.welcome-bg-image');
 
@@ -4630,15 +4630,15 @@ function showWelcomeScreen() {
     if (galaxy) {
       galaxy.style.transform = `translate3d(${currentX * -25}px, ${currentY * -25}px, 0)`;
     }
-    if (earth) {
-      earth.style.transform = `
+    if (earthWrap) {
+      earthWrap.style.transform = `
         translate3d(${currentX * -60}px, ${currentY * -60}px, 0)
         rotateX(${currentY * -8}deg)
         rotateY(${currentX * 8}deg)
       `;
     }
-    if (telescope) {
-      telescope.style.transform = `
+    if (telescopeWrap) {
+      telescopeWrap.style.transform = `
         translate3d(${currentX * -80}px, ${currentY * -80}px, 0)
         rotateX(${currentY * -10}deg)
         rotateY(${currentX * 10}deg)
@@ -4657,6 +4657,9 @@ function showWelcomeScreen() {
     if (content) content.style.transform = '';
     if (stars) stars.style.transform = '';
     if (spotlight) spotlight.style.background = '';
+    if (galaxy) galaxy.style.transform = '';
+    if (earthWrap) earthWrap.style.transform = '';
+    if (telescopeWrap) telescopeWrap.style.transform = '';
   };
 }
 

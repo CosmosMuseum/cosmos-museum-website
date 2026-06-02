@@ -2407,14 +2407,18 @@ a.ctrl-btn {
 
 /* ── WELCOME IMAGES ── */
 /* ── WELCOME DECORATIVE IMAGES ── */
-.welcome-earth {
+.welcome-earth-wrap {
   position: absolute;
   right: 8%;
   top: 38%;
-  width: 100px;
-  height: auto;
   z-index: 2;
   pointer-events: none;
+  will-change: transform;
+}
+
+.welcome-earth {
+  width: 100px;
+  height: auto;
   opacity: 0;
   filter: drop-shadow(0 0 60px rgba(79, 195, 247, 0.25)) blur(10px);
   transform: translateY(30px);
@@ -2433,16 +2437,21 @@ a.ctrl-btn {
   border-radius: 20px;
   filter: drop-shadow(0 0 40px rgba(120, 80, 200, 0.2));
   animation: fadeInOnly 1s ease-out 0.5s both;
+  will-change: transform;
 }
 
-.welcome-telescope {
+.welcome-telescope-wrap {
   position: absolute;
   right: 3%;
   top: 33%;
-  width: 30px;
-  height: auto;
   z-index: 2;
   pointer-events: none;
+  will-change: transform;
+}
+
+.welcome-telescope {
+  width: 30px;
+  height: auto;
   opacity: 0;
   filter: drop-shadow(0 0 30px rgba(200, 180, 255, 0.15)) blur(10px);
   transform: translateY(30px);
