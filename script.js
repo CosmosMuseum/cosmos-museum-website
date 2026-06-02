@@ -2535,6 +2535,16 @@ window.openAboutOverlay = function () {
   overlay.classList.remove('active');
   overlay.offsetHeight;
   overlay.classList.add('active');
+
+  const nameEl = overlay.querySelector('.about-name');
+  if (nameEl && !nameEl.dataset.animated) {
+    const text = nameEl.textContent;
+    nameEl.dataset.animated = '1';
+    nameEl.innerHTML = text.split('').map((c, i) =>
+      c === ' ' ? ' ' : `<span class="modal-name-char" style="animation-delay:${i * 0.06}s">${c}</span>`
+    ).join('');
+  }
+
   requestAnimationFrame(() => {
     if (typeof lucide !== 'undefined') lucide.createIcons();
   });
