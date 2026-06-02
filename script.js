@@ -2532,18 +2532,18 @@ window.closePlanetModal = function () {
 
 window.openAboutOverlay = function () {
   const overlay = document.getElementById('about-overlay');
+  const nameEl = overlay.querySelector('.about-name');
+
+  if (nameEl) {
+    const text = '✦ Sebastian Vasquez';
+    nameEl.innerHTML = text.split('').map((c, i) =>
+      c === ' ' ? ' ' : `<span class="modal-name-char" style="animation-delay:${i * 0.04}s">${c}</span>`
+    ).join('');
+  }
+
   overlay.classList.remove('active');
   overlay.offsetHeight;
   overlay.classList.add('active');
-
-  const nameEl = overlay.querySelector('.about-name');
-  if (nameEl && !nameEl.dataset.animated) {
-    const text = nameEl.textContent;
-    nameEl.dataset.animated = '1';
-    nameEl.innerHTML = text.split('').map((c, i) =>
-      c === ' ' ? ' ' : `<span class="modal-name-char" style="animation-delay:${i * 0.06}s">${c}</span>`
-    ).join('');
-  }
 
   requestAnimationFrame(() => {
     if (typeof lucide !== 'undefined') lucide.createIcons();
