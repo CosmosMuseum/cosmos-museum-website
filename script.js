@@ -1687,7 +1687,8 @@ function buildPlanet(key) {
     map: tex,
     emissive: new THREE.Color(data.emissive),
     emissiveIntensity: useRealTex ? 0.08 : 0.3,
-    shininess: isTerrestrial ? 35 : 15,
+    metalness: isTerrestrial ? 0.4 : 0.2,
+    roughness: isTerrestrial ? 0.55 : 0.7,
   };
   // Surface detail maps
   let terrainMaps = null;
@@ -1698,9 +1699,9 @@ function buildPlanet(key) {
       matOpts.normalScale = new THREE.Vector2(3.0, 3.0);
     }
     if (realTextures.earth_specular) {
-      matOpts.specularMap = realTextures.earth_specular;
-      matOpts.specular = new THREE.Color(0x888888);
-      matOpts.shininess = 30;
+      matOpts.roughnessMap = realTextures.earth_specular;
+      matOpts.roughness = 0.4;
+      matOpts.metalness = 0.3;
     }
     if (realTextures.earth_lights) {
       matOpts.emissiveMap = realTextures.earth_lights;
@@ -1711,7 +1712,8 @@ function buildPlanet(key) {
     // Planets with real bump maps (Mercury, Venus, Mars)
     matOpts.bumpMap = realTextures[_realBumpKeys[key]];
     matOpts.bumpScale = data.radius * 0.05;
-    matOpts.shininess = 25;
+    matOpts.metalness = 0.5;
+    matOpts.roughness = 0.45;
   } else if (isTerrestrial && !useRealTex) {
     // Procedural terrain maps as fallback
     terrainMaps = createTerrainMaps(data.textureType);
@@ -1721,12 +1723,12 @@ function buildPlanet(key) {
     matOpts.displacementScale = data.radius * 0.035;
     matOpts.displacementBias = -data.radius * 0.017;
     if (terrainMaps.specTex) {
-      matOpts.specularMap = terrainMaps.specTex;
-      matOpts.specular = new THREE.Color(0x555555);
-      matOpts.shininess = 80;
+      matOpts.roughnessMap = terrainMaps.specTex;
+      matOpts.roughness = 0.35;
+      matOpts.metalness = 0.5;
     }
   }
-  const mat = new THREE.MeshPhongMaterial(matOpts);
+  const mat = new THREE.MeshStandardMaterial(matOpts);
 
   // Rayleigh scattering atmosphere (realistic)
   const _atmoColors = { Venus: '#E8B96F', Earth: '#4fc3f7', Mars: '#C06030', Jupiter: '#D4A843', Saturn: '#F0D090', Uranus: '#7DE8E8', Neptune: '#5D6CC0' };
@@ -1952,54 +1954,13 @@ function buildKuiperBelt() {
 }
 // Kuiper belt built via deferred queue below
 
-// ── SHOOTING STARS ──
-const shootingStars = [];
-function spawnShootingStar() {
-  const count = 20; // trail length
-  const positions = new Float32Array(count * 3);
-  const alphas = new Float32Array(count);
-  const start = new THREE.Vector3(
-    (Math.random() - 0.5) * 500,
-    50 + Math.random() * 200,
-    (Math.random() - 0.5) * 500
-  );
-  const dir = new THREE.Vector3(
-    (Math.random() - 0.5) * 2, -(0.3 + Math.random() * 0.7), (Math.random() - 0.5) * 2
-  ).normalize();
-  for (let i = 0; i < count; i++) {
-    const p = start.clone().add(dir.clone().multiplyScalar(-i * 1.2));
-    positions[i * 3] = p.x; positions[i * 3 + 1] = p.y; positions[i * 3 + 2] = p.z;
-    alphas[i] = 1 - i / count;
-  }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  const mat = new THREE.LineBasicMaterial({
-    color: 0xffffff, transparent: true, opacity: 0.8,
-    blending: THREE.AdditiveBlending, depthWrite: false,
-  });
-  const line = new THREE.Line(geo, mat);
-  line.userData = { dir, speed: 3 + Math.random() * 4, life: 0, maxLife: 40 + Math.random() * 40 };
-  scene.add(line);
-  shootingStars.push(line);
+// ── SHOOTING STARS + COMETS (via js/comet.js) ──
+let cometSystem = null;
+function initCometSystem() {
+  cometSystem = new CometSystem(scene);
 }
-function updateShootingStars() {
-  for (let i = shootingStars.length - 1; i >= 0; i--) {
-    const s = shootingStars[i];
-    s.userData.life++;
-    const posArr = s.geometry.attributes.position.array;
-    for (let j = 0; j < posArr.length; j += 3) {
-      posArr[j] += s.userData.dir.x * s.userData.speed;
-      posArr[j + 1] += s.userData.dir.y * s.userData.speed;
-      posArr[j + 2] += s.userData.dir.z * s.userData.speed;
-    }
-    s.geometry.attributes.position.needsUpdate = true;
-    s.material.opacity = 0.8 * (1 - s.userData.life / s.userData.maxLife);
-    if (s.userData.life >= s.userData.maxLife) {
-      scene.remove(s); s.geometry.dispose(); s.material.dispose();
-      shootingStars.splice(i, 1);
-    }
-  }
-  if (Math.random() < 0.008) spawnShootingStar(); // ~every 2-3 seconds
+function updateShootingStars(time) {
+  if (cometSystem) cometSystem.update(time);
 }
 
 // ── COMET ──
@@ -2684,39 +2645,43 @@ let selectionParticles = null;
 function spawnSelectionParticles(position, color) {
   if (selectionParticles) { scene.remove(selectionParticles); selectionParticles.geometry.dispose(); selectionParticles.material.dispose(); }
 
-  // Circular particle texture
+  // Glowing particle texture
   const pCanvas = document.createElement('canvas');
-  pCanvas.width = pCanvas.height = 64;
+  pCanvas.width = pCanvas.height = 128;
   const pCtx = pCanvas.getContext('2d');
-  const pGrad = pCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
+  const pGrad = pCtx.createRadialGradient(64, 64, 0, 64, 64, 64);
   pGrad.addColorStop(0, 'rgba(255,255,255,1)');
-  pGrad.addColorStop(0.2, 'rgba(255,255,255,0.8)');
-  pGrad.addColorStop(0.5, 'rgba(255,255,255,0.3)');
+  pGrad.addColorStop(0.15, 'rgba(255,255,255,0.9)');
+  pGrad.addColorStop(0.4, 'rgba(255,255,255,0.4)');
+  pGrad.addColorStop(0.7, 'rgba(255,255,255,0.1)');
   pGrad.addColorStop(1, 'rgba(255,255,255,0)');
   pCtx.fillStyle = pGrad;
-  pCtx.fillRect(0, 0, 64, 64);
+  pCtx.fillRect(0, 0, 128, 128);
   const pTex = new THREE.CanvasTexture(pCanvas);
 
-  const count = 60;
+  const starColor = new THREE.Color(color || 0x4fc3f7);
+
+  const count = 100;
   const pos = new Float32Array(count * 3);
   const vel = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
     pos[i * 3] = position.x; pos[i * 3 + 1] = position.y; pos[i * 3 + 2] = position.z;
-    const theta = Math.random() * Math.PI * 2;
-    const phi = Math.acos(2 * Math.random() - 1);
-    const speed = 0.2 + Math.random() * 0.6;
-    vel[i * 3] = Math.sin(phi) * Math.cos(theta) * speed;
-    vel[i * 3 + 1] = Math.sin(phi) * Math.sin(theta) * speed;
-    vel[i * 3 + 2] = Math.cos(phi) * speed;
+    // Particles shoot upward with slight random spread
+    const spreadX = (Math.random() - 0.5) * 0.4;
+    const spreadZ = (Math.random() - 0.5) * 0.4;
+    const upSpeed = 0.3 + Math.random() * 0.6;
+    vel[i * 3] = spreadX;
+    vel[i * 3 + 1] = upSpeed;
+    vel[i * 3 + 2] = spreadZ;
   }
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   const mat = new THREE.PointsMaterial({
-    color: color || 0x4fc3f7, map: pTex, size: 0.5, transparent: true, opacity: 1.0,
+    color: starColor, map: pTex, size: 0.5, transparent: true, opacity: 1.0,
     blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true,
   });
   selectionParticles = new THREE.Points(geo, mat);
-  selectionParticles.userData = { vel, life: 0, maxLife: 50 };
+  selectionParticles.userData = { vel, life: 0, maxLife: 80, gravity: 0.008 };
   scene.add(selectionParticles);
 }
 function updateSelectionParticles() {
@@ -2726,13 +2691,14 @@ function updateSelectionParticles() {
   const t = sp.userData.life / sp.userData.maxLife;
   const posArr = sp.geometry.attributes.position.array;
   const vel = sp.userData.vel;
+  const grav = sp.userData.gravity;
   for (let i = 0; i < posArr.length; i += 3) {
+    vel[i + 1] -= grav;
     posArr[i] += vel[i]; posArr[i + 1] += vel[i + 1]; posArr[i + 2] += vel[i + 2];
-    vel[i] *= 0.96; vel[i + 1] *= 0.96; vel[i + 2] *= 0.96;
   }
   sp.geometry.attributes.position.needsUpdate = true;
-  sp.material.opacity = 1 - t;
-  sp.material.size = 0.5 * (1 - t * 0.4);
+  sp.material.opacity = 1 - t * t;
+  sp.material.size = 0.5 * (1 - t * 0.3);
   if (sp.userData.life >= sp.userData.maxLife) {
     scene.remove(sp); sp.geometry.dispose(); sp.material.dispose();
     selectionParticles = null;
