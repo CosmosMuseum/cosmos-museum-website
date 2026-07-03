@@ -1219,41 +1219,27 @@ function createStarfield() {
     uniforms: starUniforms,
     vertexShader: `
       attribute float aSize;
-      attribute float aAlpha;
       attribute float aPhase;
-      attribute float aRot;
       uniform float uTime;
       varying float vAlpha;
       varying vec3 vColor;
-      varying float vRot;
       void main() {
         vColor = color;
         vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
-        float drift = sin(uTime * 0.15 + aPhase) * 0.5 + 0.5;
-        gl_PointSize = aSize * (350.0 / -mvPos.z) * (0.8 + drift * 0.2);
-        vAlpha = aAlpha * (0.7 + drift * 0.3);
-        vRot = aRot + uTime * 0.05 * (fract(aPhase) * 2.0 - 1.0);
+        float twinkle = sin(uTime * 1.5 + aPhase) * 0.5 + 0.5;
+        gl_PointSize = aSize * (350.0 / -mvPos.z) * (0.4 + twinkle * 0.6);
+        vAlpha = 0.25 + twinkle * 0.75;
         gl_Position = projectionMatrix * mvPos;
       }
     `,
     fragmentShader: `
       varying float vAlpha;
       varying vec3 vColor;
-      varying float vRot;
       void main() {
-        vec2 pt = gl_PointCoord - vec2(0.5);
-        float s = sin(vRot);
-        float c = cos(vRot);
-        pt = vec2(pt.x * c - pt.y * s, pt.x * s + pt.y * c);
-        
-        float d = length(pt);
+        float d = length(gl_PointCoord - 0.5);
         if (d > 0.5) discard;
-        
-        float noise = fract(sin(dot(pt, vec2(12.9898, 78.233))) * 43758.5453) * 0.15;
-        float glow = 1.0 - smoothstep(0.0, 0.5, d + noise);
-        glow = pow(glow, 1.5);
-        
-        gl_FragColor = vec4(vColor, vAlpha * glow * 1.5);
+        float glow = 1.0 - smoothstep(0.0, 0.5, d);
+        gl_FragColor = vec4(vColor, vAlpha * glow);
       }
     `,
     transparent: true,
@@ -1507,6 +1493,73 @@ function buildNebulaBackground() {
   scene.add(bgMesh);
   window._bgMesh = bgMesh;
 
+  // ── 3D NEBULA DUST CLOUDS (volumetric gas) ──
+  const dustCount = 3000;
+  const dustGeo = new THREE.BufferGeometry();
+  const dustPos = new Float32Array(dustCount * 3);
+  const dustSizes = new Float32Array(dustCount);
+  const dustColors = new Float32Array(dustCount * 3);
+  const dustAlphas = new Float32Array(dustCount);
+  const dustPhases = new Float32Array(dustCount);
+  for (let i = 0; i < dustCount; i++) {
+    const r = 80 + Math.random() * 650;
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    dustPos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+    dustPos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta) * 0.4;
+    dustPos[i * 3 + 2] = r * Math.cos(phi);
+    dustSizes[i] = Math.random() * 40 + 20; // Aumentar tamaño para ser visible
+    dustAlphas[i] = Math.random() * 0.5 + 0.3; // Aumentar opacidad
+    dustPhases[i] = Math.random() * Math.PI * 2;
+    const hue = Math.random() * 15; // Tonos rojos (0 a 15)
+    const c = new THREE.Color().setHSL(hue / 360, 0.8, 0.3 + Math.random() * 0.3);
+    dustColors[i * 3] = c.r; dustColors[i * 3 + 1] = c.g; dustColors[i * 3 + 2] = c.b;
+  }
+  dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+  dustGeo.setAttribute('aSize', new THREE.BufferAttribute(dustSizes, 1));
+  dustGeo.setAttribute('color', new THREE.BufferAttribute(dustColors, 3));
+  dustGeo.setAttribute('aAlpha', new THREE.BufferAttribute(dustAlphas, 1));
+  dustGeo.setAttribute('aPhase', new THREE.BufferAttribute(dustPhases, 1));
+
+  const dustMat = new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 } },
+    vertexShader: `
+      attribute float aSize;
+      attribute float aAlpha;
+      attribute float aPhase;
+      uniform float uTime;
+      varying float vAlpha;
+      varying vec3 vColor;
+      void main() {
+        vColor = color;
+        vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
+        float drift = sin(uTime * 0.3 + aPhase) * 0.5 + 0.5;
+        gl_PointSize = 150.0;
+        vAlpha = aAlpha * (0.6 + drift * 0.4);
+        gl_Position = projectionMatrix * mvPos;
+      }
+    `,
+    fragmentShader: `
+      varying float vAlpha;
+      varying vec3 vColor;
+      void main() {
+        float d = length(gl_PointCoord - 0.5);
+        if (d > 0.5) discard;
+        float glow = 1.0 - smoothstep(0.0, 0.5, d);
+        glow = glow * glow;
+        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    vertexColors: true,
+  });
+  const dustPoints = new THREE.Points(dustGeo, dustMat);
+  dustPoints.userData = { isNebulaDust: true };
+  scene.add(dustPoints);
+  nebulaParticles.push(dustPoints);
+
   // ── BRIGHT GLOWING STARDUST (sparkle particles) ──
   const sparkleCount = 800;
   const sparkleGeo = new THREE.BufferGeometry();
@@ -1687,8 +1740,7 @@ function buildPlanet(key) {
     map: tex,
     emissive: new THREE.Color(data.emissive),
     emissiveIntensity: useRealTex ? 0.08 : 0.3,
-    metalness: isTerrestrial ? 0.4 : 0.2,
-    roughness: isTerrestrial ? 0.55 : 0.7,
+    shininess: isTerrestrial ? 35 : 15,
   };
   // Surface detail maps
   let terrainMaps = null;
@@ -1699,9 +1751,9 @@ function buildPlanet(key) {
       matOpts.normalScale = new THREE.Vector2(3.0, 3.0);
     }
     if (realTextures.earth_specular) {
-      matOpts.roughnessMap = realTextures.earth_specular;
-      matOpts.roughness = 0.4;
-      matOpts.metalness = 0.3;
+      matOpts.specularMap = realTextures.earth_specular;
+      matOpts.specular = new THREE.Color(0x888888);
+      matOpts.shininess = 30;
     }
     if (realTextures.earth_lights) {
       matOpts.emissiveMap = realTextures.earth_lights;
@@ -1712,8 +1764,7 @@ function buildPlanet(key) {
     // Planets with real bump maps (Mercury, Venus, Mars)
     matOpts.bumpMap = realTextures[_realBumpKeys[key]];
     matOpts.bumpScale = data.radius * 0.05;
-    matOpts.metalness = 0.5;
-    matOpts.roughness = 0.45;
+    matOpts.shininess = 25;
   } else if (isTerrestrial && !useRealTex) {
     // Procedural terrain maps as fallback
     terrainMaps = createTerrainMaps(data.textureType);
@@ -1723,12 +1774,12 @@ function buildPlanet(key) {
     matOpts.displacementScale = data.radius * 0.035;
     matOpts.displacementBias = -data.radius * 0.017;
     if (terrainMaps.specTex) {
-      matOpts.roughnessMap = terrainMaps.specTex;
-      matOpts.roughness = 0.35;
-      matOpts.metalness = 0.5;
+      matOpts.specularMap = terrainMaps.specTex;
+      matOpts.specular = new THREE.Color(0x555555);
+      matOpts.shininess = 80;
     }
   }
-  const mat = new THREE.MeshStandardMaterial(matOpts);
+  const mat = new THREE.MeshPhongMaterial(matOpts);
 
   // Rayleigh scattering atmosphere (realistic)
   const _atmoColors = { Venus: '#E8B96F', Earth: '#4fc3f7', Mars: '#C06030', Jupiter: '#D4A843', Saturn: '#F0D090', Uranus: '#7DE8E8', Neptune: '#5D6CC0' };
@@ -1954,13 +2005,54 @@ function buildKuiperBelt() {
 }
 // Kuiper belt built via deferred queue below
 
-// ── SHOOTING STARS + COMETS (via js/comet.js) ──
-let cometSystem = null;
-function initCometSystem() {
-  cometSystem = new CometSystem(scene);
+// ── SHOOTING STARS ──
+const shootingStars = [];
+function spawnShootingStar() {
+  const count = 20; // trail length
+  const positions = new Float32Array(count * 3);
+  const alphas = new Float32Array(count);
+  const start = new THREE.Vector3(
+    (Math.random() - 0.5) * 500,
+    50 + Math.random() * 200,
+    (Math.random() - 0.5) * 500
+  );
+  const dir = new THREE.Vector3(
+    (Math.random() - 0.5) * 2, -(0.3 + Math.random() * 0.7), (Math.random() - 0.5) * 2
+  ).normalize();
+  for (let i = 0; i < count; i++) {
+    const p = start.clone().add(dir.clone().multiplyScalar(-i * 1.2));
+    positions[i * 3] = p.x; positions[i * 3 + 1] = p.y; positions[i * 3 + 2] = p.z;
+    alphas[i] = 1 - i / count;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const mat = new THREE.LineBasicMaterial({
+    color: 0xffffff, transparent: true, opacity: 0.8,
+    blending: THREE.AdditiveBlending, depthWrite: false,
+  });
+  const line = new THREE.Line(geo, mat);
+  line.userData = { dir, speed: 3 + Math.random() * 4, life: 0, maxLife: 40 + Math.random() * 40 };
+  scene.add(line);
+  shootingStars.push(line);
 }
-function updateShootingStars(time) {
-  if (cometSystem) cometSystem.update(time);
+function updateShootingStars() {
+  for (let i = shootingStars.length - 1; i >= 0; i--) {
+    const s = shootingStars[i];
+    s.userData.life++;
+    const posArr = s.geometry.attributes.position.array;
+    for (let j = 0; j < posArr.length; j += 3) {
+      posArr[j] += s.userData.dir.x * s.userData.speed;
+      posArr[j + 1] += s.userData.dir.y * s.userData.speed;
+      posArr[j + 2] += s.userData.dir.z * s.userData.speed;
+    }
+    s.geometry.attributes.position.needsUpdate = true;
+    s.material.opacity = 0.8 * (1 - s.userData.life / s.userData.maxLife);
+    if (s.userData.life >= s.userData.maxLife) {
+      scene.remove(s); s.geometry.dispose(); s.material.dispose();
+      shootingStars.splice(i, 1);
+    }
+  }
+  if (Math.random() < 0.008) spawnShootingStar(); // ~every 2-3 seconds
 }
 
 // ── COMET ──
@@ -4483,7 +4575,6 @@ const buildQueue = [
   { fn: () => buildAsteroidBelt() },
   { fn: () => buildKuiperBelt() },
   { fn: () => buildAsteroidGroup() },
-  { fn: () => initCometSystem() },
 ];
 
 let qi = 0;
