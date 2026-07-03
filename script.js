@@ -1494,25 +1494,33 @@ function buildNebulaBackground() {
   window._bgMesh = bgMesh;
 
   // ── 3D NEBULA DUST CLOUDS (volumetric gas) ──
-  const dustCount = 3000;
+  const dustCount = 8000;
   const dustGeo = new THREE.BufferGeometry();
   const dustPos = new Float32Array(dustCount * 3);
   const dustSizes = new Float32Array(dustCount);
   const dustColors = new Float32Array(dustCount * 3);
   const dustAlphas = new Float32Array(dustCount);
   const dustPhases = new Float32Array(dustCount);
+  const dustRots = new Float32Array(dustCount);
   for (let i = 0; i < dustCount; i++) {
-    const r = 80 + Math.random() * 650;
-    const theta = Math.random() * Math.PI * 2;
-    const phi = Math.acos(2 * Math.random() - 1);
+    const u = Math.random();
+    const v = Math.random();
+    const theta = u * Math.PI * 2;
+    const phi = Math.acos(2 * v - 1);
+    const modulation = Math.sin(theta * 3.0) * Math.cos(phi * 4.0);
+    const r = 120 + Math.random() * 300 + modulation * 180;
+    
     dustPos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-    dustPos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta) * 0.4;
+    dustPos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta) * 0.25;
     dustPos[i * 3 + 2] = r * Math.cos(phi);
-    dustSizes[i] = Math.random() * 10 + 3;
-    dustAlphas[i] = Math.random() * 0.18 + 0.03;
+    dustSizes[i] = Math.random() * 80 + 40;
+    dustAlphas[i] = Math.random() * 0.15 + 0.05;
     dustPhases[i] = Math.random() * Math.PI * 2;
-    const hue = 180 + Math.random() * 80;
-    const c = new THREE.Color().setHSL(hue / 360, 0.45, 0.12 + Math.random() * 0.18);
+    dustRots[i] = Math.random() * Math.PI * 2;
+    
+    // Paleta cósmica: Rojo/Naranja o Magenta/Púrpura profundo
+    const hue = Math.random() > 0.4 ? (Math.random() * 25) : (280 + Math.random() * 50);
+    const c = new THREE.Color().setHSL(hue / 360, 0.85, 0.3 + Math.random() * 0.3);
     dustColors[i * 3] = c.r; dustColors[i * 3 + 1] = c.g; dustColors[i * 3 + 2] = c.b;
   }
   dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
@@ -1547,7 +1555,7 @@ function buildNebulaBackground() {
         if (d > 0.5) discard;
         float glow = 1.0 - smoothstep(0.0, 0.5, d);
         glow = glow * glow;
-        gl_FragColor = vec4(vColor, vAlpha * glow * 0.7);
+        gl_FragColor = vec4(vColor, vAlpha * glow * 2.0);
       }
     `,
     transparent: true,
