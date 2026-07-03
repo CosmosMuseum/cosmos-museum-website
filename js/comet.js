@@ -98,9 +98,9 @@ class CometSystem {
     this.scene = scene;
     this.comets = [];
     this.spawnInterval = 0;
-    this.minSpawnFrames = 180; // ~3 segundos entre cometas
-    this.maxSpawnFrames = 400;
-    this.nextSpawn = 150;
+    this.minSpawnFrames = 40;  // ~0.7 segundos mínimo entre cometas
+    this.maxSpawnFrames = 100;  // ~1.7 segundos máximo
+    this.nextSpawn = 30;        // Primer cometa casi inmediato
     this.frameCount = 0;
   }
 

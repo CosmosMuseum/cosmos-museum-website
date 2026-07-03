@@ -2645,43 +2645,39 @@ let selectionParticles = null;
 function spawnSelectionParticles(position, color) {
   if (selectionParticles) { scene.remove(selectionParticles); selectionParticles.geometry.dispose(); selectionParticles.material.dispose(); }
 
-  // Glowing particle texture
+  // Circular particle texture
   const pCanvas = document.createElement('canvas');
-  pCanvas.width = pCanvas.height = 128;
+  pCanvas.width = pCanvas.height = 64;
   const pCtx = pCanvas.getContext('2d');
-  const pGrad = pCtx.createRadialGradient(64, 64, 0, 64, 64, 64);
+  const pGrad = pCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
   pGrad.addColorStop(0, 'rgba(255,255,255,1)');
-  pGrad.addColorStop(0.15, 'rgba(255,255,255,0.9)');
-  pGrad.addColorStop(0.4, 'rgba(255,255,255,0.4)');
-  pGrad.addColorStop(0.7, 'rgba(255,255,255,0.1)');
+  pGrad.addColorStop(0.2, 'rgba(255,255,255,0.8)');
+  pGrad.addColorStop(0.5, 'rgba(255,255,255,0.3)');
   pGrad.addColorStop(1, 'rgba(255,255,255,0)');
   pCtx.fillStyle = pGrad;
-  pCtx.fillRect(0, 0, 128, 128);
+  pCtx.fillRect(0, 0, 64, 64);
   const pTex = new THREE.CanvasTexture(pCanvas);
 
-  const starColor = new THREE.Color(color || 0x4fc3f7);
-
-  const count = 100;
+  const count = 60;
   const pos = new Float32Array(count * 3);
   const vel = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
     pos[i * 3] = position.x; pos[i * 3 + 1] = position.y; pos[i * 3 + 2] = position.z;
-    // Particles shoot upward with slight random spread
-    const spreadX = (Math.random() - 0.5) * 0.4;
-    const spreadZ = (Math.random() - 0.5) * 0.4;
-    const upSpeed = 0.3 + Math.random() * 0.6;
-    vel[i * 3] = spreadX;
-    vel[i * 3 + 1] = upSpeed;
-    vel[i * 3 + 2] = spreadZ;
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    const speed = 0.2 + Math.random() * 0.6;
+    vel[i * 3] = Math.sin(phi) * Math.cos(theta) * speed;
+    vel[i * 3 + 1] = Math.sin(phi) * Math.sin(theta) * speed;
+    vel[i * 3 + 2] = Math.cos(phi) * speed;
   }
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   const mat = new THREE.PointsMaterial({
-    color: starColor, map: pTex, size: 0.5, transparent: true, opacity: 1.0,
+    color: color || 0x4fc3f7, map: pTex, size: 0.5, transparent: true, opacity: 1.0,
     blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true,
   });
   selectionParticles = new THREE.Points(geo, mat);
-  selectionParticles.userData = { vel, life: 0, maxLife: 80, gravity: 0.008 };
+  selectionParticles.userData = { vel, life: 0, maxLife: 50 };
   scene.add(selectionParticles);
 }
 function updateSelectionParticles() {
@@ -2691,14 +2687,13 @@ function updateSelectionParticles() {
   const t = sp.userData.life / sp.userData.maxLife;
   const posArr = sp.geometry.attributes.position.array;
   const vel = sp.userData.vel;
-  const grav = sp.userData.gravity;
   for (let i = 0; i < posArr.length; i += 3) {
-    vel[i + 1] -= grav;
     posArr[i] += vel[i]; posArr[i + 1] += vel[i + 1]; posArr[i + 2] += vel[i + 2];
+    vel[i] *= 0.96; vel[i + 1] *= 0.96; vel[i + 2] *= 0.96;
   }
   sp.geometry.attributes.position.needsUpdate = true;
-  sp.material.opacity = 1 - t * t;
-  sp.material.size = 0.5 * (1 - t * 0.3);
+  sp.material.opacity = 1 - t;
+  sp.material.size = 0.5 * (1 - t * 0.4);
   if (sp.userData.life >= sp.userData.maxLife) {
     scene.remove(sp); sp.geometry.dispose(); sp.material.dispose();
     selectionParticles = null;
@@ -4488,6 +4483,7 @@ const buildQueue = [
   { fn: () => buildAsteroidBelt() },
   { fn: () => buildKuiperBelt() },
   { fn: () => buildAsteroidGroup() },
+  { fn: () => initCometSystem() },
 ];
 
 let qi = 0;
