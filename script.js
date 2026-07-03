@@ -1219,27 +1219,41 @@ function createStarfield() {
     uniforms: starUniforms,
     vertexShader: `
       attribute float aSize;
+      attribute float aAlpha;
       attribute float aPhase;
+      attribute float aRot;
       uniform float uTime;
       varying float vAlpha;
       varying vec3 vColor;
+      varying float vRot;
       void main() {
         vColor = color;
         vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
-        float twinkle = sin(uTime * 1.5 + aPhase) * 0.5 + 0.5;
-        gl_PointSize = aSize * (350.0 / -mvPos.z) * (0.4 + twinkle * 0.6);
-        vAlpha = 0.25 + twinkle * 0.75;
+        float drift = sin(uTime * 0.15 + aPhase) * 0.5 + 0.5;
+        gl_PointSize = aSize * (350.0 / -mvPos.z) * (0.8 + drift * 0.2);
+        vAlpha = aAlpha * (0.7 + drift * 0.3);
+        vRot = aRot + uTime * 0.05 * (fract(aPhase) * 2.0 - 1.0);
         gl_Position = projectionMatrix * mvPos;
       }
     `,
     fragmentShader: `
       varying float vAlpha;
       varying vec3 vColor;
+      varying float vRot;
       void main() {
-        float d = length(gl_PointCoord - 0.5);
+        vec2 pt = gl_PointCoord - vec2(0.5);
+        float s = sin(vRot);
+        float c = cos(vRot);
+        pt = vec2(pt.x * c - pt.y * s, pt.x * s + pt.y * c);
+        
+        float d = length(pt);
         if (d > 0.5) discard;
-        float glow = 1.0 - smoothstep(0.0, 0.5, d);
-        gl_FragColor = vec4(vColor, vAlpha * glow);
+        
+        float noise = fract(sin(dot(pt, vec2(12.9898, 78.233))) * 43758.5453) * 0.15;
+        float glow = 1.0 - smoothstep(0.0, 0.5, d + noise);
+        glow = pow(glow, 1.5);
+        
+        gl_FragColor = vec4(vColor, vAlpha * glow * 1.5);
       }
     `,
     transparent: true,
@@ -1492,81 +1506,6 @@ function buildNebulaBackground() {
   bgMesh.rotation.x = 0;
   scene.add(bgMesh);
   window._bgMesh = bgMesh;
-
-  // ── 3D NEBULA DUST CLOUDS (volumetric gas) ──
-  const dustCount = 8000;
-  const dustGeo = new THREE.BufferGeometry();
-  const dustPos = new Float32Array(dustCount * 3);
-  const dustSizes = new Float32Array(dustCount);
-  const dustColors = new Float32Array(dustCount * 3);
-  const dustAlphas = new Float32Array(dustCount);
-  const dustPhases = new Float32Array(dustCount);
-  const dustRots = new Float32Array(dustCount);
-  for (let i = 0; i < dustCount; i++) {
-    const u = Math.random();
-    const v = Math.random();
-    const theta = u * Math.PI * 2;
-    const phi = Math.acos(2 * v - 1);
-    const modulation = Math.sin(theta * 3.0) * Math.cos(phi * 4.0);
-    const r = 120 + Math.random() * 300 + modulation * 180;
-    
-    dustPos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-    dustPos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta) * 0.25;
-    dustPos[i * 3 + 2] = r * Math.cos(phi);
-    dustSizes[i] = Math.random() * 80 + 40;
-    dustAlphas[i] = Math.random() * 0.15 + 0.05;
-    dustPhases[i] = Math.random() * Math.PI * 2;
-    dustRots[i] = Math.random() * Math.PI * 2;
-    
-    // Paleta cósmica: Rojo/Naranja o Magenta/Púrpura profundo
-    const hue = Math.random() > 0.4 ? (Math.random() * 25) : (280 + Math.random() * 50);
-    const c = new THREE.Color().setHSL(hue / 360, 0.85, 0.3 + Math.random() * 0.3);
-    dustColors[i * 3] = c.r; dustColors[i * 3 + 1] = c.g; dustColors[i * 3 + 2] = c.b;
-  }
-  dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
-  dustGeo.setAttribute('aSize', new THREE.BufferAttribute(dustSizes, 1));
-  dustGeo.setAttribute('color', new THREE.BufferAttribute(dustColors, 3));
-  dustGeo.setAttribute('aAlpha', new THREE.BufferAttribute(dustAlphas, 1));
-  dustGeo.setAttribute('aPhase', new THREE.BufferAttribute(dustPhases, 1));
-
-  const dustMat = new THREE.ShaderMaterial({
-    uniforms: { uTime: { value: 0 } },
-    vertexShader: `
-      attribute float aSize;
-      attribute float aAlpha;
-      attribute float aPhase;
-      uniform float uTime;
-      varying float vAlpha;
-      varying vec3 vColor;
-      void main() {
-        vColor = color;
-        vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
-        float drift = sin(uTime * 0.3 + aPhase) * 0.5 + 0.5;
-        gl_PointSize = aSize * (220.0 / -mvPos.z) * (0.7 + drift * 0.3);
-        vAlpha = aAlpha * (0.6 + drift * 0.4);
-        gl_Position = projectionMatrix * mvPos;
-      }
-    `,
-    fragmentShader: `
-      varying float vAlpha;
-      varying vec3 vColor;
-      void main() {
-        float d = length(gl_PointCoord - 0.5);
-        if (d > 0.5) discard;
-        float glow = 1.0 - smoothstep(0.0, 0.5, d);
-        glow = glow * glow;
-        gl_FragColor = vec4(vColor, vAlpha * glow * 2.0);
-      }
-    `,
-    transparent: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-    vertexColors: true,
-  });
-  const dustPoints = new THREE.Points(dustGeo, dustMat);
-  dustPoints.userData = { isNebulaDust: true };
-  scene.add(dustPoints);
-  nebulaParticles.push(dustPoints);
 
   // ── BRIGHT GLOWING STARDUST (sparkle particles) ──
   const sparkleCount = 800;
