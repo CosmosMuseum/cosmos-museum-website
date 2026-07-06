@@ -2029,7 +2029,7 @@ function buildAsteroidBelt() {
     const a = Math.random() * Math.PI * 2;
     const y = (Math.random() - 0.5) * 1.5;
     sprite.position.set(Math.cos(a) * r, y, Math.sin(a) * r);
-    const s = 0.4 + Math.random() * 1.8;
+    const s = 0.15 + Math.random() * 0.7;
     sprite.scale.set(s, s, s);
     group.add(sprite);
   }
@@ -2049,7 +2049,7 @@ function buildKuiperBelt() {
     const a = Math.random() * Math.PI * 2;
     const y = (Math.random() - 0.5) * 4;
     sprite.position.set(Math.cos(a) * r, y, Math.sin(a) * r);
-    const s = 0.3 + Math.random() * 2.0;
+    const s = 0.1 + Math.random() * 0.8;
     sprite.scale.set(s, s, s);
     group.add(sprite);
   }
@@ -2116,7 +2116,7 @@ function buildAsteroidGroup() {
   const mat = new THREE.SpriteMaterial({ map: tex });
 
   for (let i = 0; i < 25; i++) {
-    const size = 0.5 + Math.random() * 1.5;
+    const size = 0.2 + Math.random() * 0.6;
     const mesh = new THREE.Sprite(mat);
     mesh.scale.set(size, size, size);
 
