@@ -2020,46 +2020,40 @@ function createRockGeometry() {
 
 function buildAsteroidBelt() {
   const count = 4000;
-  const rockGeo = createRockGeometry();
-  const rockMat = new THREE.MeshPhongMaterial({ color: 0x998877, shininess: 5 });
-  const mesh = new THREE.InstancedMesh(rockGeo, rockMat, count);
-  const dummy = new THREE.Object3D();
+  const tex = new THREE.TextureLoader().load('img/textures/asteroide.png');
+  const mat = new THREE.SpriteMaterial({ map: tex });
+  const group = new THREE.Group();
   for (let i = 0; i < count; i++) {
+    const sprite = new THREE.Sprite(mat);
     const r = 43 + Math.random() * 8;
     const a = Math.random() * Math.PI * 2;
     const y = (Math.random() - 0.5) * 1.5;
-    dummy.position.set(Math.cos(a) * r, y, Math.sin(a) * r);
-    dummy.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
-    const s = 0.2 + Math.random() * 1.8;
-    dummy.scale.set(s, s, s);
-    dummy.updateMatrix();
-    mesh.setMatrixAt(i, dummy.matrix);
+    sprite.position.set(Math.cos(a) * r, y, Math.sin(a) * r);
+    const s = 0.4 + Math.random() * 1.8;
+    sprite.scale.set(s, s, s);
+    group.add(sprite);
   }
-  mesh.instanceMatrix.needsUpdate = true;
-  scene.add(mesh);
+  scene.add(group);
 }
 // Asteroid belt built via deferred queue below
 
 // ── KUIPER BELT ──
 function buildKuiperBelt() {
   const count = 4000;
-  const rockGeo = createRockGeometry();
-  const rockMat = new THREE.MeshPhongMaterial({ color: 0x667788, shininess: 3 });
-  const mesh = new THREE.InstancedMesh(rockGeo, rockMat, count);
-  const dummy = new THREE.Object3D();
+  const tex = new THREE.TextureLoader().load('img/textures/asteroide.png');
+  const mat = new THREE.SpriteMaterial({ map: tex });
+  const group = new THREE.Group();
   for (let i = 0; i < count; i++) {
+    const sprite = new THREE.Sprite(mat);
     const r = 122 + Math.random() * 18;
     const a = Math.random() * Math.PI * 2;
     const y = (Math.random() - 0.5) * 4;
-    dummy.position.set(Math.cos(a) * r, y, Math.sin(a) * r);
-    dummy.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
-    const s = 0.15 + Math.random() * 2.0;
-    dummy.scale.set(s, s, s);
-    dummy.updateMatrix();
-    mesh.setMatrixAt(i, dummy.matrix);
+    sprite.position.set(Math.cos(a) * r, y, Math.sin(a) * r);
+    const s = 0.3 + Math.random() * 2.0;
+    sprite.scale.set(s, s, s);
+    group.add(sprite);
   }
-  mesh.instanceMatrix.needsUpdate = true;
-  scene.add(mesh);
+  scene.add(group);
 }
 // Kuiper belt built via deferred queue below
 
@@ -2118,40 +2112,25 @@ let asteroidGroup;
 function buildAsteroidGroup() {
   asteroidGroup = new THREE.Group();
 
-  const asteroidColors = [0x6b6b7b, 0x7a7062, 0x5e5e6e, 0x8a7e6b, 0x4a4a5a];
+  const tex = new THREE.TextureLoader().load('img/textures/asteroide.png');
+  const mat = new THREE.SpriteMaterial({ map: tex });
 
   for (let i = 0; i < 25; i++) {
-    const size = 0.15 + Math.random() * 0.5;
-    const geo = new THREE.IcosahedronGeometry(size, 1);
-    const posAttr = geo.getAttribute('position');
-    for (let j = 0; j < posAttr.count; j++) {
-      const x = posAttr.getX(j);
-      const y = posAttr.getY(j);
-      const z = posAttr.getZ(j);
-      const noise = 0.7 + Math.random() * 0.6;
-      posAttr.setXYZ(j, x * noise, y * noise, z * noise);
-    }
-    posAttr.needsUpdate = true;
-    geo.computeVertexNormals();
-    const mat = new THREE.MeshStandardMaterial({
-      color: asteroidColors[Math.floor(Math.random() * asteroidColors.length)],
-      roughness: 0.9 + Math.random() * 0.1,
-      metalness: Math.random() * 0.15,
-      flatShading: true,
-    });
-    const mesh = new THREE.Mesh(geo, mat);
+    const size = 0.5 + Math.random() * 1.5;
+    const mesh = new THREE.Sprite(mat);
+    mesh.scale.set(size, size, size);
+
     const orbitAngle = Math.random() * Math.PI * 2;
     const orbitRadius = 80 + (Math.random() - 0.5) * 12;
     const orbitInclination = 0.4 + (Math.random() - 0.5) * 0.15;
     mesh.position.x = Math.cos(orbitAngle) * orbitRadius;
     mesh.position.z = Math.sin(orbitAngle) * orbitRadius;
     mesh.position.y = Math.sin(orbitAngle * 0.7) * orbitRadius * orbitInclination;
-    mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
     mesh.userData = {
       orbitAngle,
       orbitRadius,
       orbitInclination,
-      rotSpeed: (Math.random() - 0.5) * 0.02,
+      rotSpeed: 0,
       orbitSpeed: 0.002 + (Math.random() - 0.5) * 0.0008,
     };
     asteroidGroup.add(mesh);
