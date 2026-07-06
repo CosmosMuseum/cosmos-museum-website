@@ -2872,7 +2872,9 @@ function animate() {
     const po = planetObjects[key];
     if (!po) return;
     const d = po.data;
-    po.angle = (po.angle || 0) + d.orbitalSpeed * speedMul;
+    if (currentFocus !== key) {
+      po.angle = (po.angle || 0) + d.orbitalSpeed * speedMul;
+    }
     po.group.position.x = Math.cos(po.angle) * d.distance;
     po.group.position.z = Math.sin(po.angle) * d.distance;
 
