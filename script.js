@@ -2170,7 +2170,7 @@ window.surfaceZoom = function (name, hitPoint) {
   cameraOffset = camPos;
   cameraLerpT = 0;
   isCameraAnimating = true;
-  controls.minDistance = 3;
+  controls.minDistance = data.radius * 1.8 + 2;
   showPlanetPanel(name);
 };
 
@@ -2216,8 +2216,8 @@ window.focusPlanet = function (name) {
   cameraLerpT = 0;
   isCameraAnimating = true;
 
-  // Set dynamic zoom limits for this planet
-  controls.minDistance = 3;
+  // Set dynamic zoom limits based on planet radius
+  controls.minDistance = data.radius * 1.8 + 2;
 
   // Show panel
   showPlanetPanel(name);
@@ -2249,7 +2249,7 @@ window.resetView = function () {
   cameraOffset = new THREE.Vector3(0, 40, 120);
   cameraLerpT = 0;
   isCameraAnimating = true;
-  controls.minDistance = 3; // Reset to default
+  controls.minDistance = 3;
   closePanel();
   hint.classList.remove('hidden');
 };
@@ -2895,7 +2895,7 @@ function animate() {
 
     // Dynamic minDistance — prevent camera from going inside any planet
     if (key === currentFocus) {
-      controls.minDistance = 3;
+      controls.minDistance = PLANET_DATA[key].radius * 1.8 + 2;
     }
 
     // Helper to animate hint text changes
