@@ -2020,11 +2020,16 @@ function createRockGeometry() {
 
 function buildAsteroidBelt() {
   const count = 4000;
-  const tex = new THREE.TextureLoader().load('img/textures/asteroide.png');
-  const mat = new THREE.SpriteMaterial({ map: tex });
+  const loader = new THREE.TextureLoader();
+  const asteroidTextures = [
+    loader.load('img/textures/asteroide-1.png'),
+    loader.load('img/textures/asteroide-2.png'),
+    loader.load('img/textures/asteroides-3.png'),
+  ];
   const group = new THREE.Group();
   for (let i = 0; i < count; i++) {
-    const sprite = new THREE.Sprite(mat);
+    const tex = asteroidTextures[Math.floor(Math.random() * asteroidTextures.length)];
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex }));
     const r = 43 + Math.random() * 8;
     const a = Math.random() * Math.PI * 2;
     const y = (Math.random() - 0.5) * 1.5;
@@ -2040,11 +2045,16 @@ function buildAsteroidBelt() {
 // ── KUIPER BELT ──
 function buildKuiperBelt() {
   const count = 4000;
-  const tex = new THREE.TextureLoader().load('img/textures/asteroide.png');
-  const mat = new THREE.SpriteMaterial({ map: tex });
+  const loader = new THREE.TextureLoader();
+  const asteroidTextures = [
+    loader.load('img/textures/asteroide-1.png'),
+    loader.load('img/textures/asteroide-2.png'),
+    loader.load('img/textures/asteroides-3.png'),
+  ];
   const group = new THREE.Group();
   for (let i = 0; i < count; i++) {
-    const sprite = new THREE.Sprite(mat);
+    const tex = asteroidTextures[Math.floor(Math.random() * asteroidTextures.length)];
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex }));
     const r = 122 + Math.random() * 18;
     const a = Math.random() * Math.PI * 2;
     const y = (Math.random() - 0.5) * 4;
@@ -2112,12 +2122,17 @@ let asteroidGroup;
 function buildAsteroidGroup() {
   asteroidGroup = new THREE.Group();
 
-  const tex = new THREE.TextureLoader().load('img/textures/asteroide.png');
-  const mat = new THREE.SpriteMaterial({ map: tex });
+  const loader = new THREE.TextureLoader();
+  const asteroidTextures = [
+    loader.load('img/textures/asteroide-1.png'),
+    loader.load('img/textures/asteroide-2.png'),
+    loader.load('img/textures/asteroides-3.png'),
+  ];
 
   for (let i = 0; i < 25; i++) {
+    const tex = asteroidTextures[Math.floor(Math.random() * asteroidTextures.length)];
     const size = 0.2 + Math.random() * 0.6;
-    const mesh = new THREE.Sprite(mat);
+    const mesh = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex }));
     mesh.scale.set(size, size, size);
 
     const orbitAngle = Math.random() * Math.PI * 2;
