@@ -2047,54 +2047,196 @@ function buildKuiperBelt() {
 }
 // Kuiper belt built via deferred queue below
 
-// ── SHOOTING STARS ──
+// ── SHOOTING STARS (ADVANCED SHADERS) ──
+const cometHeadVertexShader = `
+  varying vec3 vNormal;
+  varying vec3 vPositionNormal;
+  void main() {
+    vNormal = normalize(normalMatrix * normal);
+    vPositionNormal = normalize((modelViewMatrix * vec4(position, 1.0)).xyz);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+const cometHeadFragmentShader = `
+  uniform vec3 colorCore;
+  uniform vec3 colorEdge;
+  uniform float opacity;
+  varying vec3 vNormal;
+  varying vec3 vPositionNormal;
+  void main() {
+    // Fresnel glow effect
+    float intensity = pow(0.7 - dot(vNormal, vPositionNormal), 2.5);
+    vec3 glow = mix(colorCore, colorEdge, intensity);
+    gl_FragColor = vec4(glow, intensity * opacity * 2.0);
+  }
+`;
+
+const cometTailVertexShader = `
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
 const shootingStars = [];
 function spawnShootingStar() {
-  const count = 20; // trail length
-  const positions = new Float32Array(count * 3);
-  const alphas = new Float32Array(count);
+  const group = new THREE.Group();
+
+  const coreColor = new THREE.Color(0xffffff);
+  const edgeColor = new THREE.Color().lerpColors(
+    new THREE.Color(0x3366ff), 
+    new THREE.Color(0xb333ff), 
+    Math.random()
+  );
+
+  // 1. Volumetric Head (at Y = 0)
+  const headGeo = new THREE.SphereGeometry(1.2, 16, 16);
+  const headMat = new THREE.ShaderMaterial({
+    uniforms: {
+      colorCore: { value: coreColor },
+      colorEdge: { value: edgeColor },
+      opacity: { value: 1.0 }
+    },
+    vertexShader: cometHeadVertexShader,
+    fragmentShader: cometHeadFragmentShader,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
+  const head = new THREE.Mesh(headGeo, headMat);
+  group.add(head);
+
+  // 2. Plasma Tail
+  // Cone base radius = 1.0, height = 40. Default aligns with Y axis.
+  // Base is at -Y, Tip is at +Y.
+  const tailGeo = new THREE.ConeGeometry(1.0, 40, 16, 1, true);
+  // Shift it up so the base is at Y=0 and tip is at Y=40
+  tailGeo.translate(0, 20, 0); 
+
+  const tailMat = new THREE.ShaderMaterial({
+    uniforms: {
+      time: { value: 0.0 },
+      colorCore: { value: coreColor },
+      colorEdge: { value: edgeColor },
+      opacity: { value: 1.0 }
+    },
+    vertexShader: cometTailVertexShader,
+    fragmentShader: `
+      uniform float time;
+      uniform vec3 colorCore;
+      uniform vec3 colorEdge;
+      uniform float opacity;
+      varying vec2 vUv;
+
+      float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+      float noise(vec2 p) {
+          vec2 i = floor(p);
+          vec2 f = fract(p);
+          f = f * f * (3.0 - 2.0 * f);
+          return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
+                     mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
+      }
+
+      void main() {
+        // vUv.y goes from 0 (Base at Y=0) to 1 (Tip at Y=40)
+        // We want it bright at the base (0) and faded at the tip (1)
+        float fadeY = 1.0 - vUv.y;
+        fadeY = pow(fadeY, 1.5); 
+        
+        // Animate noise moving along the tail from head to tip
+        vec2 uvNoise = vec2(vUv.x * 10.0, vUv.y * 5.0 - time * 15.0);
+        float n = noise(uvNoise) * 0.8 + 0.2; 
+        
+        float intensity = fadeY * n * opacity;
+        vec3 finalColor = mix(colorEdge, colorCore, fadeY * n);
+        
+        gl_FragColor = vec4(finalColor, intensity);
+      }
+    `,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    side: THREE.DoubleSide
+  });
+  const tail = new THREE.Mesh(tailGeo, tailMat);
+  group.add(tail);
+
+  // 3. Realistic Light (lowered intensity so it doesn't blind planets)
+  const light = new THREE.PointLight(edgeColor, 1.5, 120);
+  head.add(light);
+
+  // Position & Direction
   const start = new THREE.Vector3(
-    (Math.random() - 0.5) * 500,
-    50 + Math.random() * 200,
-    (Math.random() - 0.5) * 500
+    300 + Math.random() * 200,      
+    80 + Math.random() * 150,       
+    (Math.random() - 0.5) * 400     
   );
   const dir = new THREE.Vector3(
-    (Math.random() - 0.5) * 2, -(0.3 + Math.random() * 0.7), (Math.random() - 0.5) * 2
+    -(0.8 + Math.random() * 0.4),   
+    -(0.2 + Math.random() * 0.4),   
+    (Math.random() - 0.5) * 0.2     
   ).normalize();
-  for (let i = 0; i < count; i++) {
-    const p = start.clone().add(dir.clone().multiplyScalar(-i * 1.2));
-    positions[i * 3] = p.x; positions[i * 3 + 1] = p.y; positions[i * 3 + 2] = p.z;
-    alphas[i] = 1 - i / count;
-  }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  const mat = new THREE.LineBasicMaterial({
-    color: 0xffffff, transparent: true, opacity: 0.8,
-    blending: THREE.AdditiveBlending, depthWrite: false,
-  });
-  const line = new THREE.Line(geo, mat);
-  line.userData = { dir, speed: 3 + Math.random() * 4, life: 0, maxLife: 40 + Math.random() * 40 };
-  scene.add(line);
-  shootingStars.push(line);
+
+  group.position.copy(start);
+  
+  // Orient group so the FRONT (-Y axis) points towards the movement direction (dir)
+  // This means the head (Y=0) is in front, and the tail (Y=40) trails behind.
+  group.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), dir.clone().normalize());
+
+  group.userData = { 
+    dir, 
+    speed: 12 + Math.random() * 8, 
+    life: 0, 
+    maxLife: 80 + Math.random() * 40,
+    headMat,
+    tailMat,
+    light
+  };
+
+  scene.add(group);
+  shootingStars.push(group);
 }
+
 function updateShootingStars() {
   for (let i = shootingStars.length - 1; i >= 0; i--) {
     const s = shootingStars[i];
     s.userData.life++;
-    const posArr = s.geometry.attributes.position.array;
-    for (let j = 0; j < posArr.length; j += 3) {
-      posArr[j] += s.userData.dir.x * s.userData.speed;
-      posArr[j + 1] += s.userData.dir.y * s.userData.speed;
-      posArr[j + 2] += s.userData.dir.z * s.userData.speed;
+    
+    // Move the group
+    s.position.addScaledVector(s.userData.dir, s.userData.speed);
+    
+    // Update shader time for plasma animation
+    s.userData.tailMat.uniforms.time.value += 0.05;
+
+    const progress = s.userData.life / s.userData.maxLife;
+    
+    // Fade in initially, fade out at end
+    let currentOpacity = 1.0;
+    if (progress < 0.1) {
+        currentOpacity = progress / 0.1;
+    } else if (progress > 0.7) {
+        currentOpacity = 1 - ((progress - 0.7) / 0.3);
     }
-    s.geometry.attributes.position.needsUpdate = true;
-    s.material.opacity = 0.8 * (1 - s.userData.life / s.userData.maxLife);
+    
+    s.userData.headMat.uniforms.opacity.value = currentOpacity;
+    s.userData.tailMat.uniforms.opacity.value = currentOpacity;
+    s.userData.light.intensity = currentOpacity * 1.5;
+
     if (s.userData.life >= s.userData.maxLife) {
-      scene.remove(s); s.geometry.dispose(); s.material.dispose();
+      scene.remove(s);
+      s.userData.headMat.dispose();
+      s.userData.tailMat.dispose();
+      s.children.forEach(child => {
+        if(child.geometry) child.geometry.dispose();
+      });
+      s.userData.light.dispose();
       shootingStars.splice(i, 1);
     }
   }
-  if (Math.random() < 0.008) spawnShootingStar(); // ~every 2-3 seconds
+  // Spawn frequency
+  if (Math.random() < 0.02) spawnShootingStar(); 
 }
 
 // ── COMET ──
