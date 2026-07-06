@@ -1085,6 +1085,7 @@ uiOverlays.forEach(el => {
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.005, 5000);
 camera.position.set(0, 40, 120);
+CometSystem.init(scene);
 
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
@@ -1282,54 +1283,23 @@ function createOrbitLine(radius, color, planetKey) {
   });
   const line = new THREE.Line(geo, mat);
 
-  const headGeo = new THREE.SphereGeometry(0.25, 8, 8);
-  const headMat = new THREE.MeshBasicMaterial({
-    color: colorHex,
-    transparent: true,
-    opacity: 0.7,
-    blending: THREE.AdditiveBlending,
-  });
-  const head = new THREE.Mesh(headGeo, headMat);
-  head.userData = { isOrbitHead: true, planetKey, radius };
-
-  const headGlow = createGlowSprite(colorHex, 3);
-  headGlow.material.opacity = 0.4;
-  headGlow.userData = { isOrbitHead: true, planetKey, radius };
-
   const group = new THREE.Group();
   group.add(line);
-  group.add(head);
-  group.add(headGlow);
-  group.userData = { isOrbitLine: true, planetKey, radius, line, head, headGlow, color: colorHex };
+  group.userData = { isOrbitLine: true, planetKey, radius, line, color: colorHex };
 
   orbitLines.push(group);
   return group;
 }
 
-// Update orbit line glow and head position
+// Update orbit line glow
 function updateOrbitLines(time) {
   orbitLines.forEach(og => {
     if (!og.userData || !og.visible) return;
-    const { planetKey, radius, line, head, headGlow } = og.userData;
+    const { planetKey, radius, line } = og.userData;
     if (!planetKey) return;
-    const po = planetObjects[planetKey];
-    if (!po) return;
 
     const pulse = Math.sin(time * 1.5 + radius * 0.1) * 0.15 + 0.25;
     line.material.opacity = pulse;
-
-    const angle = po.angle || 0;
-    const leadAngle = angle + 0.04;
-    const hx = Math.cos(leadAngle) * radius;
-    const hz = Math.sin(leadAngle) * radius;
-    head.position.set(hx, 0, hz);
-    headGlow.position.set(hx, 0, hz);
-
-    const headPulse = Math.sin(time * 3 + radius) * 0.2 + 0.6;
-    head.material.opacity = headPulse * 0.8;
-    const s = 0.8 + Math.sin(time * 2 + radius) * 0.2;
-    head.scale.set(s, s, s);
-    headGlow.scale.set(s * 2, s * 2, 1);
   });
 }
 
@@ -2067,55 +2037,9 @@ function buildKuiperBelt() {
 }
 // Kuiper belt built via deferred queue below
 
-// ── SHOOTING STARS ──
-const shootingStars = [];
-function spawnShootingStar() {
-  const count = 20; // trail length
-  const positions = new Float32Array(count * 3);
-  const alphas = new Float32Array(count);
-  const start = new THREE.Vector3(
-    (Math.random() - 0.5) * 500,
-    50 + Math.random() * 200,
-    (Math.random() - 0.5) * 500
-  );
-  const dir = new THREE.Vector3(
-    (Math.random() - 0.5) * 2, -(0.3 + Math.random() * 0.7), (Math.random() - 0.5) * 2
-  ).normalize();
-  for (let i = 0; i < count; i++) {
-    const p = start.clone().add(dir.clone().multiplyScalar(-i * 1.2));
-    positions[i * 3] = p.x; positions[i * 3 + 1] = p.y; positions[i * 3 + 2] = p.z;
-    alphas[i] = 1 - i / count;
-  }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  const mat = new THREE.LineBasicMaterial({
-    color: 0xffffff, transparent: true, opacity: 0.8,
-    blending: THREE.AdditiveBlending, depthWrite: false,
-  });
-  const line = new THREE.Line(geo, mat);
-  line.userData = { dir, speed: 3 + Math.random() * 4, life: 0, maxLife: 40 + Math.random() * 40 };
-  scene.add(line);
-  shootingStars.push(line);
-}
-function updateShootingStars() {
-  for (let i = shootingStars.length - 1; i >= 0; i--) {
-    const s = shootingStars[i];
-    s.userData.life++;
-    const posArr = s.geometry.attributes.position.array;
-    for (let j = 0; j < posArr.length; j += 3) {
-      posArr[j] += s.userData.dir.x * s.userData.speed;
-      posArr[j + 1] += s.userData.dir.y * s.userData.speed;
-      posArr[j + 2] += s.userData.dir.z * s.userData.speed;
-    }
-    s.geometry.attributes.position.needsUpdate = true;
-    s.material.opacity = 0.8 * (1 - s.userData.life / s.userData.maxLife);
-    if (s.userData.life >= s.userData.maxLife) {
-      scene.remove(s); s.geometry.dispose(); s.material.dispose();
-      shootingStars.splice(i, 1);
-    }
-  }
-  if (Math.random() < 0.008) spawnShootingStar(); // ~every 2-3 seconds
-}
+// ── SHOOTING STARS → handled by js/systems/comets.js ──
+// Initialize CometSystem after scene is ready (called in scene init block)
+
 
 // ── COMET ──
 let asteroidGroup;
@@ -2123,14 +2047,12 @@ function buildAsteroidGroup() {
   asteroidGroup = new THREE.Group();
 
   const loader = new THREE.TextureLoader();
-  const asteroidTextures = [
-    loader.load('img/textures/asteroide-1.png'),
-    loader.load('img/textures/asteroide-2.png'),
-    loader.load('img/textures/asteroides-3.png'),
+  const cometTextures = [
+    loader.load('img/textures/cometa.png'),
   ];
 
   for (let i = 0; i < 25; i++) {
-    const tex = asteroidTextures[Math.floor(Math.random() * asteroidTextures.length)];
+    const tex = cometTextures[Math.floor(Math.random() * cometTextures.length)];
     const size = 0.2 + Math.random() * 0.6;
     const mesh = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex }));
     mesh.scale.set(size, size, size);
@@ -2280,7 +2202,7 @@ window.surfaceZoom = function (name, hitPoint) {
 
   // Camera position: very close to surface, offset from hit point
   const surfaceDir = hitPoint.clone().sub(worldPos).normalize();
-  const surfaceDist = data.radius + 5; // Always above surface
+  const surfaceDist = data.radius + 2; // Always above surface
   const camPos = worldPos.clone().add(surfaceDir.clone().multiplyScalar(surfaceDist));
 
   cameraStartPos.copy(camera.position);
@@ -2289,7 +2211,7 @@ window.surfaceZoom = function (name, hitPoint) {
   cameraOffset = camPos;
   cameraLerpT = 0;
   isCameraAnimating = true;
-  controls.minDistance = data.radius + 5;
+  controls.minDistance = data.radius + 2;
   showPlanetPanel(name);
 };
 
@@ -2326,17 +2248,18 @@ window.focusPlanet = function (name) {
   // Animate camera
 
   const data = PLANET_DATA[name];
-  const camDist = data.radius * 4 + 5;
+  const camDist = data.radius * 2.5 + 3;
   cameraStartPos.copy(camera.position);
   cameraStartTarget.copy(controls.target);
   cameraTarget = worldPos.clone();
-  const offset = new THREE.Vector3(camDist, camDist * 0.35, camDist);
+  const sunDir = worldPos.clone().negate().normalize();
+  const offset = sunDir.multiplyScalar(camDist).add(new THREE.Vector3(0, camDist * 0.3, 0));
   cameraOffset = worldPos.clone().add(offset);
   cameraLerpT = 0;
   isCameraAnimating = true;
 
   // Set dynamic zoom limits based on planet radius
-  controls.minDistance = data.radius + 5;
+  controls.minDistance = data.radius + 2;
 
   // Show panel
   showPlanetPanel(name);
@@ -2882,7 +2805,7 @@ function animate() {
   });
 
   // Shooting stars
-  updateShootingStars();
+  CometSystem.update();
 
   // Asteroid group orbit
   if (asteroidGroup) {
@@ -2903,7 +2826,9 @@ function animate() {
     const po = planetObjects[key];
     if (!po) return;
     const d = po.data;
-    po.angle = (po.angle || 0) + d.orbitalSpeed * speedMul;
+    if (currentFocus !== key) {
+      po.angle = (po.angle || 0) + d.orbitalSpeed * speedMul;
+    }
     po.group.position.x = Math.cos(po.angle) * d.distance;
     po.group.position.z = Math.sin(po.angle) * d.distance;
 
@@ -3020,7 +2945,7 @@ function animate() {
 
     // Dynamic minDistance — prevent camera from going inside any planet
     if (key === currentFocus) {
-      controls.minDistance = PLANET_DATA[key].radius + 5;
+      controls.minDistance = PLANET_DATA[key].radius + 2;
     }
 
     // Helper to animate hint text changes
@@ -4859,7 +4784,7 @@ function cinematicIntro() {
     controls.target.lerpVectors(startTgt, endTgt, ease);
     controls.update();
     if (starUniforms) starUniforms.uTime.value += 0.005;
-    updateShootingStars();
+    CometSystem.update();
     if (asteroidGroup) {
       asteroidGroup.children.forEach(child => {
         if (!child.userData.orbitAngle) return;
