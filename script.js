@@ -2161,7 +2161,7 @@ window.surfaceZoom = function (name, hitPoint) {
 
   // Camera position: very close to surface, offset from hit point
   const surfaceDir = hitPoint.clone().sub(worldPos).normalize();
-  const surfaceDist = data.radius * 1.3; // Just above surface
+  const surfaceDist = data.radius + 2; // Always above surface
   const camPos = worldPos.clone().add(surfaceDir.clone().multiplyScalar(surfaceDist));
 
   cameraStartPos.copy(camera.position);
@@ -2170,7 +2170,7 @@ window.surfaceZoom = function (name, hitPoint) {
   cameraOffset = camPos;
   cameraLerpT = 0;
   isCameraAnimating = true;
-  controls.minDistance = data.radius * 1.8 + 2;
+  controls.minDistance = data.radius * 3 + 5;
   showPlanetPanel(name);
 };
 
@@ -2217,7 +2217,7 @@ window.focusPlanet = function (name) {
   isCameraAnimating = true;
 
   // Set dynamic zoom limits based on planet radius
-  controls.minDistance = data.radius * 1.8 + 2;
+  controls.minDistance = data.radius * 3 + 5;
 
   // Show panel
   showPlanetPanel(name);
@@ -2895,7 +2895,7 @@ function animate() {
 
     // Dynamic minDistance — prevent camera from going inside any planet
     if (key === currentFocus) {
-      controls.minDistance = PLANET_DATA[key].radius * 1.8 + 2;
+      controls.minDistance = PLANET_DATA[key].radius * 3 + 5;
     }
 
     // Helper to animate hint text changes
