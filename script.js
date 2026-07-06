@@ -2092,14 +2092,12 @@ function buildAsteroidGroup() {
   asteroidGroup = new THREE.Group();
 
   const loader = new THREE.TextureLoader();
-  const asteroidTextures = [
-    loader.load('img/textures/asteroide-1.png'),
-    loader.load('img/textures/asteroide-2.png'),
-    loader.load('img/textures/asteroides-3.png'),
+  const cometTextures = [
+    loader.load('img/textures/cometa.png'),
   ];
 
   for (let i = 0; i < 25; i++) {
-    const tex = asteroidTextures[Math.floor(Math.random() * asteroidTextures.length)];
+    const tex = cometTextures[Math.floor(Math.random() * cometTextures.length)];
     const size = 0.2 + Math.random() * 0.6;
     const mesh = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex }));
     mesh.scale.set(size, size, size);
@@ -2249,7 +2247,7 @@ window.surfaceZoom = function (name, hitPoint) {
 
   // Camera position: very close to surface, offset from hit point
   const surfaceDir = hitPoint.clone().sub(worldPos).normalize();
-  const surfaceDist = data.radius + 5; // Always above surface
+  const surfaceDist = data.radius + 2; // Always above surface
   const camPos = worldPos.clone().add(surfaceDir.clone().multiplyScalar(surfaceDist));
 
   cameraStartPos.copy(camera.position);
@@ -2258,7 +2256,7 @@ window.surfaceZoom = function (name, hitPoint) {
   cameraOffset = camPos;
   cameraLerpT = 0;
   isCameraAnimating = true;
-  controls.minDistance = data.radius + 5;
+  controls.minDistance = data.radius + 2;
   showPlanetPanel(name);
 };
 
@@ -2295,17 +2293,18 @@ window.focusPlanet = function (name) {
   // Animate camera
 
   const data = PLANET_DATA[name];
-  const camDist = data.radius * 4 + 5;
+  const camDist = data.radius * 2.5 + 3;
   cameraStartPos.copy(camera.position);
   cameraStartTarget.copy(controls.target);
   cameraTarget = worldPos.clone();
-  const offset = new THREE.Vector3(camDist, camDist * 0.35, camDist);
+  const sunDir = worldPos.clone().negate().normalize();
+  const offset = sunDir.multiplyScalar(camDist).add(new THREE.Vector3(0, camDist * 0.3, 0));
   cameraOffset = worldPos.clone().add(offset);
   cameraLerpT = 0;
   isCameraAnimating = true;
 
   // Set dynamic zoom limits based on planet radius
-  controls.minDistance = data.radius + 5;
+  controls.minDistance = data.radius + 2;
 
   // Show panel
   showPlanetPanel(name);
@@ -2991,7 +2990,7 @@ function animate() {
 
     // Dynamic minDistance — prevent camera from going inside any planet
     if (key === currentFocus) {
-      controls.minDistance = PLANET_DATA[key].radius + 5;
+      controls.minDistance = PLANET_DATA[key].radius + 2;
     }
 
     // Helper to animate hint text changes
