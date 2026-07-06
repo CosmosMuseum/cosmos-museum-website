@@ -1085,7 +1085,6 @@ uiOverlays.forEach(el => {
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.005, 5000);
 camera.position.set(0, 40, 120);
-CometSystem.init(scene, camera);
 
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
@@ -2048,9 +2047,55 @@ function buildKuiperBelt() {
 }
 // Kuiper belt built via deferred queue below
 
-// ── SHOOTING STARS → handled by js/systems/comets.js ──
-// Initialize CometSystem after scene is ready (called in scene init block)
-
+// ── SHOOTING STARS ──
+const shootingStars = [];
+function spawnShootingStar() {
+  const count = 20; // trail length
+  const positions = new Float32Array(count * 3);
+  const alphas = new Float32Array(count);
+  const start = new THREE.Vector3(
+    (Math.random() - 0.5) * 500,
+    50 + Math.random() * 200,
+    (Math.random() - 0.5) * 500
+  );
+  const dir = new THREE.Vector3(
+    (Math.random() - 0.5) * 2, -(0.3 + Math.random() * 0.7), (Math.random() - 0.5) * 2
+  ).normalize();
+  for (let i = 0; i < count; i++) {
+    const p = start.clone().add(dir.clone().multiplyScalar(-i * 1.2));
+    positions[i * 3] = p.x; positions[i * 3 + 1] = p.y; positions[i * 3 + 2] = p.z;
+    alphas[i] = 1 - i / count;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const mat = new THREE.LineBasicMaterial({
+    color: 0xffffff, transparent: true, opacity: 0.8,
+    blending: THREE.AdditiveBlending, depthWrite: false,
+  });
+  const line = new THREE.Line(geo, mat);
+  line.userData = { dir, speed: 3 + Math.random() * 4, life: 0, maxLife: 40 + Math.random() * 40 };
+  scene.add(line);
+  shootingStars.push(line);
+}
+function updateShootingStars() {
+  for (let i = shootingStars.length - 1; i >= 0; i--) {
+    const s = shootingStars[i];
+    s.userData.life++;
+    const posArr = s.geometry.attributes.position.array;
+    for (let j = 0; j < posArr.length; j += 3) {
+      posArr[j] += s.userData.dir.x * s.userData.speed;
+      posArr[j + 1] += s.userData.dir.y * s.userData.speed;
+      posArr[j + 2] += s.userData.dir.z * s.userData.speed;
+    }
+    s.geometry.attributes.position.needsUpdate = true;
+    s.material.opacity = 0.8 * (1 - s.userData.life / s.userData.maxLife);
+    if (s.userData.life >= s.userData.maxLife) {
+      scene.remove(s); s.geometry.dispose(); s.material.dispose();
+      shootingStars.splice(i, 1);
+    }
+  }
+  if (Math.random() < 0.008) spawnShootingStar(); // ~every 2-3 seconds
+}
 
 // ── COMET ──
 let asteroidGroup;
@@ -2271,7 +2316,7 @@ window.focusPlanet = function (name) {
   // Animate camera
 
   const data = PLANET_DATA[name];
-  const camDist = data.radius * 1.8 + 2;
+  const camDist = data.radius * 3 + 5;
   cameraStartPos.copy(camera.position);
   cameraStartTarget.copy(controls.target);
   cameraTarget = worldPos.clone();
@@ -2828,7 +2873,7 @@ function animate() {
   });
 
   // Shooting stars
-  CometSystem.update();
+  updateShootingStars();
 
   // Asteroid group orbit
   if (asteroidGroup) {
@@ -4807,7 +4852,7 @@ function cinematicIntro() {
     controls.target.lerpVectors(startTgt, endTgt, ease);
     controls.update();
     if (starUniforms) starUniforms.uTime.value += 0.005;
-    CometSystem.update();
+    updateShootingStars();
     if (asteroidGroup) {
       asteroidGroup.children.forEach(child => {
         if (!child.userData.orbitAngle) return;
