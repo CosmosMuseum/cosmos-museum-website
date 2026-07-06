@@ -1,0 +1,446 @@
+﻿diff --git a/script.js b/script.js
+index e654a6c..997dd47 100644
+--- a/script.js
++++ b/script.js
+@@ -1282,54 +1282,23 @@ function createOrbitLine(radius, color, planetKey) {
+   });
+   const line = new THREE.Line(geo, mat);
+ 
+-  const headGeo = new THREE.SphereGeometry(0.25, 8, 8);
+-  const headMat = new THREE.MeshBasicMaterial({
+-    color: colorHex,
+-    transparent: true,
+-    opacity: 0.7,
+-    blending: THREE.AdditiveBlending,
+-  });
+-  const head = new THREE.Mesh(headGeo, headMat);
+-  head.userData = { isOrbitHead: true, planetKey, radius };
+-
+-  const headGlow = createGlowSprite(colorHex, 3);
+-  headGlow.material.opacity = 0.4;
+-  headGlow.userData = { isOrbitHead: true, planetKey, radius };
+-
+   const group = new THREE.Group();
+   group.add(line);
+-  group.add(head);
+-  group.add(headGlow);
+-  group.userData = { isOrbitLine: true, planetKey, radius, line, head, headGlow, color: colorHex };
++  group.userData = { isOrbitLine: true, planetKey, radius, line, color: colorHex };
+ 
+   orbitLines.push(group);
+   return group;
+ }
+ 
+-// Update orbit line glow and head position
++// Update orbit line glow
+ function updateOrbitLines(time) {
+   orbitLines.forEach(og => {
+     if (!og.userData || !og.visible) return;
+-    const { planetKey, radius, line, head, headGlow } = og.userData;
++    const { planetKey, radius, line } = og.userData;
+     if (!planetKey) return;
+-    const po = planetObjects[planetKey];
+-    if (!po) return;
+ 
+     const pulse = Math.sin(time * 1.5 + radius * 0.1) * 0.15 + 0.25;
+     line.material.opacity = pulse;
+-
+-    const angle = po.angle || 0;
+-    const leadAngle = angle + 0.04;
+-    const hx = Math.cos(leadAngle) * radius;
+-    const hz = Math.sin(leadAngle) * radius;
+-    head.position.set(hx, 0, hz);
+-    headGlow.position.set(hx, 0, hz);
+-
+-    const headPulse = Math.sin(time * 3 + radius) * 0.2 + 0.6;
+-    head.material.opacity = headPulse * 0.8;
+-    const s = 0.8 + Math.sin(time * 2 + radius) * 0.2;
+-    head.scale.set(s, s, s);
+-    headGlow.scale.set(s * 2, s * 2, 1);
+   });
+ }
+ 
+@@ -1560,10 +1529,135 @@ function buildNebulaBackground() {
+ function buildSun() {
+   const group = new THREE.Group();
+   group.userData = { planetName: 'Sun' };
+-  const tex = realTextures.sun_map || createTexture('sun');
+   const geo = new THREE.SphereGeometry(5, 128, 128);
+-  const mat = new THREE.MeshBasicMaterial({ map: tex });
+-  const mesh = new THREE.Mesh(geo, mat);
++  const tex = realTextures.sun_map || createTexture('sun');
++
++  // Custom ShaderMaterial for animated sun surface
++  const sunMat = new THREE.ShaderMaterial({
++    uniforms: {
++      uTexture: { value: tex },
++      uTime: { value: 0.0 },
++    },
++    vertexShader: `
++      varying vec2 vUv;
++      varying vec3 vNormal;
++      varying vec3 vPosition;
++      void main() {
++        vUv = uv;
++        vNormal = normalize(normalMatrix * normal);
++        vPosition = (modelMatrix * vec4(position, 1.0)).xyz;
++        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
++      }
++    `,
++    fragmentShader: `
++      uniform sampler2D uTexture;
++      uniform float uTime;
++      varying vec2 vUv;
++      varying vec3 vNormal;
++      varying vec3 vPosition;
++
++      // Simplex noise helpers
++      vec3 mod289(vec3 x) { return x - floor(x * (1.0/289.0)) * 289.0; }
++      vec4 mod289(vec4 x) { return x - floor(x * (1.0/289.0)) * 289.0; }
++      vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
++      vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
++      float snoise(vec3 v) {
++        const vec2 C = vec2(1.0/6.0, 1.0/3.0);
++        const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
++        vec3 i = floor(v + dot(v, C.yyy));
++        vec3 x0 = v - i + dot(i, C.xxx);
++        vec3 g = step(x0.yzx, x0.xyz);
++        vec3 l = 1.0 - g;
++        vec3 i1 = min(g.xyz, l.zxy);
++        vec3 i2 = max(g.xyz, l.zxy);
++        vec3 x1 = x0 - i1 + C.xxx;
++        vec3 x2 = x0 - i2 + C.yyy;
++        vec3 x3 = x0 - D.yyy;
++        i = mod289(i);
++        vec4 p = permute(permute(permute(
++          i.z + vec4(0.0, i1.z, i2.z, 1.0))
++          + i.y + vec4(0.0, i1.y, i2.y, 1.0))
++          + i.x + vec4(0.0, i1.x, i2.x, 1.0));
++        float n_ = 0.142857142857;
++        vec3 ns = n_ * D.wyz - D.xzx;
++        vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
++        vec4 x_ = floor(j * ns.z);
++        vec4 y_ = floor(j - 7.0 * x_);
++        vec4 x = x_ * ns.x + ns.yyyy;
++        vec4 y = y_ * ns.x + ns.yyyy;
++        vec4 h = 1.0 - abs(x) - abs(y);
++        vec4 b0 = vec4(x.xy, y.xy);
++        vec4 b1 = vec4(x.zw, y.zw);
++        vec4 s0 = floor(b0)*2.0 + 1.0;
++        vec4 s1 = floor(b1)*2.0 + 1.0;
++        vec4 sh = -step(h, vec4(0.0));
++        vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
++        vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
++        vec3 p0 = vec3(a0.xy, h.x);
++        vec3 p1 = vec3(a0.zw, h.y);
++        vec3 p2 = vec3(a1.xy, h.z);
++        vec3 p3 = vec3(a1.zw, h.w);
++        vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
++        p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
++        vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
++        m = m * m;
++        return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
++      }
++
++      float fbm(vec3 p) {
++        float v = 0.0, a = 0.5;
++        for (int i = 0; i < 5; i++) {
++          v += a * snoise(p);
++          p *= 2.1;
++          a *= 0.48;
++        }
++        return v;
++      }
++
++      void main() {
++        vec3 spherePos = normalize(vPosition);
++        float t = uTime * 0.06;
++
++        // Multi-layer turbulence
++        float n1 = fbm(spherePos * 3.0 + vec3(t * 0.7, t * 0.3, t * 0.5));
++        float n2 = fbm(spherePos * 6.0 + vec3(-t * 0.4, t * 0.6, -t * 0.2) + n1 * 0.5);
++        float n3 = fbm(spherePos * 12.0 + vec3(t * 1.2, -t * 0.8, t * 0.4) + n2 * 0.3);
++
++        float turbulence = n1 * 0.5 + n2 * 0.3 + n3 * 0.2;
++
++        // Base color from texture
++        vec4 texColor = texture2D(uTexture, vUv);
++
++        // Bright plasma regions
++        float hot = smoothstep(0.1, 0.6, turbulence);
++        vec3 plasmaBright = vec3(1.0, 0.95, 0.8);
++        vec3 plasmaMid = vec3(1.0, 0.65, 0.15);
++        vec3 plasmaDark = vec3(0.85, 0.3, 0.02);
++
++        vec3 sunColor = mix(plasmaDark, plasmaMid, smoothstep(-0.2, 0.3, turbulence));
++        sunColor = mix(sunColor, plasmaBright, smoothstep(0.3, 0.8, turbulence));
++
++        // Mix with texture
++        vec3 finalColor = mix(texColor.rgb, sunColor, 0.65);
++
++        // Limb darkening
++        float fresnel = dot(vNormal, normalize(cameraPosition - vPosition));
++        float limb = pow(max(fresnel, 0.0), 0.45);
++        finalColor *= mix(0.25, 1.0, limb);
++
++        // Bright emissive boost
++        finalColor *= 1.4;
++
++        // Subtle flicker
++        float flicker = 1.0 + sin(t * 8.0) * 0.015 + sin(t * 13.0) * 0.01;
++        finalColor *= flicker;
++
++        gl_FragColor = vec4(finalColor, 1.0);
++      }
++    `,
++  });
++
++  const mesh = new THREE.Mesh(geo, sunMat);
+   mesh.userData = { name: 'Sun', isSun: true };
+   group.add(mesh);
+ 
+@@ -1743,12 +1837,6 @@ function buildPlanet(key) {
+   if (data.axialTilt) mesh.rotation.z = data.axialTilt;
+   group.add(mesh);
+ 
+-  // Planet glow sprite
+-  const hex = parseInt(data.glowColor.replace('#', ''), 16);
+-  const glow = createGlowSprite(hex, data.radius * 4);
+-  glow.material.opacity = 0.35;
+-  group.add(glow);
+-
+   // Floating name label
+   const esName = { Sun: 'Sol', Mercury: 'Mercurio', Venus: 'Venus', Earth: 'Tierra', Mars: 'Marte', Jupiter: 'J├║piter', Saturn: 'Saturno', Uranus: 'Urano', Neptune: 'Neptuno', Moon: 'Luna' }[key] || key;
+   const nameLabel = createTextSprite(esName, {
+@@ -1840,154 +1928,6 @@ function buildPlanet(key) {
+     const moonMatOpts = { emissive: 0x111111, emissiveIntensity: 0.15 };
+     if (realTextures.moon_map) {
+       moonMatOpts.map = realTextures.moon_map;
+-    } else {
+-      moonMatOpts.color = 0xaaaaaa;
+-      moonMatOpts.emissive = 0x222222;
+-    }
+-    const moonMat = new THREE.MeshPhongMaterial(moonMatOpts);
+-    const moonMesh = new THREE.Mesh(moonGeo, moonMat);
+-    moonMesh.userData = { isMoon: true, name: 'Moon' };
+-    group.add(moonMesh);
+-    planetObjects['Earth_moon'] = moonMesh;
+-    // Store Moon as a clickable planet object for panel display
+-    planetObjects['Moon'] = { mesh: moonMesh, data: PLANET_DATA['Moon'], group: group, isTerrestrial: true, baseDisplacementScale: 0, baseNormalScale: 0 };
+-  }
+-  if (key === 'Jupiter') {
+-    const moonDists = [3.2, 4.2, 5.4, 6.5];
+-    const moonCols = [0xff9900, 0xcccccc, 0xbb9977, 0x998877];
+-    moonDists.forEach((d, i) => {
+-      const m = new THREE.Mesh(
+-        new THREE.SphereGeometry(0.18 - i * 0.02, 12, 12),
+-        new THREE.MeshPhongMaterial({ color: moonCols[i], emissive: 0x111111 })
+-      );
+-      m.userData = { isMoon: true, dist: d, speed: 0.015 - i * 0.003, angle: Math.random() * Math.PI * 2 };
+-      group.add(m);
+-    });
+-  }
+-
+-  // Set initial position
+-  const angle = Math.random() * Math.PI * 2;
+-  group.position.x = Math.cos(angle) * data.distance;
+-  group.position.z = Math.sin(angle) * data.distance;
+-
+-  planetObjects[key] = {
+-    group, mesh, data, angle,
+-    isTerrestrial,
+-    baseDisplacementScale: (useRealEarth) ? 0 : (isTerrestrial && !useRealTex ? data.radius * 0.035 : 0),
+-    baseNormalScale: (useRealEarth) ? 3.0 : (isTerrestrial && !useRealTex ? 1.2 : 0),
+-  };
+-}
+-
+-// Planets built via deferred queue below
+-
+-// ÔöÇÔöÇ ASTEROID BELT ÔöÇÔöÇ
+-function createRockGeometry() {
+-  const geo = new THREE.IcosahedronGeometry(0.12, 0);
+-  const pos = geo.attributes.position;
+-  for (let i = 0; i < pos.count; i++) {
+-    pos.setX(i, pos.getX(i) * (0.7 + Math.random() * 0.6));
+-    pos.setY(i, pos.getY(i) * (0.7 + Math.random() * 0.6));
+-    pos.setZ(i, pos.getZ(i) * (0.7 + Math.random() * 0.6));
+-  }
+-  geo.computeVertexNormals();
+-  return geo;
+-}
+-
+-function buildAsteroidBelt() {
+-  const count = 4000;
+-  const rockGeo = createRockGeometry();
+-  const rockMat = new THREE.MeshPhongMaterial({ color: 0x998877, shininess: 5 });
+-  const mesh = new THREE.InstancedMesh(rockGeo, rockMat, count);
+-  const dummy = new THREE.Object3D();
+-  for (let i = 0; i < count; i++) {
+-    const r = 43 + Math.random() * 8;
+-    const a = Math.random() * Math.PI * 2;
+-    const y = (Math.random() - 0.5) * 1.5;
+-    dummy.position.set(Math.cos(a) * r, y, Math.sin(a) * r);
+-    dummy.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+-    const s = 0.2 + Math.random() * 1.8;
+-    dummy.scale.set(s, s, s);
+-    dummy.updateMatrix();
+-    mesh.setMatrixAt(i, dummy.matrix);
+-  }
+-  mesh.instanceMatrix.needsUpdate = true;
+-  scene.add(mesh);
+-}
+-// Asteroid belt built via deferred queue below
+-
+-// ÔöÇÔöÇ KUIPER BELT ÔöÇÔöÇ
+-function buildKuiperBelt() {
+-  const count = 4000;
+-  const rockGeo = createRockGeometry();
+-  const rockMat = new THREE.MeshPhongMaterial({ color: 0x667788, shininess: 3 });
+-  const mesh = new THREE.InstancedMesh(rockGeo, rockMat, count);
+-  const dummy = new THREE.Object3D();
+-  for (let i = 0; i < count; i++) {
+-    const r = 122 + Math.random() * 18;
+-    const a = Math.random() * Math.PI * 2;
+-    const y = (Math.random() - 0.5) * 4;
+-    dummy.position.set(Math.cos(a) * r, y, Math.sin(a) * r);
+-    dummy.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+-    const s = 0.15 + Math.random() * 2.0;
+-    dummy.scale.set(s, s, s);
+-    dummy.updateMatrix();
+-    mesh.setMatrixAt(i, dummy.matrix);
+-  }
+-  mesh.instanceMatrix.needsUpdate = true;
+-  scene.add(mesh);
+-}
+-// Kuiper belt built via deferred queue below
+-
+-// ÔöÇÔöÇ SHOOTING STARS ÔöÇÔöÇ
+-const shootingStars = [];
+-function spawnShootingStar() {
+-  const count = 20; // trail length
+-  const positions = new Float32Array(count * 3);
+-  const alphas = new Float32Array(count);
+-  const start = new THREE.Vector3(
+-    (Math.random() - 0.5) * 500,
+-    50 + Math.random() * 200,
+-    (Math.random() - 0.5) * 500
+-  );
+-  const dir = new THREE.Vector3(
+-    (Math.random() - 0.5) * 2, -(0.3 + Math.random() * 0.7), (Math.random() - 0.5) * 2
+-  ).normalize();
+-  for (let i = 0; i < count; i++) {
+-    const p = start.clone().add(dir.clone().multiplyScalar(-i * 1.2));
+-    positions[i * 3] = p.x; positions[i * 3 + 1] = p.y; positions[i * 3 + 2] = p.z;
+-    alphas[i] = 1 - i / count;
+-  }
+-  const geo = new THREE.BufferGeometry();
+-  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+-  const mat = new THREE.LineBasicMaterial({
+-    color: 0xffffff, transparent: true, opacity: 0.8,
+-    blending: THREE.AdditiveBlending, depthWrite: false,
+-  });
+-  const line = new THREE.Line(geo, mat);
+-  line.userData = { dir, speed: 3 + Math.random() * 4, life: 0, maxLife: 40 + Math.random() * 40 };
+-  scene.add(line);
+-  shootingStars.push(line);
+-}
+-function updateShootingStars() {
+-  for (let i = shootingStars.length - 1; i >= 0; i--) {
+-    const s = shootingStars[i];
+-    s.userData.life++;
+-    const posArr = s.geometry.attributes.position.array;
+-    for (let j = 0; j < posArr.length; j += 3) {
+-      posArr[j] += s.userData.dir.x * s.userData.speed;
+-      posArr[j + 1] += s.userData.dir.y * s.userData.speed;
+-      posArr[j + 2] += s.userData.dir.z * s.userData.speed;
+-    }
+-    s.geometry.attributes.position.needsUpdate = true;
+-    s.material.opacity = 0.8 * (1 - s.userData.life / s.userData.maxLife);
+-    if (s.userData.life >= s.userData.maxLife) {
+-      scene.remove(s); s.geometry.dispose(); s.material.dispose();
+-      shootingStars.splice(i, 1);
+-    }
+-  }
+-  if (Math.random() < 0.008) spawnShootingStar(); // ~every 2-3 seconds
+-}
+-
+ // ÔöÇÔöÇ COMET ÔöÇÔöÇ
+ let asteroidGroup;
+ function buildAsteroidGroup() {
+@@ -2161,7 +2101,7 @@ window.surfaceZoom = function (name, hitPoint) {
+ 
+   // Camera position: very close to surface, offset from hit point
+   const surfaceDir = hitPoint.clone().sub(worldPos).normalize();
+-  const surfaceDist = data.radius * 1.3; // Just above surface
++  const surfaceDist = data.radius + 5; // Always above surface
+   const camPos = worldPos.clone().add(surfaceDir.clone().multiplyScalar(surfaceDist));
+ 
+   cameraStartPos.copy(camera.position);
+@@ -2170,7 +2110,7 @@ window.surfaceZoom = function (name, hitPoint) {
+   cameraOffset = camPos;
+   cameraLerpT = 0;
+   isCameraAnimating = true;
+-  controls.minDistance = 3;
++  controls.minDistance = data.radius + 5;
+   showPlanetPanel(name);
+ };
+ 
+@@ -2216,8 +2156,8 @@ window.focusPlanet = function (name) {
+   cameraLerpT = 0;
+   isCameraAnimating = true;
+ 
+-  // Set dynamic zoom limits for this planet
+-  controls.minDistance = 3;
++  // Set dynamic zoom limits based on planet radius
++  controls.minDistance = data.radius + 5;
+ 
+   // Show panel
+   showPlanetPanel(name);
+@@ -2249,7 +2189,7 @@ window.resetView = function () {
+   cameraOffset = new THREE.Vector3(0, 40, 120);
+   cameraLerpT = 0;
+   isCameraAnimating = true;
+-  controls.minDistance = 3; // Reset to default
++  controls.minDistance = 3;
+   closePanel();
+   hint.classList.remove('hidden');
+ };
+@@ -2748,6 +2688,9 @@ function animate() {
+   if (planetObjects.Sun && planetObjects.Sun.group.userData._pulse) {
+     planetObjects.Sun.group.userData._pulse(0.016 * speedMul);
+   }
++  if (planetObjects.Sun && planetObjects.Sun.mesh.material.uniforms) {
++    planetObjects.Sun.mesh.material.uniforms.uTime.value = animationTime;
++  }
+ 
+   // Update luminous orbit lines
+   updateOrbitLines(animationTime);
+@@ -2823,6 +2766,9 @@ function animate() {
+   if (sunPO) {
+     const pulse = 1 + Math.sin(animationTime * 2) * 0.01;
+     sunPO.mesh.scale.set(pulse, pulse, pulse);
++    if (sunPO.mesh.material.uniforms) {
++      sunPO.mesh.material.uniforms.uTime.value = animationTime;
++    }
+   }
+ 
+   // Camera animation
+@@ -2895,7 +2841,7 @@ function animate() {
+ 
+     // Dynamic minDistance ÔÇö prevent camera from going inside any planet
+     if (key === currentFocus) {
+-      controls.minDistance = 3;
++      controls.minDistance = PLANET_DATA[key].radius + 5;
+     }
+ 
+     // Helper to animate hint text changes
+@@ -4751,6 +4697,9 @@ function cinematicIntro() {
+     if (sunPO) {
+       const pulse = 1 + Math.sin(t * 10) * 0.01;
+       sunPO.mesh.scale.set(pulse, pulse, pulse);
++      if (sunPO.mesh.material.uniforms) {
++        sunPO.mesh.material.uniforms.uTime.value = t;
++      }
+     }
+     composer.render();
+     requestAnimationFrame(introStep);

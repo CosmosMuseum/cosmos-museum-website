@@ -1282,54 +1282,23 @@ function createOrbitLine(radius, color, planetKey) {
   });
   const line = new THREE.Line(geo, mat);
 
-  const headGeo = new THREE.SphereGeometry(0.25, 8, 8);
-  const headMat = new THREE.MeshBasicMaterial({
-    color: colorHex,
-    transparent: true,
-    opacity: 0.7,
-    blending: THREE.AdditiveBlending,
-  });
-  const head = new THREE.Mesh(headGeo, headMat);
-  head.userData = { isOrbitHead: true, planetKey, radius };
-
-  const headGlow = createGlowSprite(colorHex, 3);
-  headGlow.material.opacity = 0.4;
-  headGlow.userData = { isOrbitHead: true, planetKey, radius };
-
   const group = new THREE.Group();
   group.add(line);
-  group.add(head);
-  group.add(headGlow);
-  group.userData = { isOrbitLine: true, planetKey, radius, line, head, headGlow, color: colorHex };
+  group.userData = { isOrbitLine: true, planetKey, radius, line, color: colorHex };
 
   orbitLines.push(group);
   return group;
 }
 
-// Update orbit line glow and head position
+// Update orbit line glow
 function updateOrbitLines(time) {
   orbitLines.forEach(og => {
     if (!og.userData || !og.visible) return;
-    const { planetKey, radius, line, head, headGlow } = og.userData;
+    const { planetKey, radius, line } = og.userData;
     if (!planetKey) return;
-    const po = planetObjects[planetKey];
-    if (!po) return;
 
     const pulse = Math.sin(time * 1.5 + radius * 0.1) * 0.15 + 0.25;
     line.material.opacity = pulse;
-
-    const angle = po.angle || 0;
-    const leadAngle = angle + 0.04;
-    const hx = Math.cos(leadAngle) * radius;
-    const hz = Math.sin(leadAngle) * radius;
-    head.position.set(hx, 0, hz);
-    headGlow.position.set(hx, 0, hz);
-
-    const headPulse = Math.sin(time * 3 + radius) * 0.2 + 0.6;
-    head.material.opacity = headPulse * 0.8;
-    const s = 0.8 + Math.sin(time * 2 + radius) * 0.2;
-    head.scale.set(s, s, s);
-    headGlow.scale.set(s * 2, s * 2, 1);
   });
 }
 
