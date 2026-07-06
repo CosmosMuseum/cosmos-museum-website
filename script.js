@@ -1085,7 +1085,7 @@ uiOverlays.forEach(el => {
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.005, 5000);
 camera.position.set(0, 40, 120);
-CometSystem.init(scene);
+CometSystem.init(scene, camera);
 
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;

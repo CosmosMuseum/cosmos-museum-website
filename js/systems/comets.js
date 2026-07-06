@@ -8,15 +8,17 @@
 const CometSystem = (() => {
   const _comets = [];
   let _scene = null;
+  let _camera = null;
   let _cometTexture = null;
 
-  function init(scene) {
+  function init(scene, camera) {
     _scene = scene;
+    _camera = camera;
     _cometTexture = new THREE.TextureLoader().load('img/textures/cometa.png');
   }
 
   function spawn() {
-    if (!_scene || !_cometTexture) return;
+    if (!_scene || !_camera || !_cometTexture) return;
 
     const mat = new THREE.SpriteMaterial({
       map: _cometTexture,
@@ -31,31 +33,40 @@ const CometSystem = (() => {
     const size = 12 + Math.random() * 8;
     sprite.scale.set(size * 1.8, size, 1);
 
-    // Spawn always from the RIGHT side of the scene
-    const startX = 250 + Math.random() * 100;          // far right
-    const startY = 80 + Math.random() * 180;            // random height
-    const startZ = (Math.random() - 0.5) * 200;        // random depth
+    // Spawn always from the RIGHT side of the CAMERA's view
+    // Camera looks down -Z in its local space, right is +X, up is +Y
+    const offset = new THREE.Vector3(
+      200 + Math.random() * 100,     // Right
+      50 + Math.random() * 100,      // Up
+      -(150 + Math.random() * 150)   // Forward
+    );
+    // Apply camera rotation
+    offset.applyQuaternion(_camera.quaternion);
+    
+    // Set position relative to camera
+    const startPos = _camera.position.clone().add(offset);
+    sprite.position.copy(startPos);
 
-    sprite.position.set(startX, startY, startZ);
-
-    // Direction: right → left, with a downward arc
-    const dir = new THREE.Vector3(
-      -(0.7 + Math.random() * 0.3),   // strong left
+    // Direction: right → left, downward, relative to camera orientation
+    const localDir = new THREE.Vector3(
+      -(0.8 + Math.random() * 0.4),   // strong left
       -(0.2 + Math.random() * 0.3),   // slight downward
-      (Math.random() - 0.5) * 0.1     // minimal Z wobble
+      -(Math.random() * 0.3)          // slight forward
     ).normalize();
+    const dir = localDir.applyQuaternion(_camera.quaternion).normalize();
 
-    // Faster speed
-    const speed = 4.0 + Math.random() * 3.0;
-    const maxLife = 120 + Math.random() * 60;
+    // Much faster speed
+    const speed = 12.0 + Math.random() * 6.0;
+    const maxLife = 80 + Math.random() * 40; // Shorter life since it's faster
 
-    // Add a light to make it look more real (white/purple)
+    // Stronger light to look more real (white/purple)
     const lightColor = new THREE.Color().lerpColors(
       new THREE.Color(0xffffff), // White
       new THREE.Color(0xb366ff), // Purple
       Math.random() * 0.5 + 0.2
     );
-    const light = new THREE.PointLight(lightColor, 2.0, 150);
+    // Increased intensity to 10.0 and distance to 400
+    const light = new THREE.PointLight(lightColor, 10.0, 400);
     sprite.add(light); // Attach light to sprite so it moves with it
 
     _scene.add(sprite);
@@ -85,7 +96,8 @@ const CometSystem = (() => {
       
       c.sprite.material.opacity = opacity;
       if (c.light) {
-          c.light.intensity = opacity * 2.0;
+          // Adjust light intensity relative to fade
+          c.light.intensity = opacity * 10.0;
       }
 
       if (c.life >= c.maxLife) {
