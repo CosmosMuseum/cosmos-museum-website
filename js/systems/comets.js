@@ -45,11 +45,21 @@ const CometSystem = (() => {
       (Math.random() - 0.5) * 0.1     // minimal Z wobble
     ).normalize();
 
-    const speed = 1.8 + Math.random() * 1.5;
+    // Faster speed
+    const speed = 4.0 + Math.random() * 3.0;
     const maxLife = 120 + Math.random() * 60;
 
+    // Add a light to make it look more real (white/purple)
+    const lightColor = new THREE.Color().lerpColors(
+      new THREE.Color(0xffffff), // White
+      new THREE.Color(0xb366ff), // Purple
+      Math.random() * 0.5 + 0.2
+    );
+    const light = new THREE.PointLight(lightColor, 2.0, 150);
+    sprite.add(light); // Attach light to sprite so it moves with it
+
     _scene.add(sprite);
-    _comets.push({ sprite, dir, speed, life: 0, maxLife });
+    _comets.push({ sprite, light, dir, speed, life: 0, maxLife });
   }
 
   function update() {
@@ -66,17 +76,23 @@ const CometSystem = (() => {
       c.sprite.position.addScaledVector(c.dir, c.speed);
 
       // Fade in first 15%, fade out last 30%
+      let opacity = 1.0;
       if (progress < 0.15) {
-        c.sprite.material.opacity = progress / 0.15;
+        opacity = progress / 0.15;
       } else if (progress > 0.7) {
-        c.sprite.material.opacity = 1 - (progress - 0.7) / 0.3;
-      } else {
-        c.sprite.material.opacity = 1.0;
+        opacity = 1 - (progress - 0.7) / 0.3;
+      }
+      
+      c.sprite.material.opacity = opacity;
+      if (c.light) {
+          c.light.intensity = opacity * 2.0;
       }
 
       if (c.life >= c.maxLife) {
         _scene.remove(c.sprite);
+        if (c.light) c.sprite.remove(c.light);
         c.sprite.material.dispose();
+        if (c.light) c.light.dispose();
         _comets.splice(i, 1);
       }
     }
