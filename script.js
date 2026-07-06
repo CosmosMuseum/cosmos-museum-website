@@ -1988,52 +1988,63 @@ function createRockGeometry() {
   return geo;
 }
 
+function createRockGeometry() {
+  const geo = new THREE.IcosahedronGeometry(0.12, 0);
+  const posAttr = geo.getAttribute('position');
+  for (let i = 0; i < posAttr.count; i++) {
+    const x = posAttr.getX(i);
+    const y = posAttr.getY(i);
+    const z = posAttr.getZ(i);
+    const noise = 0.7 + Math.random() * 0.6;
+    posAttr.setXYZ(i, x * noise, y * noise, z * noise);
+  }
+  posAttr.needsUpdate = true;
+  geo.computeVertexNormals();
+  return geo;
+}
+
 function buildAsteroidBelt() {
   const count = 4000;
-  const loader = new THREE.TextureLoader();
-  const asteroidTextures = [
-    loader.load('img/textures/asteroide-1.png'),
-    loader.load('img/textures/asteroide-2.png'),
-    loader.load('img/textures/asteroides-3.png'),
-  ];
-  const group = new THREE.Group();
+  const rockGeo = createRockGeometry();
+  const rockMat = new THREE.MeshPhongMaterial({ color: 0x998877, shininess: 5 });
+  const mesh = new THREE.InstancedMesh(rockGeo, rockMat, count);
+  const dummy = new THREE.Object3D();
   for (let i = 0; i < count; i++) {
-    const tex = asteroidTextures[Math.floor(Math.random() * asteroidTextures.length)];
-    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex }));
     const r = 43 + Math.random() * 8;
     const a = Math.random() * Math.PI * 2;
     const y = (Math.random() - 0.5) * 1.5;
-    sprite.position.set(Math.cos(a) * r, y, Math.sin(a) * r);
-    const s = 0.15 + Math.random() * 0.7;
-    sprite.scale.set(s, s, s);
-    group.add(sprite);
+    dummy.position.set(Math.cos(a) * r, y, Math.sin(a) * r);
+    dummy.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+    const s = 0.2 + Math.random() * 1.8;
+    dummy.scale.set(s, s, s);
+    dummy.updateMatrix();
+    mesh.setMatrixAt(i, dummy.matrix);
   }
-  scene.add(group);
+  mesh.instanceMatrix.needsUpdate = true;
+  scene.add(mesh);
 }
 // Asteroid belt built via deferred queue below
 
 // ── KUIPER BELT ──
 function buildKuiperBelt() {
   const count = 4000;
-  const loader = new THREE.TextureLoader();
-  const asteroidTextures = [
-    loader.load('img/textures/asteroide-1.png'),
-    loader.load('img/textures/asteroide-2.png'),
-    loader.load('img/textures/asteroides-3.png'),
-  ];
-  const group = new THREE.Group();
+  const rockGeo = createRockGeometry();
+  const rockMat = new THREE.MeshPhongMaterial({ color: 0x667788, shininess: 3 });
+  const mesh = new THREE.InstancedMesh(rockGeo, rockMat, count);
+  const dummy = new THREE.Object3D();
   for (let i = 0; i < count; i++) {
-    const tex = asteroidTextures[Math.floor(Math.random() * asteroidTextures.length)];
-    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex }));
     const r = 122 + Math.random() * 18;
     const a = Math.random() * Math.PI * 2;
     const y = (Math.random() - 0.5) * 4;
-    sprite.position.set(Math.cos(a) * r, y, Math.sin(a) * r);
-    const s = 0.1 + Math.random() * 0.8;
-    sprite.scale.set(s, s, s);
-    group.add(sprite);
+    dummy.position.set(Math.cos(a) * r, y, Math.sin(a) * r);
+    dummy.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+    const s = 0.15 + Math.random() * 2.0;
+    dummy.scale.set(s, s, s);
+    dummy.updateMatrix();
+    mesh.setMatrixAt(i, dummy.matrix);
   }
-  scene.add(group);
+  mesh.instanceMatrix.needsUpdate = true;
+  scene.add(mesh);
 }
 // Kuiper belt built via deferred queue below
 
@@ -2046,28 +2057,40 @@ let asteroidGroup;
 function buildAsteroidGroup() {
   asteroidGroup = new THREE.Group();
 
-  const loader = new THREE.TextureLoader();
-  const cometTextures = [
-    loader.load('img/textures/cometa.png'),
-  ];
+  const asteroidColors = [0x6b6b7b, 0x7a7062, 0x5e5e6e, 0x8a7e6b, 0x4a4a5a];
 
   for (let i = 0; i < 25; i++) {
-    const tex = cometTextures[Math.floor(Math.random() * cometTextures.length)];
-    const size = 0.2 + Math.random() * 0.6;
-    const mesh = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex }));
-    mesh.scale.set(size, size, size);
-
+    const size = 0.15 + Math.random() * 0.5;
+    const geo = new THREE.IcosahedronGeometry(size, 1);
+    const posAttr = geo.getAttribute('position');
+    for (let j = 0; j < posAttr.count; j++) {
+      const x = posAttr.getX(j);
+      const y = posAttr.getY(j);
+      const z = posAttr.getZ(j);
+      const noise = 0.7 + Math.random() * 0.6;
+      posAttr.setXYZ(j, x * noise, y * noise, z * noise);
+    }
+    posAttr.needsUpdate = true;
+    geo.computeVertexNormals();
+    const mat = new THREE.MeshStandardMaterial({
+      color: asteroidColors[Math.floor(Math.random() * asteroidColors.length)],
+      roughness: 0.9 + Math.random() * 0.1,
+      metalness: Math.random() * 0.15,
+      flatShading: true,
+    });
+    const mesh = new THREE.Mesh(geo, mat);
     const orbitAngle = Math.random() * Math.PI * 2;
     const orbitRadius = 80 + (Math.random() - 0.5) * 12;
     const orbitInclination = 0.4 + (Math.random() - 0.5) * 0.15;
     mesh.position.x = Math.cos(orbitAngle) * orbitRadius;
     mesh.position.z = Math.sin(orbitAngle) * orbitRadius;
     mesh.position.y = Math.sin(orbitAngle * 0.7) * orbitRadius * orbitInclination;
+    mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
     mesh.userData = {
       orbitAngle,
       orbitRadius,
       orbitInclination,
-      rotSpeed: 0,
+      rotSpeed: (Math.random() - 0.5) * 0.02,
       orbitSpeed: 0.002 + (Math.random() - 0.5) * 0.0008,
     };
     asteroidGroup.add(mesh);
@@ -2248,7 +2271,7 @@ window.focusPlanet = function (name) {
   // Animate camera
 
   const data = PLANET_DATA[name];
-  const camDist = data.radius * 2.5 + 3;
+  const camDist = data.radius * 1.8 + 2;
   cameraStartPos.copy(camera.position);
   cameraStartTarget.copy(controls.target);
   cameraTarget = worldPos.clone();
