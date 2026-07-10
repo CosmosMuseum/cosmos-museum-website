@@ -1536,7 +1536,7 @@ function buildSun() {
   const sunMat = new THREE.ShaderMaterial({
     uniforms: {
       uTexture: { value: tex },
-      uTime: { value: 0.0 },
+      uTime:    { value: 0.0 },
     },
     vertexShader: `
       varying vec2 vUv;
@@ -1556,103 +1556,179 @@ function buildSun() {
       varying vec3 vNormal;
       varying vec3 vPosition;
 
-      // Simplex noise helpers
-      vec3 mod289(vec3 x) { return x - floor(x * (1.0/289.0)) * 289.0; }
-      vec4 mod289(vec4 x) { return x - floor(x * (1.0/289.0)) * 289.0; }
-      vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
-      vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
-      float snoise(vec3 v) {
-        const vec2 C = vec2(1.0/6.0, 1.0/3.0);
-        const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
-        vec3 i = floor(v + dot(v, C.yyy));
-        vec3 x0 = v - i + dot(i, C.xxx);
-        vec3 g = step(x0.yzx, x0.xyz);
-        vec3 l = 1.0 - g;
-        vec3 i1 = min(g.xyz, l.zxy);
-        vec3 i2 = max(g.xyz, l.zxy);
-        vec3 x1 = x0 - i1 + C.xxx;
-        vec3 x2 = x0 - i2 + C.yyy;
-        vec3 x3 = x0 - D.yyy;
-        i = mod289(i);
-        vec4 p = permute(permute(permute(
-          i.z + vec4(0.0, i1.z, i2.z, 1.0))
-          + i.y + vec4(0.0, i1.y, i2.y, 1.0))
-          + i.x + vec4(0.0, i1.x, i2.x, 1.0));
-        float n_ = 0.142857142857;
-        vec3 ns = n_ * D.wyz - D.xzx;
-        vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
-        vec4 x_ = floor(j * ns.z);
-        vec4 y_ = floor(j - 7.0 * x_);
-        vec4 x = x_ * ns.x + ns.yyyy;
-        vec4 y = y_ * ns.x + ns.yyyy;
-        vec4 h = 1.0 - abs(x) - abs(y);
-        vec4 b0 = vec4(x.xy, y.xy);
-        vec4 b1 = vec4(x.zw, y.zw);
-        vec4 s0 = floor(b0)*2.0 + 1.0;
-        vec4 s1 = floor(b1)*2.0 + 1.0;
-        vec4 sh = -step(h, vec4(0.0));
-        vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
-        vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
-        vec3 p0 = vec3(a0.xy, h.x);
-        vec3 p1 = vec3(a0.zw, h.y);
-        vec3 p2 = vec3(a1.xy, h.z);
-        vec3 p3 = vec3(a1.zw, h.w);
-        vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
-        p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
-        vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
-        m = m * m;
-        return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
+      // ── Simplex 3D noise ──────────────────────────────────────
+      vec3 mod289(vec3 x){return x-floor(x*(1./289.))*289.;}
+      vec4 mod289(vec4 x){return x-floor(x*(1./289.))*289.;}
+      vec4 permute(vec4 x){return mod289(((x*34.)+1.)*x);}
+      vec4 taylorInvSqrt(vec4 r){return 1.7928429140016-0.8537347209531*r;}
+      float snoise(vec3 v){
+        const vec2 C=vec2(1./6.,1./3.);
+        const vec4 D=vec4(0.,.5,1.,2.);
+        vec3 i=floor(v+dot(v,C.yyy));
+        vec3 x0=v-i+dot(i,C.xxx);
+        vec3 g=step(x0.yzx,x0.xyz);
+        vec3 l=1.-g;
+        vec3 i1=min(g.xyz,l.zxy);
+        vec3 i2=max(g.xyz,l.zxy);
+        vec3 x1=x0-i1+C.xxx;
+        vec3 x2=x0-i2+C.yyy;
+        vec3 x3=x0-D.yyy;
+        i=mod289(i);
+        vec4 p=permute(permute(permute(
+          i.z+vec4(0.,i1.z,i2.z,1.))
+          +i.y+vec4(0.,i1.y,i2.y,1.))
+          +i.x+vec4(0.,i1.x,i2.x,1.));
+        float n_=.142857142857;
+        vec3 ns=n_*D.wyz-D.xzx;
+        vec4 j=p-49.*floor(p*ns.z*ns.z);
+        vec4 x_=floor(j*ns.z);
+        vec4 y_=floor(j-7.*x_);
+        vec4 x=x_*ns.x+ns.yyyy;
+        vec4 y=y_*ns.x+ns.yyyy;
+        vec4 h=1.-abs(x)-abs(y);
+        vec4 b0=vec4(x.xy,y.xy);
+        vec4 b1=vec4(x.zw,y.zw);
+        vec4 s0=floor(b0)*2.+1.;
+        vec4 s1=floor(b1)*2.+1.;
+        vec4 sh=-step(h,vec4(0.));
+        vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy;
+        vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
+        vec3 p0=vec3(a0.xy,h.x);
+        vec3 p1=vec3(a0.zw,h.y);
+        vec3 p2=vec3(a1.xy,h.z);
+        vec3 p3=vec3(a1.zw,h.w);
+        vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
+        p0*=norm.x;p1*=norm.y;p2*=norm.z;p3*=norm.w;
+        vec4 m=max(.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.);
+        m=m*m;
+        return 42.*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
       }
 
-      float fbm(vec3 p) {
-        float v = 0.0, a = 0.5;
-        for (int i = 0; i < 5; i++) {
+      // ── Fractal Brownian Motion (FBM) ─────────────────────────
+      float fbm(vec3 p, int oct) {
+        float v=0., a=0.5;
+        for(int i=0;i<8;i++){
+          if(i>=oct) break;
           v += a * snoise(p);
-          p *= 2.1;
-          a *= 0.48;
+          p *= 2.3; a *= 0.46;
         }
-        return v;
+        return v * 0.5 + 0.5;
+      }
+
+      // ── Domain-warped FBM ─────────────────────────────────────
+      float warpedFbm(vec3 p, float t){
+        // Warp the input domain using a separate fbm pass
+        vec3 warp = vec3(
+          fbm(p + vec3(0.0, 0.0, t * 0.3), 4),
+          fbm(p + vec3(5.2, 1.3, t * 0.2), 4),
+          fbm(p + vec3(-3.9, 2.8, t * 0.4), 4)
+        );
+        return fbm(p + 1.4 * warp, 6);
+      }
+
+      // ── Voronoi-ish convection cells ─────────────────────────
+      float convectionCells(vec3 p){
+        // Create discrete Voronoi-like grid for granulation
+        vec3 ip = floor(p);
+        vec3 fp = fract(p);
+        float md = 1.0;
+        for(int x=-1;x<=1;x++) for(int y=-1;y<=1;y++) for(int z=-1;z<=1;z++){
+          vec3 nb = vec3(float(x),float(y),float(z));
+          vec3 h = vec3(
+            fract(sin(dot(ip+nb, vec3(127.1,311.7,74.7)))*43758.5),
+            fract(sin(dot(ip+nb, vec3(269.5,183.3,246.1)))*43758.5),
+            fract(sin(dot(ip+nb, vec3(113.5,271.9,124.6)))*43758.5)
+          );
+          md = min(md, length(fp - nb - h));
+        }
+        return md;
       }
 
       void main() {
-        vec3 spherePos = normalize(vPosition);
-        float t = uTime * 0.06;
+        vec3 sp = normalize(vPosition);
+        float t = uTime * 0.04;
 
-        // Multi-layer turbulence
-        float n1 = fbm(spherePos * 3.0 + vec3(t * 0.7, t * 0.3, t * 0.5));
-        float n2 = fbm(spherePos * 6.0 + vec3(-t * 0.4, t * 0.6, -t * 0.2) + n1 * 0.5);
-        float n3 = fbm(spherePos * 12.0 + vec3(t * 1.2, -t * 0.8, t * 0.4) + n2 * 0.3);
+        // ── LAYER 1: Large-scale convection base (slow) ──────────
+        float macro = warpedFbm(sp * 1.5 + vec3(t*0.4, t*0.15, t*0.25), t);
 
-        float turbulence = n1 * 0.5 + n2 * 0.3 + n3 * 0.2;
+        // ── LAYER 2: Mid-scale turbulent plasma ──────────────────
+        float meso = fbm(sp * 4.0 + vec3(-t*0.3, t*0.55, -t*0.18) + macro * 1.2, 5);
 
-        // Base color from texture
+        // ── LAYER 3: High-freq granulation noise ─────────────────
+        float micro = fbm(sp * 9.0 + vec3(t*0.7, -t*0.5, t*0.3) + meso * 0.9, 4);
+
+        // ── LAYER 4: Fine detail - magnetic field lines ──────────
+        float fineDetail = fbm(sp * 20.0 + vec3(t*1.1, -t*0.8, t*0.6) + micro * 0.5, 3);
+
+        // ── LAYER 5: Voronoi convection cells (solar granules) ───
+        float cells = convectionCells(sp * 7.0 + vec3(t*0.2, 0.0, t*0.15));
+        float granules = 1.0 - smoothstep(0.1, 0.45, cells); // bright centers, dark edges
+
+        // ── LAYER 6: Sunspot regions (dark cool areas) ───────────
+        float spots = fbm(sp * 3.5 + vec3(t*0.08, t*0.06, t*0.05), 3);
+        float sunspotMask = smoothstep(0.62, 0.70, spots); // only at very low turb zones
+
+        // ── LAYER 7: Chromatic turbulence (separate per channel) ─
+        // Each channel shifts direction slightly, creating iridescence
+        float chromR = fbm(sp * 6.0 + vec3(t*0.4, 0.3, 0.1), 4);
+        float chromG = fbm(sp * 6.0 + vec3(0.1, t*0.35, 0.5), 4);
+        float chromB = fbm(sp * 6.0 + vec3(0.5, 0.2, t*0.5), 4);
+
+        // ── Composite turbulence ─────────────────────────────────
+        float turb = macro*0.3 + meso*0.25 + micro*0.25 + fineDetail*0.1 + granules*0.1;
+        turb = clamp(turb, 0.0, 1.0);
+
+        // ── Color palette ─────────────────────────────────────────
+        vec3 cSunspot  = vec3(0.10, 0.00, 0.00); // near-black sunspot
+        vec3 cDeepRed  = vec3(0.65, 0.05, 0.00); // deep red
+        vec3 cFlame    = vec3(0.95, 0.30, 0.00); // deep orange/flame
+        vec3 cOrange   = vec3(1.00, 0.55, 0.05); // vivid orange
+        vec3 cYellow   = vec3(1.00, 0.82, 0.20); // yellow-orange
+        vec3 cHot      = vec3(1.00, 0.95, 0.70); // hot yellow
+        vec3 cWhite    = vec3(1.00, 0.98, 0.95); // white-hot plasma
+
+        // Multi-stop gradient based on turbulence
+        vec3 col = cDeepRed;
+        col = mix(col, cFlame,  smoothstep(0.10, 0.30, turb));
+        col = mix(col, cOrange, smoothstep(0.28, 0.48, turb));
+        col = mix(col, cYellow, smoothstep(0.45, 0.65, turb));
+        col = mix(col, cHot,    smoothstep(0.62, 0.78, turb));
+        col = mix(col, cWhite,  smoothstep(0.76, 0.92, turb));
+
+        // Add chromatic RGB shift for iridescent plasma shimmer
+        vec3 chromaTint = vec3(chromR, chromG*0.7, chromB*0.3) * 0.12;
+        col += chromaTint;
+
+        // Add granulation: bright centers, dark borders
+        col = mix(col * 0.65, col * 1.25, granules * 0.4 + 0.6);
+
+        // Sunspots: darken + reddish in spot regions
+        col = mix(col, cSunspot + vec3(0.08, 0.0, 0.0), sunspotMask * 0.85);
+
+        // Mix with base texture for detail
         vec4 texColor = texture2D(uTexture, vUv);
+        col = mix(texColor.rgb, col, 0.82);
 
-        // Bright plasma regions
-        float hot = smoothstep(0.1, 0.6, turbulence);
-        vec3 plasmaBright = vec3(1.0, 0.95, 0.8);
-        vec3 plasmaMid = vec3(1.0, 0.65, 0.15);
-        vec3 plasmaDark = vec3(0.85, 0.3, 0.02);
+        // ── Fresnel limb darkening ────────────────────────────────
+        float fresnel = clamp(dot(vNormal, normalize(cameraPosition - vPosition)), 0.0, 1.0);
+        float limb = pow(fresnel, 0.30);
+        col *= mix(0.12, 1.0, limb);
 
-        vec3 sunColor = mix(plasmaDark, plasmaMid, smoothstep(-0.2, 0.3, turbulence));
-        sunColor = mix(sunColor, plasmaBright, smoothstep(0.3, 0.8, turbulence));
+        // ── Bright white-hot center ───────────────────────────────
+        float centreBoost = pow(fresnel, 0.5);
+        col = mix(col, cWhite * 1.4, centreBoost * 0.35);
 
-        // Mix with texture
-        vec3 finalColor = mix(texColor.rgb, sunColor, 0.65);
+        // ── Emission boost ────────────────────────────────────────
+        col *= 2.0;
 
-        // Limb darkening
-        float fresnel = dot(vNormal, normalize(cameraPosition - vPosition));
-        float limb = pow(max(fresnel, 0.0), 0.45);
-        finalColor *= mix(0.25, 1.0, limb);
+        // ── Multi-frequency flicker ───────────────────────────────
+        float flicker  = 1.0
+          + sin(t * 5.0)  * 0.025
+          + sin(t * 11.3) * 0.015
+          + sin(t * 23.7) * 0.008;
+        col *= flicker;
 
-        // Bright emissive boost
-        finalColor *= 1.4;
-
-        // Subtle flicker
-        float flicker = 1.0 + sin(t * 8.0) * 0.015 + sin(t * 13.0) * 0.01;
-        finalColor *= flicker;
-
-        gl_FragColor = vec4(finalColor, 1.0);
+        gl_FragColor = vec4(col, 1.0);
       }
     `,
   });
@@ -1661,28 +1737,31 @@ function buildSun() {
   mesh.userData = { name: 'Sun', isSun: true };
   group.add(mesh);
 
-  // Inner corona (hot white)
-  for (let i = 0; i < 3; i++) {
-    const sprite = createGlowSprite(0xFFF4E0, 7 + i * 1.2);
-    sprite.material.opacity = 0.08 - i * 0.015;
+  // Inner corona (hot white glow - very bright)
+  for (let i = 0; i < 4; i++) {
+    const sprite = createGlowSprite(0xFFFFDD, 6.5 + i * 0.8);
+    sprite.material.opacity = 0.18 - i * 0.03;
     group.add(sprite);
   }
   // Mid corona (orange)
-  for (let i = 0; i < 4; i++) {
-    const sprite = createGlowSprite(0xFF8C00, 9 + i * 2);
-    sprite.material.opacity = 0.05 - i * 0.008;
+  for (let i = 0; i < 5; i++) {
+    const sprite = createGlowSprite(0xFF6600, 9 + i * 2.2);
+    sprite.material.opacity = 0.10 - i * 0.015;
     group.add(sprite);
   }
   // Outer corona (deep red)
-  for (let i = 0; i < 3; i++) {
-    const sprite = createGlowSprite(0xFF4500, 14 + i * 3);
-    sprite.material.opacity = 0.03 - i * 0.007;
+  for (let i = 0; i < 4; i++) {
+    const sprite = createGlowSprite(0xCC2200, 18 + i * 4);
+    sprite.material.opacity = 0.06 - i * 0.01;
     group.add(sprite);
   }
-  // Outer bright glow
-  const bright = createGlowSprite(0xFFEE88, 12);
-  bright.material.opacity = 0.08;
+  // Intense central white-hot flare
+  const bright = createGlowSprite(0xFFFFFF, 8);
+  bright.material.opacity = 0.18;
   group.add(bright);
+  const bright2 = createGlowSprite(0xFFEE88, 14);
+  bright2.material.opacity = 0.12;
+  group.add(bright2);
 
   // ── LENS FLARE ──
   const flareCanvas = document.createElement('canvas');
@@ -3016,6 +3095,16 @@ function animate() {
 
   // Shooting stars
   updateShootingStars();
+
+  // Solar effects (prominences + solar wind)
+  if (typeof SolarEffects !== 'undefined') {
+    SolarEffects.update(animationTime, speedMul);
+  }
+
+  // Eccentric asteroids
+  if (typeof EccentricAsteroids !== 'undefined') {
+    EccentricAsteroids.update(animationTime, speedMul);
+  }
 
   // Asteroid group orbit
   if (asteroidGroup) {
@@ -4768,6 +4857,19 @@ const buildQueue = [
   { fn: () => buildAsteroidBelt() },
   { fn: () => buildKuiperBelt() },
   { fn: () => buildAsteroidGroup() },
+  { fn: () => {
+    // Initialize solar effects (prominences + solar wind)
+    if (typeof SolarEffects !== 'undefined' && planetObjects['Sun']) {
+      SolarEffects.init(planetObjects['Sun'].group, PLANET_DATA['Sun'].radius);
+    }
+  }},
+  { fn: () => {
+    // Initialize eccentric asteroids
+    if (typeof EccentricAsteroids !== 'undefined') {
+      const eGroup = EccentricAsteroids.build(30);
+      scene.add(eGroup);
+    }
+  }},
 ];
 
 let qi = 0;
@@ -4995,6 +5097,8 @@ function cinematicIntro() {
     controls.update();
     if (starUniforms) starUniforms.uTime.value += 0.005;
     updateShootingStars();
+    if (typeof SolarEffects !== 'undefined') SolarEffects.update(t, 1);
+    if (typeof EccentricAsteroids !== 'undefined') EccentricAsteroids.update(t, 1);
     if (asteroidGroup) {
       asteroidGroup.children.forEach(child => {
         if (!child.userData.orbitAngle) return;
