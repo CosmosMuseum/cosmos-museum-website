@@ -1709,14 +1709,15 @@ function buildSun() {
         vec4 texColor = texture2D(uTexture, vUv);
         col = mix(texColor.rgb, col, 0.82);
 
-        // ── Fresnel limb darkening ────────────────────────────────
+        // ── Fresnel — uniform glow, no dark edges (star emits light) ──
         float fresnel = clamp(dot(vNormal, normalize(cameraPosition - vPosition)), 0.0, 1.0);
-        float limb = pow(fresnel, 0.30);
-        col *= mix(0.12, 1.0, limb);
+        // Subtle limb brightening instead of darkening — star emits from everywhere
+        float limb = pow(fresnel, 0.6);
+        col *= mix(0.85, 1.0, limb);
 
-        // ── Bright white-hot center ───────────────────────────────
+        // ── Bright white-hot center (subtle) ──────────────────────
         float centreBoost = pow(fresnel, 0.5);
-        col = mix(col, cWhite * 1.4, centreBoost * 0.35);
+        col = mix(col, cWhite * 1.2, centreBoost * 0.2);
 
         // ── Emission boost ────────────────────────────────────────
         col *= 2.0;
@@ -1737,31 +1738,178 @@ function buildSun() {
   mesh.userData = { name: 'Sun', isSun: true };
   group.add(mesh);
 
-  // Inner corona (hot white glow - very bright)
-  for (let i = 0; i < 4; i++) {
-    const sprite = createGlowSprite(0xFFFFDD, 6.5 + i * 0.8);
-    sprite.material.opacity = 0.18 - i * 0.03;
-    group.add(sprite);
-  }
-  // Mid corona (orange)
-  for (let i = 0; i < 5; i++) {
-    const sprite = createGlowSprite(0xFF6600, 9 + i * 2.2);
-    sprite.material.opacity = 0.10 - i * 0.015;
-    group.add(sprite);
-  }
-  // Outer corona (deep red)
-  for (let i = 0; i < 4; i++) {
-    const sprite = createGlowSprite(0xCC2200, 18 + i * 4);
-    sprite.material.opacity = 0.06 - i * 0.01;
-    group.add(sprite);
-  }
-  // Intense central white-hot flare
-  const bright = createGlowSprite(0xFFFFFF, 8);
-  bright.material.opacity = 0.18;
-  group.add(bright);
-  const bright2 = createGlowSprite(0xFFEE88, 14);
-  bright2.material.opacity = 0.12;
-  group.add(bright2);
+  // ── REALISTIC SOLAR CORONA SHADER ──────────────────────
+  // Radiating streams of plasma light, animated with noise
+  const coronaGeo = new THREE.SphereGeometry(5.6, 64, 64);
+  const coronaMat = new THREE.ShaderMaterial({
+    uniforms: {
+      uTime: { value: 0 },
+      uIntensity: { value: 1.0 },
+    },
+    vertexShader: `
+      varying vec3 vNormal;
+      varying vec3 vWorldPos;
+      varying vec2 vUv;
+      void main() {
+        vNormal = normalize(normalMatrix * normal);
+        vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform float uTime;
+      uniform float uIntensity;
+      varying vec3 vNormal;
+      varying vec3 vWorldPos;
+      varying vec2 vUv;
+
+      // Simplex noise helpers
+      vec3 mod289(vec3 x){return x-floor(x*(1./289.))*289.;}
+      vec4 mod289(vec4 x){return x-floor(x*(1./289.))*289.;}
+      vec4 permute(vec4 x){return mod289(((x*34.)+1.)*x);}
+      vec4 taylorInvSqrt(vec4 r){return 1.7928429140016-0.8537347209531*r;}
+      float snoise(vec3 v){
+        const vec2 C=vec2(1./6.,1./3.);
+        const vec4 D=vec4(0.,.5,1.,2.);
+        vec3 i=floor(v+dot(v,C.yyy));
+        vec3 x0=v-i+dot(i,C.xxx);
+        vec3 g=step(x0.yzx,x0.xyz);
+        vec3 l=1.-g;
+        vec3 i1=min(g.xyz,l.zxy);
+        vec3 i2=max(g.xyz,l.zxy);
+        vec3 x1=x0-i1+C.xxx;
+        vec3 x2=x0-i2+C.yyy;
+        vec3 x3=x0-D.yyy;
+        i=mod289(i);
+        vec4 p=permute(permute(permute(
+          i.z+vec4(0.,i1.z,i2.z,1.))
+          +i.y+vec4(0.,i1.y,i2.y,1.))
+          +i.x+vec4(0.,i1.x,i2.x,1.));
+        float n_=.142857142857;
+        vec3 ns=n_*D.wyz-D.xzx;
+        vec4 j=p-49.*floor(p*ns.z*ns.z);
+        vec4 x_=floor(j*ns.z);
+        vec4 y_=floor(j-7.*x_);
+        vec4 x=x_*ns.x+ns.yyyy;
+        vec4 y=y_*ns.x+ns.yyyy;
+        vec4 h=1.-abs(x)-abs(y);
+        vec4 b0=vec4(x.xy,y.xy);
+        vec4 b1=vec4(x.zw,y.zw);
+        vec4 s0=floor(b0)*2.+1.;
+        vec4 s1=floor(b1)*2.+1.;
+        vec4 sh=-step(h,vec4(0.));
+        vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy;
+        vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
+        vec3 p0=vec3(a0.xy,h.x);
+        vec3 p1=vec3(a0.zw,h.y);
+        vec3 p2=vec3(a1.xy,h.z);
+        vec3 p3=vec3(a1.zw,h.w);
+        vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
+        p0*=norm.x;p1*=norm.y;p2*=norm.z;p3*=norm.w;
+        vec4 m=max(.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.);
+        m=m*m;
+        return 42.*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
+      }
+
+      void main() {
+        vec3 viewDir = normalize(cameraPosition - vWorldPos);
+        float fresnel = 1.0 - max(dot(viewDir, vNormal), 0.0);
+
+        // ── Streaming corona rays (radial noise) ──
+        vec3 rayDir = normalize(vWorldPos);
+        float t = uTime * 0.015;
+
+        // Multi-scale noise for ray structure
+        float ray1 = snoise(rayDir * 3.0 + vec3(t * 0.4, 0.0, t * 0.2)) * 0.5 + 0.5;
+        float ray2 = snoise(rayDir * 6.0 + vec3(0.0, t * 0.3, t * 0.15)) * 0.5 + 0.5;
+        float ray3 = snoise(rayDir * 12.0 + vec3(t * 0.2, t * 0.25, 0.0)) * 0.5 + 0.5;
+
+        // Combine rays — create streaming streaks
+        float rays = ray1 * 0.5 + ray2 * 0.3 + ray3 * 0.2;
+        rays = pow(rays, 1.8); // sharpen the ray edges
+
+        // ── Radial fade: bright near surface, fades outward ──
+        float distFromCenter = length(vWorldPos);
+        float sunRadius = 5.0;
+        float radialFade = 1.0 - smoothstep(sunRadius * 1.0, sunRadius * 2.5, distFromCenter);
+
+        // ── Fresnel-based intensity (rim glow) ──
+        float rimGlow = pow(fresnel, 2.0);
+
+        // ── Combine: rays + radial fade + rim ──
+        float corona = rays * radialFade * (0.4 + rimGlow * 0.6);
+
+        // ── Pulsing shimmer ──
+        float shimmer = 1.0 + sin(t * 8.0) * 0.08 + sin(t * 13.7) * 0.05 + sin(t * 21.3) * 0.03;
+        corona *= shimmer;
+
+        // ── Color: white-hot core → orange → deep red outer ──
+        vec3 innerColor = vec3(1.0, 0.95, 0.85);  // white-hot
+        vec3 midColor   = vec3(1.0, 0.6, 0.15);    // orange
+        vec3 outerColor = vec3(0.9, 0.25, 0.02);   // deep red
+
+        float colorMix1 = smoothstep(0.0, 0.4, fresnel);
+        float colorMix2 = smoothstep(0.3, 0.9, fresnel);
+        vec3 col = mix(innerColor, midColor, colorMix1);
+        col = mix(col, outerColor, colorMix2);
+
+        // Add bright ray highlights
+        col += vec3(1.0, 0.9, 0.7) * rays * 0.3 * radialFade;
+
+        float alpha = corona * uIntensity * 0.85;
+        alpha = clamp(alpha, 0.0, 1.0);
+
+        gl_FragColor = vec4(col * (1.0 + corona * 1.5), alpha);
+      }
+    `,
+    transparent: true,
+    side: THREE.BackSide,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const coronaMesh = new THREE.Mesh(coronaGeo, coronaMat);
+  group.add(coronaMesh);
+
+  // ── OUTER GLOW SPHERE (soft broad halo) ──
+  const haloGeo = new THREE.SphereGeometry(8, 32, 32);
+  const haloMat = new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 } },
+    vertexShader: `
+      varying vec3 vNormal;
+      varying vec3 vWorldPos;
+      void main() {
+        vNormal = normalize(normalMatrix * normal);
+        vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform float uTime;
+      varying vec3 vNormal;
+      varying vec3 vWorldPos;
+      void main() {
+        vec3 viewDir = normalize(cameraPosition - vWorldPos);
+        float fresnel = 1.0 - max(dot(viewDir, vNormal), 0.0);
+        float glow = pow(fresnel, 3.0);
+        float t = uTime * 0.01;
+        float pulse = 1.0 + sin(t * 6.0) * 0.06 + sin(t * 11.0) * 0.04;
+        glow *= pulse;
+        vec3 col = mix(vec3(1.0, 0.6, 0.1), vec3(1.0, 0.35, 0.05), fresnel);
+        gl_FragColor = vec4(col, glow * 0.25);
+      }
+    `,
+    transparent: true,
+    side: THREE.BackSide,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const haloMesh = new THREE.Mesh(haloGeo, haloMat);
+  group.add(haloMesh);
+
+  // Store references for animation
+  group.userData._coronaMat = coronaMat;
+  group.userData._haloMat = haloMat;
 
   // ── LENS FLARE ──
   const flareCanvas = document.createElement('canvas');
@@ -3067,24 +3215,8 @@ function animate() {
   // Background galaxy follows camera
   if (window._bgMesh) window._bgMesh.position.copy(camera.position);
 
-  // Mouse parallax effect on camera
-  if (!isCameraAnimating && !shipMode && window._mouseParallaxX !== undefined) {
-    const px = (window._mouseParallaxX || 0) * 3;
-    const py = (window._mouseParallaxY || 0) * 2;
-    camera.position.x += (px - camera.position.x * 0.001) * 0.02;
-    camera.position.y += (py - camera.position.y * 0.001) * 0.02;
-  }
-
-  // Sun pulse
-  if (planetObjects.Sun && planetObjects.Sun.group.userData._pulse) {
-    planetObjects.Sun.group.userData._pulse(0.016 * speedMul);
-  }
-  if (planetObjects.Sun && planetObjects.Sun.mesh.material.uniforms) {
-    planetObjects.Sun.mesh.material.uniforms.uTime.value = animationTime;
-  }
-
-  // Update luminous orbit lines
-  updateOrbitLines(animationTime);
+  // Update luminous orbit lines — stop when focused
+  if (!currentFocus) updateOrbitLines(animationTime);
 
   // Update nebula dust particles
   nebulaParticles.forEach(p => {
@@ -3101,13 +3233,13 @@ function animate() {
     SolarEffects.update(animationTime, speedMul);
   }
 
-  // Eccentric asteroids
-  if (typeof EccentricAsteroids !== 'undefined') {
+  // Eccentric asteroids — stop when planet focused
+  if (typeof EccentricAsteroids !== 'undefined' && !currentFocus) {
     EccentricAsteroids.update(animationTime, speedMul);
   }
 
-  // Asteroid group orbit
-  if (asteroidGroup) {
+  // Asteroid group orbit — stop when planet focused
+  if (asteroidGroup && !currentFocus) {
     asteroidGroup.children.forEach(child => {
       if (!child.userData.orbitAngle) return;
       const ud = child.userData;
@@ -3120,12 +3252,13 @@ function animate() {
     });
   }
 
-  // Orbit planets
+  // Orbit planets — STOP all orbits when any planet is focused
   ['Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune'].forEach(key => {
     const po = planetObjects[key];
     if (!po) return;
     const d = po.data;
-    if (currentFocus !== key) {
+    // Only orbit when NO planet is focused (free exploration mode)
+    if (!currentFocus) {
       po.angle = (po.angle || 0) + d.orbitalSpeed * speedMul;
     }
     po.group.position.x = Math.cos(po.angle) * d.distance;
@@ -3139,29 +3272,31 @@ function animate() {
       }
     });
 
-    // Rotate planet
-    if (po.mesh) po.mesh.rotation.y += d.rotationSpeed * speedMul;
+    // Rotate planet — all rotate when no focus, only focused one when selected
+    if ((!currentFocus || key === currentFocus) && po.mesh) po.mesh.rotation.y += d.rotationSpeed * speedMul;
 
-    // Rotate cloud layer (slightly different speed for visual effect)
-    if (key === 'Earth' && planetObjects['Earth_clouds']) {
+    // Rotate cloud layer — only Earth's clouds, only when no focus or Earth focused
+    if ((!currentFocus || key === 'Earth') && key === 'Earth' && planetObjects['Earth_clouds']) {
       planetObjects['Earth_clouds'].rotation.y += d.rotationSpeed * 0.7 * speedMul;
     }
 
-    // Moons
-    po.group.children.forEach(child => {
-      if (child.userData && child.userData.isMoon) {
-        if (key === 'Earth') {
-          const t = animationTime * 1.2;
-          child.position.x = Math.cos(t) * 1.8;
-          child.position.z = Math.sin(t) * 1.8;
-          child.position.y = Math.sin(t * 0.5) * 0.3;
-        } else if (key === 'Jupiter' && child.userData.dist) {
-          child.userData.angle = (child.userData.angle || 0) + child.userData.speed;
-          child.position.x = Math.cos(child.userData.angle) * child.userData.dist;
-          child.position.z = Math.sin(child.userData.angle) * child.userData.dist;
+    // Moons — only when no focus
+    if (!currentFocus) {
+      po.group.children.forEach(child => {
+        if (child.userData && child.userData.isMoon) {
+          if (key === 'Earth') {
+            const t = animationTime * 1.2;
+            child.position.x = Math.cos(t) * 1.8;
+            child.position.z = Math.sin(t) * 1.8;
+            child.position.y = Math.sin(t * 0.5) * 0.3;
+          } else if (key === 'Jupiter' && child.userData.dist) {
+            child.userData.angle = (child.userData.angle || 0) + child.userData.speed;
+            child.position.x = Math.cos(child.userData.angle) * child.userData.dist;
+            child.position.z = Math.sin(child.userData.angle) * child.userData.dist;
+          }
         }
-      }
-    });
+      });
+    }
   });
 
   // Sun pulse
@@ -3171,6 +3306,13 @@ function animate() {
     sunPO.mesh.scale.set(pulse, pulse, pulse);
     if (sunPO.mesh.material.uniforms) {
       sunPO.mesh.material.uniforms.uTime.value = animationTime;
+    }
+    // Update corona + halo shader time
+    if (sunPO.group.userData._coronaMat) {
+      sunPO.group.userData._coronaMat.uniforms.uTime.value = animationTime;
+    }
+    if (sunPO.group.userData._haloMat) {
+      sunPO.group.userData._haloMat.uniforms.uTime.value = animationTime;
     }
   }
 
@@ -5118,6 +5260,8 @@ function cinematicIntro() {
       if (sunPO.mesh.material.uniforms) {
         sunPO.mesh.material.uniforms.uTime.value = t;
       }
+      if (sunPO.group.userData._coronaMat) sunPO.group.userData._coronaMat.uniforms.uTime.value = t;
+      if (sunPO.group.userData._haloMat) sunPO.group.userData._haloMat.uniforms.uTime.value = t;
     }
     composer.render();
     requestAnimationFrame(introStep);
