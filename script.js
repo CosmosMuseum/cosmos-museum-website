@@ -2203,14 +2203,31 @@ function buildPlanet(key) {
 
 // ── ASTEROID BELT ──
 function createRockGeometry() {
-  return AsteroidDeform.createGeometry(0.12);
+  const geo = new THREE.IcosahedronGeometry(0.12, 2);
+  const pos = geo.attributes.position;
+  const baseNoise = [];
+  for (let i = 0; i < pos.count; i++) {
+    baseNoise.push(0.65 + Math.random() * 0.7);
+  }
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i);
+    const y = pos.getY(i);
+    const z = pos.getZ(i);
+    const noise = baseNoise[i];
+    const ridge = Math.abs(x * y * z) * 1.2;
+    const jitter = (Math.random() - 0.5) * 0.03;
+    pos.setXYZ(i, x * noise + jitter, y * noise + jitter, z * noise + jitter);
+  }
+  pos.needsUpdate = true;
+  geo.computeVertexNormals();
+  return geo;
 }
 
 function buildAsteroidBelt() {
   const count = 4000;
-  const rockGeo = AsteroidDeform.createGeometry(0.12);
-  const rockMat = AsteroidDeform.createMaterial();
-  const mesh = AsteroidDeform.createInstancedMesh(count, rockGeo, rockMat);
+  const rockGeo = createRockGeometry();
+  const rockMat = new THREE.MeshPhongMaterial({ color: 0x998877, shininess: 5 });
+  const mesh = new THREE.InstancedMesh(rockGeo, rockMat, count);
   const dummy = new THREE.Object3D();
   for (let i = 0; i < count; i++) {
     const r = 43 + Math.random() * 8;
@@ -2231,9 +2248,9 @@ function buildAsteroidBelt() {
 // ── KUIPER BELT ──
 function buildKuiperBelt() {
   const count = 4000;
-  const rockGeo = AsteroidDeform.createGeometry(0.12);
-  const rockMat = AsteroidDeform.createMaterial();
-  const mesh = AsteroidDeform.createInstancedMesh(count, rockGeo, rockMat);
+  const rockGeo = createRockGeometry();
+  const rockMat = new THREE.MeshPhongMaterial({ color: 0x667788, shininess: 3 });
+  const mesh = new THREE.InstancedMesh(rockGeo, rockMat, count);
   const dummy = new THREE.Object3D();
   for (let i = 0; i < count; i++) {
     const r = 122 + Math.random() * 18;
@@ -2452,8 +2469,29 @@ function buildAsteroidGroup() {
 
   for (let i = 0; i < 25; i++) {
     const size = 0.15 + Math.random() * 0.5;
-    const geo = AsteroidDeform.createGeometry(size);
-    const mat = AsteroidDeform.createMaterial();
+    const geo = new THREE.IcosahedronGeometry(size, 2);
+    const posAttr = geo.getAttribute('position');
+    const baseNoise = [];
+    for (let j = 0; j < posAttr.count; j++) {
+      baseNoise.push(0.6 + Math.random() * 0.8);
+    }
+    for (let j = 0; j < posAttr.count; j++) {
+      const x = posAttr.getX(j);
+      const y = posAttr.getY(j);
+      const z = posAttr.getZ(j);
+      const noise = baseNoise[j];
+      const ridge = Math.abs(x * y * z) * 1.5;
+      const jitter = (Math.random() - 0.5) * 0.02;
+      posAttr.setXYZ(j, x * noise + jitter, y * noise + jitter, z * noise + jitter);
+    }
+    posAttr.needsUpdate = true;
+    geo.computeVertexNormals();
+    const mat = new THREE.MeshStandardMaterial({
+      color: asteroidColors[Math.floor(Math.random() * asteroidColors.length)],
+      roughness: 0.9 + Math.random() * 0.1,
+      metalness: Math.random() * 0.15,
+      flatShading: true,
+    });
     const mesh = new THREE.Mesh(geo, mat);
     const orbitAngle = Math.random() * Math.PI * 2;
     const orbitRadius = 80 + (Math.random() - 0.5) * 12;

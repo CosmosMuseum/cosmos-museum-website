@@ -11,7 +11,24 @@ const EccentricAsteroids = (() => {
 
   // ── ROCK GEOMETRY (shared) ────────────────────────────
   function createRockGeometry() {
-    return AsteroidDeform.createGeometry(0.15);
+    const geo = new THREE.IcosahedronGeometry(0.15, 2);
+    const posAttr = geo.getAttribute('position');
+    const baseNoise = [];
+    for (let i = 0; i < posAttr.count; i++) {
+      baseNoise.push(0.6 + Math.random() * 0.8);
+    }
+    for (let i = 0; i < posAttr.count; i++) {
+      const x = posAttr.getX(i);
+      const y = posAttr.getY(i);
+      const z = posAttr.getZ(i);
+      const noise = baseNoise[i];
+      const ridge = Math.abs(x * y * z) * 1.5;
+      const jitter = (Math.random() - 0.5) * 0.02;
+      posAttr.setXYZ(i, x * noise + jitter, y * noise + jitter, z * noise + jitter);
+    }
+    posAttr.needsUpdate = true;
+    geo.computeVertexNormals();
+    return geo;
   }
 
   // ── KEPLERIAN ORBIT HELPER ────────────────────────────
@@ -66,8 +83,13 @@ const EccentricAsteroids = (() => {
     ];
 
     // Material with varying color per instance
-    const baseMat = AsteroidDeform.createMaterial();
-    instancedMesh = AsteroidDeform.createInstancedMesh(count, rockGeo, baseMat);
+    const baseMat = new THREE.MeshPhongMaterial({
+      color: 0x888888,
+      shininess: 5,
+      flatShading: true,
+    });
+
+    instancedMesh = new THREE.InstancedMesh(rockGeo, baseMat, count);
     instancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
 
     const dummy = new THREE.Object3D();
