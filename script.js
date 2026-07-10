@@ -4663,7 +4663,7 @@ let musicPlaying = false;
 let pianoAudio = null;
 function initMusic() {
   if (pianoAudio) return;
-  pianoAudio = new Audio('audio/audio.mp3');
+  pianoAudio = new Audio('audio/piano.mp3');
   pianoAudio.loop = true;
   pianoAudio.volume = 0.3;
 }
@@ -4890,11 +4890,24 @@ function showWelcomeScreen() {
 }
 
 function launchExperience() {
-  // Start music directly on user click (browsers require this)
+  // Start music directly on user click with fade-in
   initMusic();
   if (pianoAudio && !musicPlaying) {
+    pianoAudio.volume = 0;
     pianoAudio.play().catch(function(){});
     musicPlaying = true;
+    // Fade in over 3 seconds
+    var fadeDuration = 3000;
+    var targetVolume = 0.3;
+    var steps = 60;
+    var stepTime = fadeDuration / steps;
+    var volStep = targetVolume / steps;
+    var currentStep = 0;
+    var fadeInterval = setInterval(function() {
+      currentStep++;
+      pianoAudio.volume = Math.min(volStep * currentStep, targetVolume);
+      if (currentStep >= steps) clearInterval(fadeInterval);
+    }, stepTime);
     var btn = document.getElementById('music-btn');
     if (btn) btn.classList.add('active');
   }
