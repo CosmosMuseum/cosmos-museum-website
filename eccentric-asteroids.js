@@ -11,14 +11,20 @@ const EccentricAsteroids = (() => {
 
   // ── ROCK GEOMETRY (shared) ────────────────────────────
   function createRockGeometry() {
-    const geo = new THREE.IcosahedronGeometry(0.15, 1);
+    const geo = new THREE.IcosahedronGeometry(0.15, 2);
     const posAttr = geo.getAttribute('position');
+    const baseNoise = [];
+    for (let i = 0; i < posAttr.count; i++) {
+      baseNoise.push(0.6 + Math.random() * 0.8);
+    }
     for (let i = 0; i < posAttr.count; i++) {
       const x = posAttr.getX(i);
       const y = posAttr.getY(i);
       const z = posAttr.getZ(i);
-      const noise = 0.65 + Math.random() * 0.7;
-      posAttr.setXYZ(i, x * noise, y * noise, z * noise);
+      const noise = baseNoise[i];
+      const ridge = Math.abs(x * y * z) * 1.5;
+      const jitter = (Math.random() - 0.5) * 0.02;
+      posAttr.setXYZ(i, x * noise + jitter, y * noise + jitter, z * noise + jitter);
     }
     posAttr.needsUpdate = true;
     geo.computeVertexNormals();

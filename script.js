@@ -2203,28 +2203,22 @@ function buildPlanet(key) {
 
 // ── ASTEROID BELT ──
 function createRockGeometry() {
-  const geo = new THREE.IcosahedronGeometry(0.12, 0);
+  const geo = new THREE.IcosahedronGeometry(0.12, 2);
   const pos = geo.attributes.position;
+  const baseNoise = [];
   for (let i = 0; i < pos.count; i++) {
-    pos.setX(i, pos.getX(i) * (0.7 + Math.random() * 0.6));
-    pos.setY(i, pos.getY(i) * (0.7 + Math.random() * 0.6));
-    pos.setZ(i, pos.getZ(i) * (0.7 + Math.random() * 0.6));
+    baseNoise.push(0.65 + Math.random() * 0.7);
   }
-  geo.computeVertexNormals();
-  return geo;
-}
-
-function createRockGeometry() {
-  const geo = new THREE.IcosahedronGeometry(0.12, 0);
-  const posAttr = geo.getAttribute('position');
-  for (let i = 0; i < posAttr.count; i++) {
-    const x = posAttr.getX(i);
-    const y = posAttr.getY(i);
-    const z = posAttr.getZ(i);
-    const noise = 0.7 + Math.random() * 0.6;
-    posAttr.setXYZ(i, x * noise, y * noise, z * noise);
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i);
+    const y = pos.getY(i);
+    const z = pos.getZ(i);
+    const noise = baseNoise[i];
+    const ridge = Math.abs(x * y * z) * 1.2;
+    const jitter = (Math.random() - 0.5) * 0.03;
+    pos.setXYZ(i, x * noise + jitter, y * noise + jitter, z * noise + jitter);
   }
-  posAttr.needsUpdate = true;
+  pos.needsUpdate = true;
   geo.computeVertexNormals();
   return geo;
 }
@@ -2475,14 +2469,20 @@ function buildAsteroidGroup() {
 
   for (let i = 0; i < 25; i++) {
     const size = 0.15 + Math.random() * 0.5;
-    const geo = new THREE.IcosahedronGeometry(size, 1);
+    const geo = new THREE.IcosahedronGeometry(size, 2);
     const posAttr = geo.getAttribute('position');
+    const baseNoise = [];
+    for (let j = 0; j < posAttr.count; j++) {
+      baseNoise.push(0.6 + Math.random() * 0.8);
+    }
     for (let j = 0; j < posAttr.count; j++) {
       const x = posAttr.getX(j);
       const y = posAttr.getY(j);
       const z = posAttr.getZ(j);
-      const noise = 0.7 + Math.random() * 0.6;
-      posAttr.setXYZ(j, x * noise, y * noise, z * noise);
+      const noise = baseNoise[j];
+      const ridge = Math.abs(x * y * z) * 1.5;
+      const jitter = (Math.random() - 0.5) * 0.02;
+      posAttr.setXYZ(j, x * noise + jitter, y * noise + jitter, z * noise + jitter);
     }
     posAttr.needsUpdate = true;
     geo.computeVertexNormals();
@@ -3233,13 +3233,13 @@ function animate() {
     SolarEffects.update(animationTime, speedMul);
   }
 
-  // Eccentric asteroids — stop when planet focused
-  if (typeof EccentricAsteroids !== 'undefined' && !currentFocus) {
+  // Eccentric asteroids — always
+  if (typeof EccentricAsteroids !== 'undefined') {
     EccentricAsteroids.update(animationTime, speedMul);
   }
 
-  // Asteroid group orbit — stop when planet focused
-  if (asteroidGroup && !currentFocus) {
+  // Asteroid group orbit — always
+  if (asteroidGroup) {
     asteroidGroup.children.forEach(child => {
       if (!child.userData.orbitAngle) return;
       const ud = child.userData;
@@ -3272,17 +3272,16 @@ function animate() {
       }
     });
 
-    // Rotate planet — all rotate when no focus, only focused one when selected
-    if ((!currentFocus || key === currentFocus) && po.mesh) po.mesh.rotation.y += d.rotationSpeed * speedMul;
+    // Rotate planet — always
+    if (po.mesh) po.mesh.rotation.y += d.rotationSpeed * speedMul;
 
-    // Rotate cloud layer — only Earth's clouds, only when no focus or Earth focused
-    if ((!currentFocus || key === 'Earth') && key === 'Earth' && planetObjects['Earth_clouds']) {
+    // Rotate cloud layer — always
+    if (key === 'Earth' && planetObjects['Earth_clouds']) {
       planetObjects['Earth_clouds'].rotation.y += d.rotationSpeed * 0.7 * speedMul;
     }
 
-    // Moons — only when no focus
-    if (!currentFocus) {
-      po.group.children.forEach(child => {
+    // Moons — always
+    po.group.children.forEach(child => {
         if (child.userData && child.userData.isMoon) {
           if (key === 'Earth') {
             const t = animationTime * 1.2;
@@ -3296,7 +3295,6 @@ function animate() {
           }
         }
       });
-    }
   });
 
   // Sun pulse
