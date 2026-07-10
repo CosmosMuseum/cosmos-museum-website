@@ -1,4 +1,4 @@
-// ═══════════════════════════════════════════════════════
+﻿// ═══════════════════════════════════════════════════════
 //  Cosmic Explorer — Built by Ritesh Meena (github.com/rtm20)
 //  Licensed under CC BY-NC 4.0
 //  https://github.com/rtm20/cosmic-explorer
@@ -4658,318 +4658,25 @@ function updateMinimap() {
   ctx.closePath(); ctx.fill();
   ctx.restore();
 }
-//  Deep organ drones, ticking clock, swelling pads,
-//  ethereal bell melodies — evoking cosmic wonder
-// ═══════════════════════════════════════════════════════
-let audioCtx = null, musicPlaying = false;
+// ── MUSIC — piano audio file ──
+let musicPlaying = false;
+let pianoAudio = null;
+function initMusic() {
+  if (pianoAudio) return;
+  pianoAudio = new Audio('audio/audio.mp3');
+  pianoAudio.loop = true;
+  pianoAudio.volume = 0.3;
+}
 window.toggleMusic = function () {
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-    // ── CATHEDRAL REVERB — long 6-second tail ──
-    const convolver = audioCtx.createConvolver();
-    const reverbLen = audioCtx.sampleRate * 6;
-    const impulse = audioCtx.createBuffer(2, reverbLen, audioCtx.sampleRate);
-    for (let ch = 0; ch < 2; ch++) {
-      const d = impulse.getChannelData(ch);
-      for (let i = 0; i < reverbLen; i++) {
-        const t = i / reverbLen;
-        // Early reflections + long exponential tail
-        const early = (i < audioCtx.sampleRate * 0.08) ? 0.6 : 0;
-        d[i] = (Math.random() * 2 - 1) * (Math.pow(1 - t, 3.0) * 0.8 + early * Math.random());
-      }
-    }
-    convolver.buffer = impulse;
-
-    // Master mix bus
-    const master = audioCtx.createGain(); master.gain.value = 0.20;
-    const dryGain = audioCtx.createGain(); dryGain.gain.value = 0.35;
-    const wetGain = audioCtx.createGain(); wetGain.gain.value = 0.65; // Heavy reverb
-    master.connect(dryGain);
-    master.connect(convolver);
-    convolver.connect(wetGain);
-    dryGain.connect(audioCtx.destination);
-    wetGain.connect(audioCtx.destination);
-
-    // ── PIPE ORGAN DRONE — the signature Interstellar sound ──
-    // Church organ = many harmonics stacked at octaves + fifths
-    // Root: C2 with full organ-like harmonic series
-    const organBus = audioCtx.createGain(); organBus.gain.value = 0.0;
-    const organFilter = audioCtx.createBiquadFilter();
-    organFilter.type = 'lowpass'; organFilter.frequency.value = 600; organFilter.Q.value = 0.5;
-    organBus.connect(organFilter); organFilter.connect(master);
-
-    // Slow organ swell — breathe in and out like a cathedral organ
-    const organLFO = audioCtx.createOscillator(); organLFO.type = 'sine'; organLFO.frequency.value = 0.012;
-    const organLFOGain = audioCtx.createGain(); organLFOGain.gain.value = 0.08;
-    organLFO.connect(organLFOGain); organLFOGain.connect(organBus.gain); organLFO.start();
-
-    // Slowly open the organ filter like pulling out stops
-    const filterSwell = audioCtx.createOscillator(); filterSwell.type = 'sine'; filterSwell.frequency.value = 0.018;
-    const filterSwellG = audioCtx.createGain(); filterSwellG.gain.value = 400;
-    filterSwell.connect(filterSwellG); filterSwellG.connect(organFilter.frequency); filterSwell.start();
-
-    // Organ stops: fundamental + 2nd + 3rd + 4th + 5th harmonics + sub-octave
-    // This creates the massive church organ pipe sound
-    const organVoices = [
-      // [freq, type, gain] — simulating organ pipe ranks
-      [32.70, 'sine', 0.20],       // Sub-bass 16' (C1)
-      [65.41, 'sine', 0.30],       // Principal 8' (C2) — root
-      [65.41, 'triangle', 0.08],   // Flute 8' coloring
-      [98.00, 'sine', 0.10],       // Quint 5⅓' (G2)
-      [130.81, 'sine', 0.22],      // Octave 4' (C3)
-      [130.81, 'triangle', 0.06],  // Flute 4' coloring
-      [196.00, 'sine', 0.08],      // Quint 2⅔' (G3)
-      [261.63, 'sine', 0.12],      // Super-octave 2' (C4)
-      [329.63, 'sine', 0.04],      // Tierce 1⅗' (E4 — adds warmth)
-      [392.00, 'sine', 0.03],      // Larigot (G4)
-    ];
-
-    organVoices.forEach(([freq, type, gain]) => {
-      // Main pipe
-      const o = audioCtx.createOscillator(); o.type = type; o.frequency.value = freq;
-      const g = audioCtx.createGain(); g.gain.value = gain;
-      o.connect(g); g.connect(organBus); o.start();
-      // Slightly detuned "chorus" pipe — organs always have slight tuning differences
-      const o2 = audioCtx.createOscillator(); o2.type = type; o2.frequency.value = freq * 1.002;
-      const g2 = audioCtx.createGain(); g2.gain.value = gain * 0.4;
-      o2.connect(g2); g2.connect(organBus); o2.start();
-      // Third pipe detuned down
-      const o3 = audioCtx.createOscillator(); o3.type = 'sine'; o3.frequency.value = freq * 0.998;
-      const g3 = audioCtx.createGain(); g3.gain.value = gain * 0.3;
-      o3.connect(g3); g3.connect(organBus); o3.start();
-    });
-
-    // Fade organ in majestically over 8 seconds
-    organBus.gain.setValueAtTime(0, audioCtx.currentTime);
-    organBus.gain.linearRampToValueAtTime(0.18, audioCtx.currentTime + 8);
-
-    // ── TICKING CLOCK — the iconic Interstellar time motif ──
-    // Each tick = 1.25 seconds (like 48bpm), representing the passage of time
-    const tickBuf = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.04, audioCtx.sampleRate);
-    const tickData = tickBuf.getChannelData(0);
-    for (let i = 0; i < tickData.length; i++) {
-      const t = i / audioCtx.sampleRate;
-      // Sharp transient click + short resonant decay
-      tickData[i] = Math.exp(-t * 200) * 0.7 * Math.sin(t * 4000 * Math.PI * 2)
-        + Math.exp(-t * 80) * 0.3 * Math.sin(t * 1200 * Math.PI * 2);
-    }
-
-    const tickGain = audioCtx.createGain(); tickGain.gain.value = 0.0;
-    const tickFilter = audioCtx.createBiquadFilter();
-    tickFilter.type = 'highpass'; tickFilter.frequency.value = 800;
-    tickGain.connect(tickFilter); tickFilter.connect(master);
-    // Fade ticking in after 12 seconds
-    tickGain.gain.setValueAtTime(0, audioCtx.currentTime);
-    tickGain.gain.linearRampToValueAtTime(0.06, audioCtx.currentTime + 12);
-
-    function tick() {
-      if (!musicPlaying) { setTimeout(tick, 1250); return; }
-      const src = audioCtx.createBufferSource();
-      src.buffer = tickBuf;
-      src.connect(tickGain);
-      src.start();
-      setTimeout(tick, 1250); // 48 BPM
-    }
-    setTimeout(tick, 4000); // Start ticking after 4 seconds
-
-    // ── SUSTAIN STRING PAD — warm sustained notes like Dust ──
-    const padBus = audioCtx.createGain(); padBus.gain.value = 0.0;
-    const padFilter2 = audioCtx.createBiquadFilter();
-    padFilter2.type = 'lowpass'; padFilter2.frequency.value = 1200; padFilter2.Q.value = 0.4;
-    padBus.connect(padFilter2); padFilter2.connect(master);
-
-    // Am chord (A2, C3, E3) — melancholic, yearning quality
-    const padNotes = [
-      [110.00, 'sine', 0.15],     // A2
-      [110.00, 'triangle', 0.04], // A2 color
-      [130.81, 'sine', 0.12],     // C3
-      [164.81, 'sine', 0.10],     // E3
-      [220.00, 'sine', 0.06],     // A3 (octave)
-      [261.63, 'sine', 0.03],     // C4 (upper)
-    ];
-    padNotes.forEach(([freq, type, gain]) => {
-      const o = audioCtx.createOscillator(); o.type = type; o.frequency.value = freq;
-      const g = audioCtx.createGain(); g.gain.value = gain;
-      o.connect(g); g.connect(padBus); o.start();
-      // Vibrato — slight pitch modulation for string-like quality
-      const vib = audioCtx.createOscillator(); vib.type = 'sine'; vib.frequency.value = 4.5 + Math.random();
-      const vibG = audioCtx.createGain(); vibG.gain.value = freq * 0.003;
-      vib.connect(vibG); vibG.connect(o.frequency); vib.start();
-    });
-
-    // Pad swell — slow breathing 30-second cycle
-    const padLFO = audioCtx.createOscillator(); padLFO.type = 'sine'; padLFO.frequency.value = 0.033;
-    const padLFOG = audioCtx.createGain(); padLFOG.gain.value = 0.06;
-    padLFO.connect(padLFOG); padLFOG.connect(padBus.gain); padLFO.start();
-    padBus.gain.setValueAtTime(0, audioCtx.currentTime);
-    padBus.gain.linearRampToValueAtTime(0.10, audioCtx.currentTime + 15);
-
-    // ── CHORD PROGRESSION — slowly shifting organ chords ──
-    // Cycle: Am → Dm → F → Em → Am (each chord sustained 20 seconds)
-    const chordProg = [
-      // Am:  A2, C3, E3
-      [[110.00, 130.81, 164.81, 220.00]],
-      // Dm:  D3, F3, A3
-      [[146.83, 174.61, 220.00, 293.66]],
-      // F:   F2, A2, C3
-      [[87.31, 110.00, 130.81, 174.61]],
-      // Em:  E2, G2, B2
-      [[82.41, 98.00, 123.47, 164.81]],
-    ];
-    let chordIdx = 0;
-    const chordOscs = [];
-    const chordBus = audioCtx.createGain(); chordBus.gain.value = 0;
-    const chordFilter = audioCtx.createBiquadFilter();
-    chordFilter.type = 'lowpass'; chordFilter.frequency.value = 500;
-    chordBus.connect(chordFilter); chordFilter.connect(master);
-    chordBus.gain.setValueAtTime(0, audioCtx.currentTime);
-    chordBus.gain.linearRampToValueAtTime(0.12, audioCtx.currentTime + 20);
-
-    function morphChord() {
-      if (!musicPlaying) { setTimeout(morphChord, 20000); return; }
-      const chord = chordProg[chordIdx % chordProg.length][0];
-      chordIdx++;
-      const now = audioCtx.currentTime;
-      // Crossfade: fade out old oscillators, create new ones
-      chordOscs.forEach(({ osc, gain }) => {
-        gain.gain.linearRampToValueAtTime(0.001, now + 4);
-        osc.stop(now + 4.5);
-      });
-      chordOscs.length = 0;
-      chord.forEach((freq, i) => {
-        const o = audioCtx.createOscillator(); o.type = 'sine'; o.frequency.value = freq;
-        const g = audioCtx.createGain();
-        g.gain.setValueAtTime(0, now);
-        g.gain.linearRampToValueAtTime(0.08 - i * 0.01, now + 5); // Slow 5s fade-in
-        o.connect(g); g.connect(chordBus); o.start(now);
-        chordOscs.push({ osc: o, gain: g });
-        // Detuned pair
-        const o2 = audioCtx.createOscillator(); o2.type = 'sine'; o2.frequency.value = freq * 1.003;
-        const g2 = audioCtx.createGain();
-        g2.gain.setValueAtTime(0, now);
-        g2.gain.linearRampToValueAtTime(0.03, now + 5);
-        o2.connect(g2); g2.connect(chordBus); o2.start(now);
-        chordOscs.push({ osc: o2, gain: g2 });
-      });
-      setTimeout(morphChord, 20000); // Change chord every 20 seconds
-    }
-    setTimeout(morphChord, 10000); // First chord change at 10s
-
-    // ── ETHEREAL BELL MELODY — like piano in "Cornfield Chase" ──
-    const bellBus = audioCtx.createGain(); bellBus.gain.value = 0;
-    const bellFilter = audioCtx.createBiquadFilter();
-    bellFilter.type = 'lowpass'; bellFilter.frequency.value = 3000;
-    const bellReverb = audioCtx.createConvolver();
-    const bellImpLen = audioCtx.sampleRate * 3;
-    const bellImp = audioCtx.createBuffer(2, bellImpLen, audioCtx.sampleRate);
-    for (let ch = 0; ch < 2; ch++) {
-      const d = bellImp.getChannelData(ch);
-      for (let i = 0; i < bellImpLen; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bellImpLen, 2);
-    }
-    bellReverb.buffer = bellImp;
-    bellBus.connect(bellFilter); bellFilter.connect(bellReverb); bellReverb.connect(master);
-    bellBus.gain.setValueAtTime(0, audioCtx.currentTime);
-    bellBus.gain.linearRampToValueAtTime(0.10, audioCtx.currentTime + 18);
-
-    // Bell tones: high register, Am pentatonic — A4, C5, D5, E5, G5, A5
-    const bellNotes = [440, 523.25, 587.33, 659.25, 783.99, 880];
-    // Simple descending melodic patterns inspired by the movie
-    const patterns = [
-      [5, 4, 3, 2],    // A5→G5→E5→D5
-      [4, 3, 2, 0],    // G5→E5→D5→A4
-      [3, 2, 0, 1],    // E5→D5→A4→C5
-      [5, 3, 4, 2],    // A5→E5→G5→D5
-      [2, 1, 0, 2],    // D5→C5→A4→D5
-    ];
-    let patIdx = 0;
-    let noteInPat = 0;
-
-    function playBellNote() {
-      if (!musicPlaying) { setTimeout(playBellNote, 2000); return; }
-      const pattern = patterns[patIdx % patterns.length];
-      const freq = bellNotes[pattern[noteInPat]];
-      noteInPat++;
-      if (noteInPat >= pattern.length) { noteInPat = 0; patIdx++; }
-
-      const now = audioCtx.currentTime;
-      // Bell = sine + slight harmonic for shimmer
-      const o1 = audioCtx.createOscillator(); o1.type = 'sine'; o1.frequency.value = freq;
-      const o2 = audioCtx.createOscillator(); o2.type = 'sine'; o2.frequency.value = freq * 2.01; // octave shimmer
-      const o3 = audioCtx.createOscillator(); o3.type = 'sine'; o3.frequency.value = freq * 3.0;  // 12th harmonic
-      const env = audioCtx.createGain();
-      env.gain.setValueAtTime(0, now);
-      env.gain.linearRampToValueAtTime(0.20, now + 0.08); // Fast attack
-      env.gain.exponentialRampToValueAtTime(0.10, now + 0.8);
-      env.gain.exponentialRampToValueAtTime(0.001, now + 5); // Long decay like piano
-      const g2 = audioCtx.createGain(); g2.gain.value = 0.06;
-      const g3 = audioCtx.createGain(); g3.gain.value = 0.02;
-      o1.connect(env); o2.connect(g2); g2.connect(env); o3.connect(g3); g3.connect(env);
-      env.connect(bellBus);
-      o1.start(now); o2.start(now); o3.start(now);
-      o1.stop(now + 5.5); o2.stop(now + 5.5); o3.stop(now + 5.5);
-
-      // Variable spacing: 1.25s (on the tick) or 2.5s
-      const spacing = (noteInPat === 0) ? 3500 + Math.random() * 3000 : 1250;
-      setTimeout(playBellNote, spacing);
-    }
-    setTimeout(playBellNote, 8000); // Bells enter after 8 seconds
-
-    // ── DEEP RUMBLE — sub-bass swell for dramatic moments ──
-    const rumble = audioCtx.createOscillator(); rumble.type = 'sine'; rumble.frequency.value = 27.5; // A0
-    const rumble2 = audioCtx.createOscillator(); rumble2.type = 'sine'; rumble2.frequency.value = 55; // A1
-    const rumbleG = audioCtx.createGain(); rumbleG.gain.value = 0;
-    const rumbleG2 = audioCtx.createGain(); rumbleG2.gain.value = 0;
-    rumble.connect(rumbleG); rumbleG.connect(master); rumble.start();
-    rumble2.connect(rumbleG2); rumbleG2.connect(master); rumble2.start();
-
-    // Dramatic rumble swell every ~45 seconds
-    function rumbleSwell() {
-      if (!musicPlaying) { setTimeout(rumbleSwell, 45000); return; }
-      const now = audioCtx.currentTime;
-      rumbleG.gain.setValueAtTime(0, now);
-      rumbleG.gain.linearRampToValueAtTime(0.15, now + 8);
-      rumbleG.gain.linearRampToValueAtTime(0, now + 18);
-      rumbleG2.gain.setValueAtTime(0, now);
-      rumbleG2.gain.linearRampToValueAtTime(0.08, now + 8);
-      rumbleG2.gain.linearRampToValueAtTime(0, now + 18);
-      setTimeout(rumbleSwell, 40000 + Math.random() * 15000);
-    }
-    setTimeout(rumbleSwell, 25000);
-
-    // ── COSMIC WIND — filtered noise for vastness of space ──
-    const nBuf = audioCtx.createBuffer(2, audioCtx.sampleRate * 4, audioCtx.sampleRate);
-    for (let ch = 0; ch < 2; ch++) {
-      const d = nBuf.getChannelData(ch);
-      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-    }
-    const wind = audioCtx.createBufferSource(); wind.buffer = nBuf; wind.loop = true;
-    const windLP = audioCtx.createBiquadFilter(); windLP.type = 'lowpass'; windLP.frequency.value = 200;
-    const windHP = audioCtx.createBiquadFilter(); windHP.type = 'highpass'; windHP.frequency.value = 40;
-    const windG = audioCtx.createGain(); windG.gain.value = 0.025;
-    wind.connect(windLP); windLP.connect(windHP); windHP.connect(windG); windG.connect(master);
-    // Slow wind modulation
-    const windLFO = audioCtx.createOscillator(); windLFO.type = 'sine'; windLFO.frequency.value = 0.06;
-    const windLFOG = audioCtx.createGain(); windLFOG.gain.value = 100;
-    windLFO.connect(windLFOG); windLFOG.connect(windLP.frequency); windLFO.start();
-    wind.start();
-
-    // ── HIGH SHIMMER — ethereal high-frequency wash ──
-    const shimmerBuf = audioCtx.createBuffer(1, audioCtx.sampleRate * 2, audioCtx.sampleRate);
-    const sD = shimmerBuf.getChannelData(0);
-    for (let i = 0; i < sD.length; i++) sD[i] = Math.random() * 2 - 1;
-    const shimmer = audioCtx.createBufferSource(); shimmer.buffer = shimmerBuf; shimmer.loop = true;
-    const shimmerBP = audioCtx.createBiquadFilter(); shimmerBP.type = 'bandpass'; shimmerBP.frequency.value = 6000; shimmerBP.Q.value = 2;
-    const shimmerG = audioCtx.createGain(); shimmerG.gain.value = 0.004;
-    shimmer.connect(shimmerBP); shimmerBP.connect(shimmerG); shimmerG.connect(master);
-    shimmer.start();
-
+  initMusic();
+  if (!musicPlaying) {
+    pianoAudio.play().catch(function(){});
     musicPlaying = true;
   } else {
-    if (musicPlaying) { audioCtx.suspend(); musicPlaying = false; }
-    else { audioCtx.resume(); musicPlaying = true; }
+    pianoAudio.pause();
+    musicPlaying = false;
   }
-  const btn = document.getElementById('music-btn');
+  var btn = document.getElementById('music-btn');
   if (btn) btn.classList.toggle('active', musicPlaying);
 };
 
@@ -5183,6 +4890,15 @@ function showWelcomeScreen() {
 }
 
 function launchExperience() {
+  // Start music directly on user click (browsers require this)
+  initMusic();
+  if (pianoAudio && !musicPlaying) {
+    pianoAudio.play().catch(function(){});
+    musicPlaying = true;
+    var btn = document.getElementById('music-btn');
+    if (btn) btn.classList.add('active');
+  }
+
   const ws = document.getElementById('welcome-screen');
   if (!ws) return;
   if (ws._parallaxCleanup) ws._parallaxCleanup();
@@ -5202,7 +4918,6 @@ function launchExperience() {
     canvas.style.opacity = '1';
     canvas.style.filter = 'blur(0)';
     cinematicIntro();
-    setTimeout(() => { if (!musicPlaying && typeof toggleMusic === 'function') toggleMusic(); }, 800);
   }, 350);
 }
 
@@ -5271,4 +4986,4 @@ function cinematicIntro() {
 requestAnimationFrame(() => {
   processNext();
   setTimeout(showPresents, 2000);
-});
+});
