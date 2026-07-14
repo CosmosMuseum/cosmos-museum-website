@@ -1312,6 +1312,10 @@ function createStarfield() {
 scene.add(createStarfield());
 
 // ── PLANETS & OBJECTS ──
+const solarSystemGroup = new THREE.Group();
+solarSystemGroup.rotation.y = 0;
+solarSystemGroup.rotation.x = 40 * Math.PI / 180;
+scene.add(solarSystemGroup);
 const planetObjects = {};
 const orbitLines = [];
 let animationTime = 0;
@@ -1763,12 +1767,12 @@ function buildPlanet(key) {
 
   const group = new THREE.Group();
   group.userData = { planetName: key };
-  scene.add(group);
+  solarSystemGroup.add(group);
 
   // Luminous orbit line
   const hexColor = data.cssColor ? parseInt(data.cssColor.replace('#', ''), 16) : 0x334466;
   const orbitGroup = createOrbitLine(data.distance, hexColor, key);
-  scene.add(orbitGroup);
+  solarSystemGroup.add(orbitGroup);
 
   // Planet mesh — prefer real satellite textures, fallback to procedural
   const _realTexKeys = { Mercury: 'mercury_map', Venus: 'venus_map', Earth: 'earth_map', Mars: 'mars_map', Jupiter: 'jupiter_map', Saturn: 'saturn_map', Uranus: 'uranus_map', Neptune: 'neptune_map' };
@@ -2030,7 +2034,7 @@ function buildAsteroidBelt() {
     mesh.setMatrixAt(i, dummy.matrix);
   }
   mesh.instanceMatrix.needsUpdate = true;
-  scene.add(mesh);
+  solarSystemGroup.add(mesh);
 }
 // Asteroid belt built via deferred queue below
 
@@ -2053,7 +2057,7 @@ function buildKuiperBelt() {
     mesh.setMatrixAt(i, dummy.matrix);
   }
   mesh.instanceMatrix.needsUpdate = true;
-  scene.add(mesh);
+  solarSystemGroup.add(mesh);
 }
 // Kuiper belt built via deferred queue below
 
@@ -2118,7 +2122,7 @@ function buildAsteroidGroup() {
   label.position.y = 3;
   label.visible = false;
   asteroidGroup.add(label);
-  scene.add(asteroidGroup);
+  solarSystemGroup.add(asteroidGroup);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2770,7 +2774,7 @@ function spawnSelectionParticles(position, color) {
     randoms[i * 4 + 1] = Math.random();
     randoms[i * 4 + 2] = Math.random();
     randoms[i * 4 + 3] = Math.random();
-    sizes[i] = Math.random() * 1.2 + 0.3;
+    sizes[i] = Math.random() * 2.0 + 0.5;
   }
 
   const geo = new THREE.BufferGeometry();
