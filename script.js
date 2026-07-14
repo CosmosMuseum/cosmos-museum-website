@@ -1529,431 +1529,166 @@ function buildNebulaBackground() {
 function buildSun() {
   const group = new THREE.Group();
   group.userData = { planetName: 'Sun' };
-  const geo = new THREE.SphereGeometry(5, 128, 128);
-  const tex = realTextures.sun_map || createTexture('sun');
 
-  // Custom ShaderMaterial for animated sun surface
-  const sunMat = new THREE.ShaderMaterial({
-    uniforms: {
-      uTexture: { value: tex },
-      uTime:    { value: 0.0 },
-    },
-    vertexShader: `
-      varying vec2 vUv;
-      varying vec3 vNormal;
-      varying vec3 vPosition;
-      void main() {
-        vUv = uv;
-        vNormal = normalize(normalMatrix * normal);
-        vPosition = (modelMatrix * vec4(position, 1.0)).xyz;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-    fragmentShader: `
-      uniform sampler2D uTexture;
-      uniform float uTime;
-      varying vec2 vUv;
-      varying vec3 vNormal;
-      varying vec3 vPosition;
+  const vertexShader = `
+void main(){
+  gl_Position = vec4(position.xy, 0.0, 1.0);
+}`;
+  const fragmentShader = `
+precision highp float;
+uniform float iTime;
+uniform vec3 iResolution;
+uniform mat3 uCameraRotation;
+vec4 hash4(vec4 n){return fract(sin(n)*1399763.5453123);}
+float noise4q(vec4 x){
+vec4 n3=vec4(0,0.25,0.5,0.75);
+vec4 p2=floor(x.wwww+n3);
+vec4 b=floor(x.xxxx+n3)+floor(x.yyyy+n3)*157.0+floor(x.zzzz+n3)*113.0;
+vec4 p1=b+fract(p2*0.00390625)*vec4(164352.0,-164352.0,163840.0,-163840.0);
+p2=b+fract((p2+1.0)*0.00390625)*vec4(164352.0,-164352.0,163840.0,-163840.0);
+vec4 f1=fract(x.xxxx+n3);
+vec4 f2=fract(x.yyyy+n3);
+f1=f1*f1*(3.0-2.0*f1);
+f2=f2*f2*(3.0-2.0*f2);
+vec4 n1=vec4(0,1.0,157.0,158.0);
+vec4 n2=vec4(113.0,114.0,270.0,271.0);
+vec4 vs1=mix(hash4(p1),hash4(n1.yyyy+p1),f1);
+vec4 vs2=mix(hash4(n1.zzzz+p1),hash4(n1.wwww+p1),f1);
+vec4 vs3=mix(hash4(p2),hash4(n1.yyyy+p2),f1);
+vec4 vs4=mix(hash4(n1.zzzz+p2),hash4(n1.wwww+p2),f1);
+vs1=mix(vs1,vs2,f2);vs3=mix(vs3,vs4,f2);
+vs2=mix(hash4(n2.xxxx+p1),hash4(n2.yyyy+p1),f1);
+vs4=mix(hash4(n2.zzzz+p1),hash4(n2.wwww+p1),f1);
+vs2=mix(vs2,vs4,f2);
+vs4=mix(hash4(n2.xxxx+p2),hash4(n2.yyyy+p2),f1);
+vec4 vs5=mix(hash4(n2.zzzz+p2),hash4(n2.wwww+p2),f1);
+vs4=mix(vs4,vs5,f2);
+f1=fract(x.zzzz+n3);f2=fract(x.wwww+n3);
+f1=f1*f1*(3.0-2.0*f1);f2=f2*f2*(3.0-2.0*f2);
+vs1=mix(vs1,vs2,f1);vs3=mix(vs3,vs4,f1);vs1=mix(vs1,vs3,f2);
+float r=dot(vs1,vec4(0.25));
+return r*r*(3.0-2.0*r);
+}
+float noiseSpere(vec3 ray,vec3 pos,float r,mat3 mr,float zoom,vec3 subnoise,float anim){
+float b=dot(ray,pos);
+float c=dot(pos,pos)-b*b;
+vec3 r1=vec3(0.0);
+float s=0.0;
+float d=0.03125;
+float d2=zoom/(d*d);
+float ar=5.0;
+for(int i=0;i<3;i++){
+float rq=r*r;
+if(c<rq){
+float l1=sqrt(rq-c);
+r1=ray*(b-l1)-pos;
+r1=r1*mr;
+s+=abs(noise4q(vec4(r1*d2+subnoise*ar,anim*ar))*d);
+}
+ar-=2.0;d*=4.0;d2*=0.0625;r=r-r*0.02;
+}
+return s;
+}
+float ring(vec3 ray,vec3 pos,float r,float size){
+float b=dot(ray,pos);
+float c=dot(pos,pos)-b*b;
+return max(0.0,1.0-size*abs(r-sqrt(c)));
+}
+float ringRayNoise(vec3 ray,vec3 pos,float r,float size,mat3 mr,float anim){
+float b=dot(ray,pos);
+vec3 pr=ray*b-pos;
+float c=length(pr);
+pr*=mr;pr=normalize(pr);
+float s=max(0.0,1.0-size*abs(r-c));
+float nd=noise4q(vec4(pr*1.0,-anim+c))*2.0;
+nd=pow(nd,2.0);
+float n=0.4;
+float ns=1.0;
+if(c>r){
+n=noise4q(vec4(pr*10.0,-anim+c));
+ns=noise4q(vec4(pr*50.0,-anim*2.5+c*2.0))*2.0;
+}
+n=n*n*nd*ns;
+return pow(s,4.0)+s*s*n;
+}
+vec4 noiseSpace(vec3 ray,vec3 pos,float r,mat3 mr,float zoom,vec3 subnoise,float anim){
+float b=dot(ray,pos);
+float c=dot(pos,pos)-b*b;
+vec3 r1=vec3(0.0);
+float s=0.0;
+float d=0.0625*1.5;
+float d2=zoom/d;
+float rq=r*r;
+float l1=sqrt(abs(rq-c));
+r1=(ray*(b-l1)-pos)*mr;
+r1*=d2;
+s+=abs(noise4q(vec4(r1+subnoise,anim))*d);
+s+=abs(noise4q(vec4(r1*0.5+subnoise,anim))*d*2.0);
+s+=abs(noise4q(vec4(r1*0.25+subnoise,anim))*d*4.0);
+return vec4(s*2.0,
+abs(noise4q(vec4(r1*0.1+subnoise,anim))),
+abs(noise4q(vec4(r1*0.1+subnoise*6.0,anim))),
+abs(noise4q(vec4(r1*0.1+subnoise*13.0,anim))));
+}
+float sphereZero(vec3 ray,vec3 pos,float r){
+float b=dot(ray,pos);
+float c=dot(pos,pos)-b*b;
+return c<r*r?0.0:1.0;
+}
+void main(){
+vec2 fragCoord=gl_FragCoord.xy;
+vec2 p=(-iResolution.xy+2.0*fragCoord.xy)/iResolution.y;
+float time=iTime;
+vec3 ray=normalize(vec3(p,2.0));
+vec3 pos=vec3(0.0,0.0,3.0);
+mat3 mr=uCameraRotation;
+float s1=noiseSpere(ray,pos,1.0,mr,0.5,vec3(0.0),time);
+s1=pow(min(1.0,s1*2.4),2.0);
+float s2=noiseSpere(ray,pos,1.0,mr,4.0,vec3(83.23,34.34,67.453),time);
+s2=min(1.0,s2*2.2);
+vec4 fragColor=vec4(mix(vec3(1.0,1.0,0.0),vec3(1.0),pow(s1,60.0))*s1,1.0);
+fragColor+=vec4(mix(mix(vec3(1.0,0.0,0.0),vec3(1.0,0.0,1.0),pow(s2,2.0)),vec3(1.0),pow(s2,10.0))*s2,1.0);
+fragColor.xyz-=vec3(ring(ray,pos,1.03,11.0))*2.0;
+fragColor=max(vec4(0.0),fragColor);
+float s3=ringRayNoise(ray,pos,0.96,1.0,mr,time);
+fragColor.xyz+=mix(vec3(1.0,0.6,0.1),vec3(1.0,0.95,1.0),pow(s3,3.0))*s3;
+float zero=sphereZero(ray,pos,0.9);
+if(zero>0.0){
+vec4 s4=noiseSpace(ray,pos,100.0,mr,0.05,vec3(1.0,2.0,4.0),0.0);
+s4.x=pow(s4.x,3.0);
+fragColor.xyz+=mix(mix(vec3(1.0,0.0,0.0),vec3(0.0,0.0,1.0),s4.y*1.9),vec3(0.9,1.0,0.1),s4.w*0.75)*s4.x*pow(s4.z*2.5,3.0)*0.2*zero;
+}
+fragColor=max(vec4(0.0),fragColor);
+fragColor=min(vec4(1.0),fragColor);
+gl_FragColor=fragColor;
+}`;
 
-      // ── Simplex 3D noise ──────────────────────────────────────
-      vec3 mod289(vec3 x){return x-floor(x*(1./289.))*289.;}
-      vec4 mod289(vec4 x){return x-floor(x*(1./289.))*289.;}
-      vec4 permute(vec4 x){return mod289(((x*34.)+1.)*x);}
-      vec4 taylorInvSqrt(vec4 r){return 1.7928429140016-0.8537347209531*r;}
-      float snoise(vec3 v){
-        const vec2 C=vec2(1./6.,1./3.);
-        const vec4 D=vec4(0.,.5,1.,2.);
-        vec3 i=floor(v+dot(v,C.yyy));
-        vec3 x0=v-i+dot(i,C.xxx);
-        vec3 g=step(x0.yzx,x0.xyz);
-        vec3 l=1.-g;
-        vec3 i1=min(g.xyz,l.zxy);
-        vec3 i2=max(g.xyz,l.zxy);
-        vec3 x1=x0-i1+C.xxx;
-        vec3 x2=x0-i2+C.yyy;
-        vec3 x3=x0-D.yyy;
-        i=mod289(i);
-        vec4 p=permute(permute(permute(
-          i.z+vec4(0.,i1.z,i2.z,1.))
-          +i.y+vec4(0.,i1.y,i2.y,1.))
-          +i.x+vec4(0.,i1.x,i2.x,1.));
-        float n_=.142857142857;
-        vec3 ns=n_*D.wyz-D.xzx;
-        vec4 j=p-49.*floor(p*ns.z*ns.z);
-        vec4 x_=floor(j*ns.z);
-        vec4 y_=floor(j-7.*x_);
-        vec4 x=x_*ns.x+ns.yyyy;
-        vec4 y=y_*ns.x+ns.yyyy;
-        vec4 h=1.-abs(x)-abs(y);
-        vec4 b0=vec4(x.xy,y.xy);
-        vec4 b1=vec4(x.zw,y.zw);
-        vec4 s0=floor(b0)*2.+1.;
-        vec4 s1=floor(b1)*2.+1.;
-        vec4 sh=-step(h,vec4(0.));
-        vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy;
-        vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
-        vec3 p0=vec3(a0.xy,h.x);
-        vec3 p1=vec3(a0.zw,h.y);
-        vec3 p2=vec3(a1.xy,h.z);
-        vec3 p3=vec3(a1.zw,h.w);
-        vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
-        p0*=norm.x;p1*=norm.y;p2*=norm.z;p3*=norm.w;
-        vec4 m=max(.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.);
-        m=m*m;
-        return 42.*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
-      }
-
-      // ── Fractal Brownian Motion (FBM) ─────────────────────────
-      float fbm(vec3 p, int oct) {
-        float v=0., a=0.5;
-        for(int i=0;i<8;i++){
-          if(i>=oct) break;
-          v += a * snoise(p);
-          p *= 2.3; a *= 0.46;
-        }
-        return v * 0.5 + 0.5;
-      }
-
-      // ── Domain-warped FBM ─────────────────────────────────────
-      float warpedFbm(vec3 p, float t){
-        // Warp the input domain using a separate fbm pass
-        vec3 warp = vec3(
-          fbm(p + vec3(0.0, 0.0, t * 0.3), 4),
-          fbm(p + vec3(5.2, 1.3, t * 0.2), 4),
-          fbm(p + vec3(-3.9, 2.8, t * 0.4), 4)
-        );
-        return fbm(p + 1.4 * warp, 6);
-      }
-
-      // ── Voronoi-ish convection cells ─────────────────────────
-      float convectionCells(vec3 p){
-        // Create discrete Voronoi-like grid for granulation
-        vec3 ip = floor(p);
-        vec3 fp = fract(p);
-        float md = 1.0;
-        for(int x=-1;x<=1;x++) for(int y=-1;y<=1;y++) for(int z=-1;z<=1;z++){
-          vec3 nb = vec3(float(x),float(y),float(z));
-          vec3 h = vec3(
-            fract(sin(dot(ip+nb, vec3(127.1,311.7,74.7)))*43758.5),
-            fract(sin(dot(ip+nb, vec3(269.5,183.3,246.1)))*43758.5),
-            fract(sin(dot(ip+nb, vec3(113.5,271.9,124.6)))*43758.5)
-          );
-          md = min(md, length(fp - nb - h));
-        }
-        return md;
-      }
-
-      void main() {
-        vec3 sp = normalize(vPosition);
-        float t = uTime * 0.04;
-
-        // ── LAYER 1: Large-scale convection base (slow) ──────────
-        float macro = warpedFbm(sp * 1.5 + vec3(t*0.4, t*0.15, t*0.25), t);
-
-        // ── LAYER 2: Mid-scale turbulent plasma ──────────────────
-        float meso = fbm(sp * 4.0 + vec3(-t*0.3, t*0.55, -t*0.18) + macro * 1.2, 5);
-
-        // ── LAYER 3: High-freq granulation noise ─────────────────
-        float micro = fbm(sp * 9.0 + vec3(t*0.7, -t*0.5, t*0.3) + meso * 0.9, 4);
-
-        // ── LAYER 4: Fine detail - magnetic field lines ──────────
-        float fineDetail = fbm(sp * 20.0 + vec3(t*1.1, -t*0.8, t*0.6) + micro * 0.5, 3);
-
-        // ── LAYER 5: Voronoi convection cells (solar granules) ───
-        float cells = convectionCells(sp * 7.0 + vec3(t*0.2, 0.0, t*0.15));
-        float granules = 1.0 - smoothstep(0.1, 0.45, cells); // bright centers, dark edges
-
-        // ── LAYER 6: Sunspot regions (dark cool areas) ───────────
-        float spots = fbm(sp * 3.5 + vec3(t*0.08, t*0.06, t*0.05), 3);
-        float sunspotMask = smoothstep(0.62, 0.70, spots); // only at very low turb zones
-
-        // ── LAYER 7: Chromatic turbulence (separate per channel) ─
-        // Each channel shifts direction slightly, creating iridescence
-        float chromR = fbm(sp * 6.0 + vec3(t*0.4, 0.3, 0.1), 4);
-        float chromG = fbm(sp * 6.0 + vec3(0.1, t*0.35, 0.5), 4);
-        float chromB = fbm(sp * 6.0 + vec3(0.5, 0.2, t*0.5), 4);
-
-        // ── Composite turbulence ─────────────────────────────────
-        float turb = macro*0.3 + meso*0.25 + micro*0.25 + fineDetail*0.1 + granules*0.1;
-        turb = clamp(turb, 0.0, 1.0);
-
-        // ── Color palette ─────────────────────────────────────────
-        vec3 cSunspot  = vec3(0.10, 0.00, 0.00); // near-black sunspot
-        vec3 cDeepRed  = vec3(0.65, 0.05, 0.00); // deep red
-        vec3 cFlame    = vec3(0.95, 0.30, 0.00); // deep orange/flame
-        vec3 cOrange   = vec3(1.00, 0.55, 0.05); // vivid orange
-        vec3 cYellow   = vec3(1.00, 0.82, 0.20); // yellow-orange
-        vec3 cHot      = vec3(1.00, 0.95, 0.70); // hot yellow
-        vec3 cWhite    = vec3(1.00, 0.98, 0.95); // white-hot plasma
-
-        // Multi-stop gradient based on turbulence
-        vec3 col = cDeepRed;
-        col = mix(col, cFlame,  smoothstep(0.10, 0.30, turb));
-        col = mix(col, cOrange, smoothstep(0.28, 0.48, turb));
-        col = mix(col, cYellow, smoothstep(0.45, 0.65, turb));
-        col = mix(col, cHot,    smoothstep(0.62, 0.78, turb));
-        col = mix(col, cWhite,  smoothstep(0.76, 0.92, turb));
-
-        // Add chromatic RGB shift for iridescent plasma shimmer
-        vec3 chromaTint = vec3(chromR, chromG*0.7, chromB*0.3) * 0.12;
-        col += chromaTint;
-
-        // Add granulation: bright centers, dark borders
-        col = mix(col * 0.65, col * 1.25, granules * 0.4 + 0.6);
-
-        // Sunspots: darken + reddish in spot regions
-        col = mix(col, cSunspot + vec3(0.08, 0.0, 0.0), sunspotMask * 0.85);
-
-        // Mix with base texture for detail
-        vec4 texColor = texture2D(uTexture, vUv);
-        col = mix(texColor.rgb, col, 0.82);
-
-        // ── Fresnel — uniform glow, no dark edges (star emits light) ──
-        float fresnel = clamp(dot(vNormal, normalize(cameraPosition - vPosition)), 0.0, 1.0);
-        // Subtle limb brightening instead of darkening — star emits from everywhere
-        float limb = pow(fresnel, 0.6);
-        col *= mix(0.85, 1.0, limb);
-
-        // ── Bright white-hot center (subtle) ──────────────────────
-        float centreBoost = pow(fresnel, 0.5);
-        col = mix(col, cWhite * 1.2, centreBoost * 0.2);
-
-        // ── Emission boost ────────────────────────────────────────
-        col *= 2.0;
-
-        // ── Multi-frequency flicker ───────────────────────────────
-        float flicker  = 1.0
-          + sin(t * 5.0)  * 0.025
-          + sin(t * 11.3) * 0.015
-          + sin(t * 23.7) * 0.008;
-        col *= flicker;
-
-        gl_FragColor = vec4(col, 1.0);
-      }
-    `,
-  });
-
-  const mesh = new THREE.Mesh(geo, sunMat);
-  mesh.userData = { name: 'Sun', isSun: true };
-  group.add(mesh);
-
-  // ── REALISTIC SOLAR CORONA SHADER ──────────────────────
-  // Radiating streams of plasma light, animated with noise
-  const coronaGeo = new THREE.SphereGeometry(5.6, 64, 64);
-  const coronaMat = new THREE.ShaderMaterial({
-    uniforms: {
-      uTime: { value: 0 },
-      uIntensity: { value: 1.0 },
-    },
-    vertexShader: `
-      varying vec3 vNormal;
-      varying vec3 vWorldPos;
-      varying vec2 vUv;
-      void main() {
-        vNormal = normalize(normalMatrix * normal);
-        vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
-        vUv = uv;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-    fragmentShader: `
-      uniform float uTime;
-      uniform float uIntensity;
-      varying vec3 vNormal;
-      varying vec3 vWorldPos;
-      varying vec2 vUv;
-
-      // Simplex noise helpers
-      vec3 mod289(vec3 x){return x-floor(x*(1./289.))*289.;}
-      vec4 mod289(vec4 x){return x-floor(x*(1./289.))*289.;}
-      vec4 permute(vec4 x){return mod289(((x*34.)+1.)*x);}
-      vec4 taylorInvSqrt(vec4 r){return 1.7928429140016-0.8537347209531*r;}
-      float snoise(vec3 v){
-        const vec2 C=vec2(1./6.,1./3.);
-        const vec4 D=vec4(0.,.5,1.,2.);
-        vec3 i=floor(v+dot(v,C.yyy));
-        vec3 x0=v-i+dot(i,C.xxx);
-        vec3 g=step(x0.yzx,x0.xyz);
-        vec3 l=1.-g;
-        vec3 i1=min(g.xyz,l.zxy);
-        vec3 i2=max(g.xyz,l.zxy);
-        vec3 x1=x0-i1+C.xxx;
-        vec3 x2=x0-i2+C.yyy;
-        vec3 x3=x0-D.yyy;
-        i=mod289(i);
-        vec4 p=permute(permute(permute(
-          i.z+vec4(0.,i1.z,i2.z,1.))
-          +i.y+vec4(0.,i1.y,i2.y,1.))
-          +i.x+vec4(0.,i1.x,i2.x,1.));
-        float n_=.142857142857;
-        vec3 ns=n_*D.wyz-D.xzx;
-        vec4 j=p-49.*floor(p*ns.z*ns.z);
-        vec4 x_=floor(j*ns.z);
-        vec4 y_=floor(j-7.*x_);
-        vec4 x=x_*ns.x+ns.yyyy;
-        vec4 y=y_*ns.x+ns.yyyy;
-        vec4 h=1.-abs(x)-abs(y);
-        vec4 b0=vec4(x.xy,y.xy);
-        vec4 b1=vec4(x.zw,y.zw);
-        vec4 s0=floor(b0)*2.+1.;
-        vec4 s1=floor(b1)*2.+1.;
-        vec4 sh=-step(h,vec4(0.));
-        vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy;
-        vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
-        vec3 p0=vec3(a0.xy,h.x);
-        vec3 p1=vec3(a0.zw,h.y);
-        vec3 p2=vec3(a1.xy,h.z);
-        vec3 p3=vec3(a1.zw,h.w);
-        vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
-        p0*=norm.x;p1*=norm.y;p2*=norm.z;p3*=norm.w;
-        vec4 m=max(.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.);
-        m=m*m;
-        return 42.*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
-      }
-
-      void main() {
-        vec3 viewDir = normalize(cameraPosition - vWorldPos);
-        float fresnel = 1.0 - max(dot(viewDir, vNormal), 0.0);
-
-        // ── Streaming corona rays (radial noise) ──
-        vec3 rayDir = normalize(vWorldPos);
-        float t = uTime * 0.015;
-
-        // Multi-scale noise for ray structure
-        float ray1 = snoise(rayDir * 3.0 + vec3(t * 0.4, 0.0, t * 0.2)) * 0.5 + 0.5;
-        float ray2 = snoise(rayDir * 6.0 + vec3(0.0, t * 0.3, t * 0.15)) * 0.5 + 0.5;
-        float ray3 = snoise(rayDir * 12.0 + vec3(t * 0.2, t * 0.25, 0.0)) * 0.5 + 0.5;
-
-        // Combine rays — create streaming streaks
-        float rays = ray1 * 0.5 + ray2 * 0.3 + ray3 * 0.2;
-        rays = pow(rays, 1.8); // sharpen the ray edges
-
-        // ── Radial fade: bright near surface, fades outward ──
-        float distFromCenter = length(vWorldPos);
-        float sunRadius = 5.0;
-        float radialFade = 1.0 - smoothstep(sunRadius * 1.0, sunRadius * 2.5, distFromCenter);
-
-        // ── Fresnel-based intensity (rim glow) ──
-        float rimGlow = pow(fresnel, 2.0);
-
-        // ── Combine: rays + radial fade + rim ──
-        float corona = rays * radialFade * (0.4 + rimGlow * 0.6);
-
-        // ── Pulsing shimmer ──
-        float shimmer = 1.0 + sin(t * 8.0) * 0.08 + sin(t * 13.7) * 0.05 + sin(t * 21.3) * 0.03;
-        corona *= shimmer;
-
-        // ── Color: white-hot core → orange → deep red outer ──
-        vec3 innerColor = vec3(1.0, 0.95, 0.85);  // white-hot
-        vec3 midColor   = vec3(1.0, 0.6, 0.15);    // orange
-        vec3 outerColor = vec3(0.9, 0.25, 0.02);   // deep red
-
-        float colorMix1 = smoothstep(0.0, 0.4, fresnel);
-        float colorMix2 = smoothstep(0.3, 0.9, fresnel);
-        vec3 col = mix(innerColor, midColor, colorMix1);
-        col = mix(col, outerColor, colorMix2);
-
-        // Add bright ray highlights
-        col += vec3(1.0, 0.9, 0.7) * rays * 0.3 * radialFade;
-
-        float alpha = corona * uIntensity * 0.85;
-        alpha = clamp(alpha, 0.0, 1.0);
-
-        gl_FragColor = vec4(col * (1.0 + corona * 1.5), alpha);
-      }
-    `,
-    transparent: true,
-    side: THREE.BackSide,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-  });
-  const coronaMesh = new THREE.Mesh(coronaGeo, coronaMat);
-  group.add(coronaMesh);
-
-  // ── OUTER GLOW SPHERE (soft broad halo) ──
-  const haloGeo = new THREE.SphereGeometry(8, 32, 32);
-  const haloMat = new THREE.ShaderMaterial({
-    uniforms: { uTime: { value: 0 } },
-    vertexShader: `
-      varying vec3 vNormal;
-      varying vec3 vWorldPos;
-      void main() {
-        vNormal = normalize(normalMatrix * normal);
-        vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-    fragmentShader: `
-      uniform float uTime;
-      varying vec3 vNormal;
-      varying vec3 vWorldPos;
-      void main() {
-        vec3 viewDir = normalize(cameraPosition - vWorldPos);
-        float fresnel = 1.0 - max(dot(viewDir, vNormal), 0.0);
-        float glow = pow(fresnel, 3.0);
-        float t = uTime * 0.01;
-        float pulse = 1.0 + sin(t * 6.0) * 0.06 + sin(t * 11.0) * 0.04;
-        glow *= pulse;
-        vec3 col = mix(vec3(1.0, 0.6, 0.1), vec3(1.0, 0.35, 0.05), fresnel);
-        gl_FragColor = vec4(col, glow * 0.25);
-      }
-    `,
-    transparent: true,
-    side: THREE.BackSide,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-  });
-  const haloMesh = new THREE.Mesh(haloGeo, haloMat);
-  group.add(haloMesh);
-
-  // Store references for animation
-  group.userData._coronaMat = coronaMat;
-  group.userData._haloMat = haloMat;
-
-  // ── LENS FLARE ──
-  const flareCanvas = document.createElement('canvas');
-  flareCanvas.width = flareCanvas.height = 256;
-  const fctx = flareCanvas.getContext('2d');
-  const fgrd = fctx.createRadialGradient(128, 128, 0, 128, 128, 128);
-  fgrd.addColorStop(0, 'rgba(255,248,220,0.7)');
-  fgrd.addColorStop(0.1, 'rgba(255,230,170,0.4)');
-  fgrd.addColorStop(0.3, 'rgba(255,180,80,0.1)');
-  fgrd.addColorStop(0.6, 'rgba(255,120,20,0.03)');
-  fgrd.addColorStop(1, 'rgba(255,80,0,0)');
-  fctx.fillStyle = fgrd;
-  fctx.fillRect(0, 0, 256, 256);
-  const flareTex = new THREE.CanvasTexture(flareCanvas);
-  // Secondary flare element
-  const flare2Canvas = document.createElement('canvas');
-  flare2Canvas.width = flare2Canvas.height = 64;
-  const f2ctx = flare2Canvas.getContext('2d');
-  const f2grd = f2ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-  f2grd.addColorStop(0, 'rgba(120,180,255,0.3)');
-  f2grd.addColorStop(0.5, 'rgba(100,150,255,0.08)');
-  f2grd.addColorStop(1, 'rgba(80,120,255,0)');
-  f2ctx.fillStyle = f2grd;
-  f2ctx.fillRect(0, 0, 64, 64);
-  const flare2Tex = new THREE.CanvasTexture(flare2Canvas);
-  const lensflare = new THREE.Lensflare();
-  lensflare.addElement(new THREE.LensflareElement(flareTex, 350, 0, new THREE.Color(0xFFF8DC)));
-  lensflare.addElement(new THREE.LensflareElement(flare2Tex, 50, 0.3));
-  lensflare.addElement(new THREE.LensflareElement(flare2Tex, 80, 0.4));
-  lensflare.addElement(new THREE.LensflareElement(flare2Tex, 35, 0.5));
-  lensflare.addElement(new THREE.LensflareElement(flare2Tex, 70, 0.6));
-  lensflare.addElement(new THREE.LensflareElement(flare2Tex, 40, 0.7));
-  group.add(lensflare);
-
-  // ── PULSE ANIMATION ──
-  group.userData._pulsePhase = 0;
-  group.userData._pulse = (dt) => {
-    group.userData._pulsePhase += dt * 0.8;
-    const s = 1 + Math.sin(group.userData._pulsePhase) * 0.015;
-    mesh.scale.set(s, s, s);
+  const sunUniforms = {
+    iTime: { value: 0 },
+    iResolution: { value: new THREE.Vector3(window.innerWidth, window.innerHeight, 1) },
+    uCameraRotation: { value: new THREE.Matrix3() }
   };
+  
+  group.userData.sunUniforms = sunUniforms;
+
+  const sunMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(2, 2),
+    new THREE.ShaderMaterial({
+      vertexShader,
+      fragmentShader,
+      uniforms: sunUniforms,
+      depthTest: false,
+      depthWrite: false,
+      transparent: true,
+      blending: THREE.AdditiveBlending // Helps blend the black background if needed
+    })
+  );
+  sunMesh.frustumCulled = false;
+  sunMesh.renderOrder = -50; 
+  group.add(sunMesh);
 
   scene.add(group);
-  planetObjects['Sun'] = { group, mesh, data: PLANET_DATA['Sun'] };
+  planetObjects['Sun'] = { group, mesh: sunMesh, data: PLANET_DATA['Sun'] };
 
   const sunLabel = createTextSprite('Sol', {
     fontSize: 36,
@@ -3270,19 +3005,13 @@ function animate() {
 
   // Sun pulse
   const sunPO = planetObjects['Sun'];
-  if (sunPO) {
-    const pulse = 1 + Math.sin(animationTime * 2) * 0.01;
-    sunPO.mesh.scale.set(pulse, pulse, pulse);
-    if (sunPO.mesh.material.uniforms) {
-      sunPO.mesh.material.uniforms.uTime.value = animationTime;
-    }
-    // Update corona + halo shader time
-    if (sunPO.group.userData._coronaMat) {
-      sunPO.group.userData._coronaMat.uniforms.uTime.value = animationTime;
-    }
-    if (sunPO.group.userData._haloMat) {
-      sunPO.group.userData._haloMat.uniforms.uTime.value = animationTime;
-    }
+  if (sunPO && sunPO.group.userData.sunUniforms) {
+    const su = sunPO.group.userData.sunUniforms;
+    su.iTime.value = animationTime;
+    const tempMatrix = new THREE.Matrix3();
+    tempMatrix.getNormalMatrix(camera.matrixWorld);
+    su.uCameraRotation.value.copy(tempMatrix);
+    su.iResolution.value.set(window.innerWidth, window.innerHeight, 1);
   }
 
   // Camera animation
@@ -4951,14 +4680,13 @@ function cinematicIntro() {
       });
     }
     const sunPO = planetObjects['Sun'];
-    if (sunPO) {
-      const pulse = 1 + Math.sin(t * 10) * 0.01;
-      sunPO.mesh.scale.set(pulse, pulse, pulse);
-      if (sunPO.mesh.material.uniforms) {
-        sunPO.mesh.material.uniforms.uTime.value = t;
-      }
-      if (sunPO.group.userData._coronaMat) sunPO.group.userData._coronaMat.uniforms.uTime.value = t;
-      if (sunPO.group.userData._haloMat) sunPO.group.userData._haloMat.uniforms.uTime.value = t;
+    if (sunPO && sunPO.group.userData.sunUniforms) {
+      const su = sunPO.group.userData.sunUniforms;
+      su.iTime.value = t;
+      const tmpMat = new THREE.Matrix3();
+      tmpMat.getNormalMatrix(camera.matrixWorld);
+      su.uCameraRotation.value.copy(tmpMat);
+      su.iResolution.value.set(window.innerWidth, window.innerHeight, 1);
     }
     composer.render();
     requestAnimationFrame(introStep);
