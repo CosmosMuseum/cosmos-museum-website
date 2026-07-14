@@ -1252,8 +1252,8 @@ function createStarfield() {
         vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
         gl_Position = projectionMatrix * mvPosition;
         
-        // Shrink stars when close to planetarium
-        float sizeFactor = mix(0.55, 1.0, vDistFactor);
+        // Scale stars: smaller when close, moderate when far
+        float sizeFactor = mix(0.55, 0.72, vDistFactor);
         gl_PointSize = (aSize * sizeFactor) * (300.0 / -mvPosition.z);
       }
     `,
@@ -1296,8 +1296,8 @@ function createStarfield() {
         float twinkle = sin(uTime * (vRandom.z * 5.0 + 2.0) + vRandom.w * 10.0) * 0.5 + 0.5;
         brightness *= mix(0.3, 1.0, twinkle);
         
-        // Dim stars when close to planetarium
-        brightness *= mix(0.45, 1.0, vDistFactor);
+        // Dim stars: subtler at all distances
+        brightness *= mix(0.45, 0.68, vDistFactor);
         
         // Soft edges
         float alpha = smoothstep(0.5, 0.0, d);
