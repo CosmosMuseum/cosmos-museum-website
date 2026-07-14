@@ -1,4 +1,4 @@
-﻿// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 //  Cosmic Explorer — Built by Ritesh Meena (github.com/rtm20)
 //  Licensed under CC BY-NC 4.0
 //  https://github.com/rtm20/cosmic-explorer
@@ -2269,196 +2269,115 @@ function buildKuiperBelt() {
 // Kuiper belt built via deferred queue below
 
 // ── SHOOTING STARS (ADVANCED SHADERS) ──
-const cometHeadVertexShader = `
-  varying vec3 vNormal;
-  varying vec3 vPositionNormal;
-  void main() {
-    vNormal = normalize(normalMatrix * normal);
-    vPositionNormal = normalize((modelViewMatrix * vec4(position, 1.0)).xyz);
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  }
-`;
+const cometHeadVertexShader = ""; // Not used anymore
+let cometsBackgroundMesh;
+let cometsUniforms;
 
-const cometHeadFragmentShader = `
-  uniform vec3 colorCore;
-  uniform vec3 colorEdge;
-  uniform float opacity;
-  varying vec3 vNormal;
-  varying vec3 vPositionNormal;
-  void main() {
-    // Fresnel glow effect
-    float intensity = pow(0.7 - dot(vNormal, vPositionNormal), 2.5);
-    vec3 glow = mix(colorCore, colorEdge, intensity);
-    gl_FragColor = vec4(glow, intensity * opacity * 2.0);
-  }
-`;
+function generateNoiseTexture(size) {
+    const c = document.createElement('canvas');
+    c.width = c.height = size;
+    const ctx = c.getContext('2d');
+    const imgData = ctx.createImageData(size, size);
+    for(let i = 0; i < size * size * 4; i += 4) {
+        const v = Math.random() * 255;
+        imgData.data[i] = v;
+        imgData.data[i+1] = v;
+        imgData.data[i+2] = v;
+        imgData.data[i+3] = 255;
+    }
+    ctx.putImageData(imgData, 0, 0);
+    return c;
+}
 
-const cometTailVertexShader = `
-  varying vec2 vUv;
-  void main() {
-    vUv = uv;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  }
-`;
+function initCometsShader() {
+    if (cometsBackgroundMesh) return;
+    
+    const noiseCanvas = generateNoiseTexture(512);
+    const noiseTex = new THREE.CanvasTexture(noiseCanvas);
+    noiseTex.wrapS = THREE.RepeatWrapping;
+    noiseTex.wrapT = THREE.RepeatWrapping;
+    noiseTex.minFilter = THREE.LinearFilter;
+    noiseTex.magFilter = THREE.LinearFilter;
 
-const shootingStars = [];
-function spawnShootingStar() {
-  const group = new THREE.Group();
+    cometsUniforms = {
+        u_time: { value: 0.0 },
+        u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+        u_channel0: { value: noiseTex }
+    };
 
-  const coreColor = new THREE.Color(0xffffff);
-  const edgeColor = new THREE.Color().lerpColors(
-    new THREE.Color(0x3366ff), 
-    new THREE.Color(0xb333ff), 
-    Math.random()
-  );
+    const vertSrc = `
+        void main() {
+            gl_Position = vec4(position.xy, 0.0, 1.0);
+        }
+    `;
 
-  // 1. Volumetric Head (at Y = 0)
-  const headGeo = new THREE.SphereGeometry(1.2, 16, 16);
-  const headMat = new THREE.ShaderMaterial({
-    uniforms: {
-      colorCore: { value: coreColor },
-      colorEdge: { value: edgeColor },
-      opacity: { value: 1.0 }
-    },
-    vertexShader: cometHeadVertexShader,
-    fragmentShader: cometHeadFragmentShader,
-    transparent: true,
-    blending: THREE.AdditiveBlending,
-    depthWrite: false
-  });
-  const head = new THREE.Mesh(headGeo, headMat);
-  group.add(head);
+    const fragSrc = `
+        precision mediump float;
+        uniform float u_time;
+        uniform vec2 u_resolution;
+        uniform sampler2D u_channel0;
+        void main() {
+            vec2 I = gl_FragCoord.xy;
+            vec2 r = u_resolution.xy;
+            vec4 O = vec4(0.0);
+            vec2 p = (I+I-r) / r.y * mat2(4.0,-3.0,3.0,4.0);
+            float t = u_time;
+            float T = t + 0.1*p.x;
+            for(int n = 0; n < 50; n++) {
+                float i = float(n);
+                vec3 center = vec3(
+                    cos(i*11.0+i*i+T*0.2),
+                    sin(i*9.0+i*i+T*0.2) - t*0.5 - i*0.15,
+                    0.0
+                );
+                vec2 q = p - center.xy;
+                O += (cos(sin(i)*vec4(1.0,2.0,3.0,0.0))+1.0)
+                    * exp(sin(i+0.1*i*T))
+                    / length(max(q,
+                        q / vec2(texture2D(u_channel0, q/exp(sin(i)+5.0)+vec2(t,i)/8.0).r*40.0, 2.0))
+                    );
+            }
+            vec4 final = 0.01*p.y*vec4(0.0,1.0,2.0,3.0)+O*O/1e4;
+            vec4 t2 = exp(2.0*final);
+            vec3 color = (t2.rgb - 1.0) / (t2.rgb + 1.0);
+            float alpha = max(max(color.r, color.g), color.b);
+            gl_FragColor = vec4(color, alpha);
+        }
+    `;
 
-  // 2. Plasma Tail
-  // Cone base radius = 1.0, height = 40. Default aligns with Y axis.
-  // Base is at -Y, Tip is at +Y.
-  const tailGeo = new THREE.ConeGeometry(1.0, 40, 16, 1, true);
-  // Shift it up so the base is at Y=0 and tip is at Y=40
-  tailGeo.translate(0, 20, 0); 
+    const mat = new THREE.ShaderMaterial({
+        uniforms: cometsUniforms,
+        vertexShader: vertSrc,
+        fragmentShader: fragSrc,
+        transparent: true,
+        depthWrite: false,
+        depthTest: false,
+        blending: THREE.AdditiveBlending
+    });
 
-  const tailMat = new THREE.ShaderMaterial({
-    uniforms: {
-      time: { value: 0.0 },
-      colorCore: { value: coreColor },
-      colorEdge: { value: edgeColor },
-      opacity: { value: 1.0 }
-    },
-    vertexShader: cometTailVertexShader,
-    fragmentShader: `
-      uniform float time;
-      uniform vec3 colorCore;
-      uniform vec3 colorEdge;
-      uniform float opacity;
-      varying vec2 vUv;
+    const geo = new THREE.PlaneGeometry(2, 2);
+    cometsBackgroundMesh = new THREE.Mesh(geo, mat);
+    cometsBackgroundMesh.frustumCulled = false;
+    cometsBackgroundMesh.renderOrder = -100; // Render behind everything else
+    
+    scene.add(cometsBackgroundMesh);
 
-      float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
-      float noise(vec2 p) {
-          vec2 i = floor(p);
-          vec2 f = fract(p);
-          f = f * f * (3.0 - 2.0 * f);
-          return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
-                     mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
-      }
-
-      void main() {
-        // vUv.y goes from 0 (Base at Y=0) to 1 (Tip at Y=40)
-        // We want it bright at the base (0) and faded at the tip (1)
-        float fadeY = 1.0 - vUv.y;
-        fadeY = pow(fadeY, 1.5); 
-        
-        // Animate noise moving along the tail from head to tip
-        vec2 uvNoise = vec2(vUv.x * 10.0, vUv.y * 5.0 - time * 15.0);
-        float n = noise(uvNoise) * 0.8 + 0.2; 
-        
-        float intensity = fadeY * n * opacity;
-        vec3 finalColor = mix(colorEdge, colorCore, fadeY * n);
-        
-        gl_FragColor = vec4(finalColor, intensity);
-      }
-    `,
-    transparent: true,
-    blending: THREE.AdditiveBlending,
-    depthWrite: false,
-    side: THREE.DoubleSide
-  });
-  const tail = new THREE.Mesh(tailGeo, tailMat);
-  group.add(tail);
-
-  // 3. Realistic Light (lowered intensity so it doesn't blind planets)
-  const light = new THREE.PointLight(edgeColor, 1.5, 120);
-  head.add(light);
-
-  // Position & Direction
-  const start = new THREE.Vector3(
-    300 + Math.random() * 200,      
-    80 + Math.random() * 150,       
-    (Math.random() - 0.5) * 400     
-  );
-  const dir = new THREE.Vector3(
-    -(0.8 + Math.random() * 0.4),   
-    -(0.2 + Math.random() * 0.4),   
-    (Math.random() - 0.5) * 0.2     
-  ).normalize();
-
-  group.position.copy(start);
-  
-  // Orient group so the FRONT (-Y axis) points towards the movement direction (dir)
-  // This means the head (Y=0) is in front, and the tail (Y=40) trails behind.
-  group.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), dir.clone().normalize());
-
-  group.userData = { 
-    dir, 
-    speed: 12 + Math.random() * 8, 
-    life: 0, 
-    maxLife: 80 + Math.random() * 40,
-    headMat,
-    tailMat,
-    light
-  };
-
-  scene.add(group);
-  shootingStars.push(group);
+    window.addEventListener('resize', () => {
+        if(cometsUniforms) {
+            cometsUniforms.u_resolution.value.set(window.innerWidth, window.innerHeight);
+        }
+    });
 }
 
 function updateShootingStars() {
-  for (let i = shootingStars.length - 1; i >= 0; i--) {
-    const s = shootingStars[i];
-    s.userData.life++;
-    
-    // Move the group
-    s.position.addScaledVector(s.userData.dir, s.userData.speed);
-    
-    // Update shader time for plasma animation
-    s.userData.tailMat.uniforms.time.value += 0.05;
-
-    const progress = s.userData.life / s.userData.maxLife;
-    
-    // Fade in initially, fade out at end
-    let currentOpacity = 1.0;
-    if (progress < 0.1) {
-        currentOpacity = progress / 0.1;
-    } else if (progress > 0.7) {
-        currentOpacity = 1 - ((progress - 0.7) / 0.3);
+    if (!cometsBackgroundMesh) {
+        initCometsShader();
     }
-    
-    s.userData.headMat.uniforms.opacity.value = currentOpacity;
-    s.userData.tailMat.uniforms.opacity.value = currentOpacity;
-    s.userData.light.intensity = currentOpacity * 1.5;
-
-    if (s.userData.life >= s.userData.maxLife) {
-      scene.remove(s);
-      s.userData.headMat.dispose();
-      s.userData.tailMat.dispose();
-      s.children.forEach(child => {
-        if(child.geometry) child.geometry.dispose();
-      });
-      s.userData.light.dispose();
-      shootingStars.splice(i, 1);
+    if (cometsUniforms) {
+        cometsUniforms.u_time.value += 0.016;
     }
-  }
-  // Spawn frequency
-  if (Math.random() < 0.02) spawnShootingStar(); 
 }
+
 
 // ── COMET ──
 let asteroidGroup;
