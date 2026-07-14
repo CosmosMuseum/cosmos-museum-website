@@ -1332,11 +1332,11 @@ function createOrbitLine(radius, color, planetKey) {
   }
   geo.setAttribute('alpha', new THREE.BufferAttribute(alphas, 1));
 
-  const baseOpacity = Math.max(0.08, 0.5 - (radius / 150) * 0.45);
+  const colorHex = color || 0x4488cc;
   const mat = new THREE.LineBasicMaterial({
-    color: 0xffffff,
+    color: colorHex,
     transparent: true,
-    opacity: baseOpacity,
+    opacity: 0.3,
     blending: THREE.AdditiveBlending,
     depthWrite: false,
   });
@@ -1344,7 +1344,7 @@ function createOrbitLine(radius, color, planetKey) {
 
   const group = new THREE.Group();
   group.add(line);
-  group.userData = { isOrbitLine: true, planetKey, radius, line, color: 0xffffff, baseOpacity };
+  group.userData = { isOrbitLine: true, planetKey, radius, line, color: colorHex };
 
   orbitLines.push(group);
   return group;
@@ -1354,11 +1354,11 @@ function createOrbitLine(radius, color, planetKey) {
 function updateOrbitLines(time) {
   orbitLines.forEach(og => {
     if (!og.userData || !og.visible) return;
-    const { planetKey, radius, line, baseOpacity } = og.userData;
+    const { planetKey, radius, line } = og.userData;
     if (!planetKey) return;
 
-    const pulse = Math.sin(time * 1.5 + radius * 0.1) * 0.05;
-    line.material.opacity = baseOpacity + pulse;
+    const pulse = Math.sin(time * 1.5 + radius * 0.1) * 0.15 + 0.25;
+    line.material.opacity = pulse;
   });
 }
 
@@ -2770,7 +2770,7 @@ function spawnSelectionParticles(position, color) {
     randoms[i * 4 + 1] = Math.random();
     randoms[i * 4 + 2] = Math.random();
     randoms[i * 4 + 3] = Math.random();
-    sizes[i] = Math.random() * 10 + 4;
+    sizes[i] = Math.random() * 1.2 + 0.3;
   }
 
   const geo = new THREE.BufferGeometry();
