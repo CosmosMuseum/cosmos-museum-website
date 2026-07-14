@@ -13,8 +13,8 @@ const SolarEffects = (() => {
     const group = new THREE.Group();
     const prominenceData = [];
 
-    // Generate 5-7 prominences at random positions
-    const count = 5 + Math.floor(Math.random() * 3);
+    // Generate 0 prominences (removed)
+    const count = 0;
     for (let i = 0; i < count; i++) {
       const theta = Math.random() * Math.PI * 2;
       const phi = (Math.random() - 0.5) * Math.PI * 0.6; // near equator
