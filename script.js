@@ -1188,16 +1188,21 @@ function loadRealTextures() {
 let starUniforms;
 function createStarfield() {
   const geo = new THREE.BufferGeometry();
-  const NB_PARTICLES = 150;
+  const NB_PARTICLES = 3000; // Aumentado para llenar el museo
   
   const positions = new Float32Array(NB_PARTICLES * 3);
   const randoms = new Float32Array(NB_PARTICLES * 4);
   const sizes = new Float32Array(NB_PARTICLES);
   
   for(let i = 0; i < NB_PARTICLES; i++) {
-    positions[i * 3] = (Math.random() - 0.5) * 20;
-    positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+    // Distribución esférica como estaba antes (radio de 300 a 800)
+    const r = 300 + Math.random() * 500;
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    
+    positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+    positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+    positions[i * 3 + 2] = r * Math.cos(phi);
     
     randoms[i * 4] = Math.random();
     randoms[i * 4 + 1] = Math.random();
@@ -1213,7 +1218,8 @@ function createStarfield() {
   
   starUniforms = {
     uTime: { value: 0 },
-    uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+    uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+    uCameraDist: { value: 0 }
   };
   
   const mat = new THREE.ShaderMaterial({
@@ -1225,13 +1231,18 @@ function createStarfield() {
       attribute vec4 aRandom;
       attribute float aSize;
       uniform float uTime;
+      uniform float uCameraDist;
       
       varying vec4 vRandom;
       varying float vSize;
+      varying float vDistFactor;
       
       void main() {
         vRandom = aRandom;
         vSize = aSize;
+        
+        // Calculate how far camera is to apply dimming/shrinking
+        vDistFactor = smoothstep(100.0, 300.0, uCameraDist);
         
         vec3 pos = position;
         pos.y += sin(uTime * 0.5 + position.x * 0.1) * 1.0;
@@ -1241,13 +1252,16 @@ function createStarfield() {
         vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
         gl_Position = projectionMatrix * mvPosition;
         
-        gl_PointSize = aSize * (300.0 / -mvPosition.z);
+        // Shrink stars when close to planetarium
+        float sizeFactor = mix(0.55, 1.0, vDistFactor);
+        gl_PointSize = (aSize * sizeFactor) * (300.0 / -mvPosition.z);
       }
     `,
     fragmentShader: `
       uniform float uTime;
       varying vec4 vRandom;
       varying float vSize;
+      varying float vDistFactor;
       
       void main() {
         // Form star shape
@@ -1268,13 +1282,12 @@ function createStarfield() {
         starIntensity += 0.01 / dDiag1;
         starIntensity += 0.01 / dDiag2;
         
-        // Color palette based on vRandom.x
+        // Color palette based on vRandom.x (White, silver, and blue tones)
         vec3 color;
-        if(vRandom.x < 0.2) color = vec3(1.0, 1.0, 1.0); // White
-        else if(vRandom.x < 0.4) color = vec3(1.0, 0.9, 0.6); // Light yellow
-        else if(vRandom.x < 0.6) color = vec3(0.6, 0.8, 1.0); // Light blue
-        else if(vRandom.x < 0.8) color = vec3(1.0, 0.6, 0.2); // Orange
-        else color = vec3(1.0, 0.2, 0.2); // Red
+        if(vRandom.x < 0.3) color = vec3(1.0, 1.0, 1.0); // Pure white
+        else if(vRandom.x < 0.6) color = vec3(0.85, 0.88, 0.92); // Silver
+        else if(vRandom.x < 0.85) color = vec3(0.6, 0.8, 1.0); // Light blue
+        else color = vec3(0.8, 0.9, 1.0); // Silver-blue
         
         // Base brightness
         float brightness = starIntensity * (vRandom.y * 0.5 + 0.5);
@@ -1282,6 +1295,9 @@ function createStarfield() {
         // Twinkle
         float twinkle = sin(uTime * (vRandom.z * 5.0 + 2.0) + vRandom.w * 10.0) * 0.5 + 0.5;
         brightness *= mix(0.3, 1.0, twinkle);
+        
+        // Dim stars when close to planetarium
+        brightness *= mix(0.45, 1.0, vDistFactor);
         
         // Soft edges
         float alpha = smoothstep(0.5, 0.0, d);
@@ -2794,7 +2810,10 @@ function animate() {
   animationTime += 0.005 * speedMul;
 
   // Twinkling stars
-  if (starUniforms) starUniforms.uTime.value = animationTime;
+  if (starUniforms) {
+    starUniforms.uTime.value = animationTime;
+    starUniforms.uCameraDist.value = camera.position.length();
+  }
 
   // Background galaxy follows camera
   if (window._bgMesh) window._bgMesh.position.copy(camera.position);
