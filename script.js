@@ -2336,7 +2336,7 @@ const shootingStars = [];
 function spawnShootingStar() {
   const group = new THREE.Group();
 
-  const geo = new THREE.PlaneGeometry(60, 20);
+  const geo = new THREE.PlaneGeometry(120, 40);
   const mat = new THREE.ShaderMaterial({
     uniforms: {
       time: { value: 0.0 },
@@ -2357,6 +2357,15 @@ function spawnShootingStar() {
   plane2.rotation.x = Math.PI / 2;
   group.add(plane1, plane2);
 
+  const edgeColor = new THREE.Color().lerpColors(
+    new THREE.Color(0x3366ff), 
+    new THREE.Color(0xb333ff), 
+    Math.random()
+  );
+  const light = new THREE.PointLight(edgeColor, 1.5, 250);
+  light.position.set(40, 0, 0);
+  group.add(light);
+
   // Position & Direction
   const start = new THREE.Vector3(
     300 + Math.random() * 200,      
@@ -2376,10 +2385,11 @@ function spawnShootingStar() {
 
   group.userData = { 
     dir, 
-    speed: 12 + Math.random() * 8, 
+    speed: 3 + Math.random() * 3, 
     life: 0, 
-    maxLife: 80 + Math.random() * 40,
-    mat: mat
+    maxLife: 200 + Math.random() * 100,
+    mat: mat,
+    light: light
   };
 
   scene.add(group);
@@ -2405,6 +2415,7 @@ function updateShootingStars() {
     }
     
     s.userData.mat.uniforms.opacity.value = currentOpacity;
+    if (s.userData.light) s.userData.light.intensity = currentOpacity * 1.5;
 
     if (s.userData.life >= s.userData.maxLife) {
       scene.remove(s);
@@ -2412,6 +2423,7 @@ function updateShootingStars() {
       s.children.forEach(child => {
         if(child.geometry) child.geometry.dispose();
       });
+      if (s.userData.light) s.userData.light.dispose();
       shootingStars.splice(i, 1);
     }
   }
