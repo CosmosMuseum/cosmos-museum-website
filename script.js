@@ -1314,7 +1314,7 @@ scene.add(createStarfield());
 // ── PLANETS & OBJECTS ──
 const solarSystemGroup = new THREE.Group();
 solarSystemGroup.rotation.y = 0;
-solarSystemGroup.rotation.x = 40 * Math.PI / 180;
+solarSystemGroup.rotation.x = 20 * Math.PI / 180;
 scene.add(solarSystemGroup);
 const planetObjects = {};
 const orbitLines = [];
