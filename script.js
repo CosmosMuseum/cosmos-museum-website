@@ -2269,113 +2269,153 @@ function buildKuiperBelt() {
 // Kuiper belt built via deferred queue below
 
 // ── SHOOTING STARS (ADVANCED SHADERS) ──
-const cometHeadVertexShader = ""; // Not used anymore
-let cometsBackgroundMesh;
-let cometsUniforms;
-
-function generateNoiseTexture(size) {
-    const c = document.createElement('canvas');
-    c.width = c.height = size;
-    const ctx = c.getContext('2d');
-    const imgData = ctx.createImageData(size, size);
-    for(let i = 0; i < size * size * 4; i += 4) {
-        const v = Math.random() * 255;
-        imgData.data[i] = v;
-        imgData.data[i+1] = v;
-        imgData.data[i+2] = v;
-        imgData.data[i+3] = 255;
+let cometNoiseTex = null;
+function getCometNoise() {
+    if (!cometNoiseTex) {
+        const size = 512;
+        const c = document.createElement('canvas');
+        c.width = c.height = size;
+        const ctx = c.getContext('2d');
+        const imgData = ctx.createImageData(size, size);
+        for(let i = 0; i < size * size * 4; i += 4) {
+            const v = Math.random() * 255;
+            imgData.data[i] = v;
+            imgData.data[i+1] = v;
+            imgData.data[i+2] = v;
+            imgData.data[i+3] = 255;
+        }
+        ctx.putImageData(imgData, 0, 0);
+        cometNoiseTex = new THREE.CanvasTexture(c);
+        cometNoiseTex.wrapS = THREE.RepeatWrapping;
+        cometNoiseTex.wrapT = THREE.RepeatWrapping;
+        cometNoiseTex.minFilter = THREE.LinearFilter;
+        cometNoiseTex.magFilter = THREE.LinearFilter;
     }
-    ctx.putImageData(imgData, 0, 0);
-    return c;
+    return cometNoiseTex;
 }
 
-function initCometsShader() {
-    if (cometsBackgroundMesh) return;
+const cometVertSrc = `
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+const cometFragSrc = `
+  uniform float time;
+  uniform float u_seed;
+  uniform float opacity;
+  uniform sampler2D u_channel0;
+  varying vec2 vUv;
+
+  void main() {
+    vec2 q = (vUv - vec2(0.9, 0.5)) * vec2(25.0, 10.0);
+    float t = time;
+    float seed = u_seed;
     
-    const noiseCanvas = generateNoiseTexture(512);
-    const noiseTex = new THREE.CanvasTexture(noiseCanvas);
-    noiseTex.wrapS = THREE.RepeatWrapping;
-    noiseTex.wrapT = THREE.RepeatWrapping;
-    noiseTex.minFilter = THREE.LinearFilter;
-    noiseTex.magFilter = THREE.LinearFilter;
-
-    cometsUniforms = {
-        u_time: { value: 0.0 },
-        u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
-        u_channel0: { value: noiseTex }
-    };
-
-    const vertSrc = `
-        void main() {
-            gl_Position = vec4(position.xy, 0.0, 1.0);
-        }
-    `;
-
-    const fragSrc = `
-        precision mediump float;
-        uniform float u_time;
-        uniform vec2 u_resolution;
-        uniform sampler2D u_channel0;
-        void main() {
-            vec2 I = gl_FragCoord.xy;
-            vec2 r = u_resolution.xy;
-            vec4 O = vec4(0.0);
-            vec2 p = (I+I-r) / r.y * mat2(4.0,-3.0,3.0,4.0);
-            float t = u_time;
-            float T = t + 0.1*p.x;
-            for(int n = 0; n < 50; n++) {
-                float i = float(n);
-                vec3 center = vec3(
-                    cos(i*11.0+i*i+T*0.2),
-                    sin(i*9.0+i*i+T*0.2) - t*0.5 - i*0.15,
-                    0.0
-                );
-                vec2 q = p - center.xy;
-                O += (cos(sin(i)*vec4(1.0,2.0,3.0,0.0))+1.0)
-                    * exp(sin(i+0.1*i*T))
-                    / length(max(q,
-                        q / vec2(texture2D(u_channel0, q/exp(sin(i)+5.0)+vec2(t,i)/8.0).r*40.0, 2.0))
-                    );
-            }
-            vec4 final = 0.01*p.y*vec4(0.0,1.0,2.0,3.0)+O*O/1e4;
-            vec4 t2 = exp(2.0*final);
-            vec3 color = (t2.rgb - 1.0) / (t2.rgb + 1.0);
-            float alpha = max(max(color.r, color.g), color.b);
-            gl_FragColor = vec4(color, alpha);
-        }
-    `;
-
-    const mat = new THREE.ShaderMaterial({
-        uniforms: cometsUniforms,
-        vertexShader: vertSrc,
-        fragmentShader: fragSrc,
-        transparent: true,
-        depthWrite: false,
-        depthTest: false,
-        blending: THREE.AdditiveBlending
-    });
-
-    const geo = new THREE.PlaneGeometry(2, 2);
-    cometsBackgroundMesh = new THREE.Mesh(geo, mat);
-    cometsBackgroundMesh.frustumCulled = false;
-    cometsBackgroundMesh.renderOrder = -100; // Render behind everything else
+    vec4 O = vec4(0.0);
+    O += (cos(sin(seed)*vec4(1.0,2.0,3.0,0.0))+1.0)
+        * exp(sin(seed+0.1*seed*t))
+        / length(max(q,
+            q / vec2(texture2D(u_channel0, q/exp(sin(seed)+5.0)+vec2(t,seed)/8.0).r*40.0, 2.0))
+        );
+        
+    vec4 final = O*O/1e4;
+    vec4 t2 = exp(2.0*final);
+    vec3 color = (t2.rgb - 1.0) / (t2.rgb + 1.0);
     
-    scene.add(cometsBackgroundMesh);
+    float alpha = max(max(color.r, color.g), color.b);
+    float edgeFade = smoothstep(0.0, 0.1, vUv.x) * smoothstep(1.0, 0.9, vUv.x) * smoothstep(0.0, 0.2, vUv.y) * smoothstep(1.0, 0.8, vUv.y);
+    
+    gl_FragColor = vec4(color, alpha * edgeFade * opacity * 2.0);
+  }
+`;
 
-    window.addEventListener('resize', () => {
-        if(cometsUniforms) {
-            cometsUniforms.u_resolution.value.set(window.innerWidth, window.innerHeight);
-        }
-    });
+const shootingStars = [];
+function spawnShootingStar() {
+  const group = new THREE.Group();
+
+  const geo = new THREE.PlaneGeometry(60, 20);
+  const mat = new THREE.ShaderMaterial({
+    uniforms: {
+      time: { value: 0.0 },
+      u_seed: { value: Math.random() * 100.0 },
+      opacity: { value: 1.0 },
+      u_channel0: { value: getCometNoise() }
+    },
+    vertexShader: cometVertSrc,
+    fragmentShader: cometFragSrc,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    side: THREE.DoubleSide
+  });
+
+  const plane1 = new THREE.Mesh(geo, mat);
+  const plane2 = new THREE.Mesh(geo, mat);
+  plane2.rotation.x = Math.PI / 2;
+  group.add(plane1, plane2);
+
+  // Position & Direction
+  const start = new THREE.Vector3(
+    300 + Math.random() * 200,      
+    80 + Math.random() * 150,       
+    (Math.random() - 0.5) * 400     
+  );
+  const dir = new THREE.Vector3(
+    -(0.8 + Math.random() * 0.4),   
+    -(0.2 + Math.random() * 0.4),   
+    (Math.random() - 0.5) * 0.2     
+  ).normalize();
+
+  group.position.copy(start);
+  
+  // Orient group so the FRONT (+X axis) points towards the movement direction (dir)
+  group.quaternion.setFromUnitVectors(new THREE.Vector3(1, 0, 0), dir.clone().normalize());
+
+  group.userData = { 
+    dir, 
+    speed: 12 + Math.random() * 8, 
+    life: 0, 
+    maxLife: 80 + Math.random() * 40,
+    mat: mat
+  };
+
+  scene.add(group);
+  shootingStars.push(group);
 }
 
 function updateShootingStars() {
-    if (!cometsBackgroundMesh) {
-        initCometsShader();
+  for (let i = shootingStars.length - 1; i >= 0; i--) {
+    const s = shootingStars[i];
+    s.userData.life++;
+    
+    s.position.addScaledVector(s.userData.dir, s.userData.speed);
+    
+    s.userData.mat.uniforms.time.value += 0.05;
+
+    const progress = s.userData.life / s.userData.maxLife;
+    
+    let currentOpacity = 1.0;
+    if (progress < 0.1) {
+        currentOpacity = progress / 0.1;
+    } else if (progress > 0.7) {
+        currentOpacity = 1 - ((progress - 0.7) / 0.3);
     }
-    if (cometsUniforms) {
-        cometsUniforms.u_time.value += 0.016;
+    
+    s.userData.mat.uniforms.opacity.value = currentOpacity;
+
+    if (s.userData.life >= s.userData.maxLife) {
+      scene.remove(s);
+      s.userData.mat.dispose();
+      s.children.forEach(child => {
+        if(child.geometry) child.geometry.dispose();
+      });
+      shootingStars.splice(i, 1);
     }
+  }
+  if (Math.random() < 0.02) spawnShootingStar(); 
 }
 
 
