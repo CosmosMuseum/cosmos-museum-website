@@ -1188,65 +1188,109 @@ function loadRealTextures() {
 let starUniforms;
 function createStarfield() {
   const geo = new THREE.BufferGeometry();
-  const count = 15000;
-  const pos = new Float32Array(count * 3);
-  const sizes = new Float32Array(count);
-  const phase = new Float32Array(count);
-  const colors = new Float32Array(count * 3);
-  const starColors = [
-    [1.0, 1.0, 1.0], [0.8, 0.85, 1.0], [1.0, 0.95, 0.8],
-    [1.0, 0.8, 0.7], [0.7, 0.8, 1.0], [1.0, 0.9, 0.95],
-  ];
-  for (let i = 0; i < count; i++) {
-    const r = 300 + Math.random() * 500;
-    const theta = Math.random() * Math.PI * 2;
-    const phi = Math.acos(2 * Math.random() - 1);
-    pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-    pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-    pos[i * 3 + 2] = r * Math.cos(phi);
-    sizes[i] = Math.random() * 2.5 + 0.3;
-    phase[i] = Math.random() * Math.PI * 2;
-    const c = starColors[Math.floor(Math.random() * starColors.length)];
-    colors[i * 3] = c[0]; colors[i * 3 + 1] = c[1]; colors[i * 3 + 2] = c[2];
+  const NB_PARTICLES = 150;
+  
+  const positions = new Float32Array(NB_PARTICLES * 3);
+  const randoms = new Float32Array(NB_PARTICLES * 4);
+  const sizes = new Float32Array(NB_PARTICLES);
+  
+  for(let i = 0; i < NB_PARTICLES; i++) {
+    positions[i * 3] = (Math.random() - 0.5) * 20;
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+    
+    randoms[i * 4] = Math.random();
+    randoms[i * 4 + 1] = Math.random();
+    randoms[i * 4 + 2] = Math.random();
+    randoms[i * 4 + 3] = Math.random();
+    
+    sizes[i] = Math.random() * 40 + 20;
   }
-  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geo.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 4));
   geo.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
-  geo.setAttribute('aPhase', new THREE.BufferAttribute(phase, 1));
-  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-  starUniforms = { uTime: { value: 0 } };
+  
+  starUniforms = {
+    uTime: { value: 0 },
+    uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+  };
+  
   const mat = new THREE.ShaderMaterial({
     uniforms: starUniforms,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
     vertexShader: `
+      attribute vec4 aRandom;
       attribute float aSize;
-      attribute float aPhase;
       uniform float uTime;
-      varying float vAlpha;
-      varying vec3 vColor;
+      
+      varying vec4 vRandom;
+      varying float vSize;
+      
       void main() {
-        vColor = color;
-        vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
-        float twinkle = sin(uTime * 1.5 + aPhase) * 0.5 + 0.5;
-        gl_PointSize = aSize * (350.0 / -mvPos.z) * (0.4 + twinkle * 0.6);
-        vAlpha = 0.25 + twinkle * 0.75;
-        gl_Position = projectionMatrix * mvPos;
+        vRandom = aRandom;
+        vSize = aSize;
+        
+        vec3 pos = position;
+        pos.y += sin(uTime * 0.5 + position.x * 0.1) * 1.0;
+        pos.x += cos(uTime * 0.3 + position.y * 0.1) * 0.8;
+        pos.z += sin(uTime * 0.2 + position.z * 0.1) * 0.9;
+        
+        vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+        gl_Position = projectionMatrix * mvPosition;
+        
+        gl_PointSize = aSize * (300.0 / -mvPosition.z);
       }
     `,
     fragmentShader: `
-      varying float vAlpha;
-      varying vec3 vColor;
+      uniform float uTime;
+      varying vec4 vRandom;
+      varying float vSize;
+      
       void main() {
-        float d = length(gl_PointCoord - 0.5);
-        if (d > 0.5) discard;
-        float glow = 1.0 - smoothstep(0.0, 0.5, d);
-        gl_FragColor = vec4(vColor, vAlpha * glow);
+        // Form star shape
+        vec2 center = gl_PointCoord - 0.5;
+        
+        // Distances
+        float d = length(center);
+        float dx = length(center * vec2(8.0, 0.4));
+        float dy = length(center * vec2(0.4, 8.0));
+        float dDiag1 = length(mat2(0.707, -0.707, 0.707, 0.707) * center * vec2(8.0, 0.4));
+        float dDiag2 = length(mat2(0.707, 0.707, -0.707, 0.707) * center * vec2(8.0, 0.4));
+        
+        // Sum intensities
+        float starIntensity = 0.0;
+        starIntensity += 0.05 / d;
+        starIntensity += 0.02 / dx;
+        starIntensity += 0.02 / dy;
+        starIntensity += 0.01 / dDiag1;
+        starIntensity += 0.01 / dDiag2;
+        
+        // Color palette based on vRandom.x
+        vec3 color;
+        if(vRandom.x < 0.2) color = vec3(1.0, 1.0, 1.0); // White
+        else if(vRandom.x < 0.4) color = vec3(1.0, 0.9, 0.6); // Light yellow
+        else if(vRandom.x < 0.6) color = vec3(0.6, 0.8, 1.0); // Light blue
+        else if(vRandom.x < 0.8) color = vec3(1.0, 0.6, 0.2); // Orange
+        else color = vec3(1.0, 0.2, 0.2); // Red
+        
+        // Base brightness
+        float brightness = starIntensity * (vRandom.y * 0.5 + 0.5);
+        
+        // Twinkle
+        float twinkle = sin(uTime * (vRandom.z * 5.0 + 2.0) + vRandom.w * 10.0) * 0.5 + 0.5;
+        brightness *= mix(0.3, 1.0, twinkle);
+        
+        // Soft edges
+        float alpha = smoothstep(0.5, 0.0, d);
+        
+        gl_FragColor = vec4(color * brightness, alpha);
       }
-    `,
-    transparent: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-    vertexColors: true,
+    `
   });
+  
   return new THREE.Points(geo, mat);
 }
 scene.add(createStarfield());
