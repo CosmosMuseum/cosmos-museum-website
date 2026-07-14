@@ -1332,12 +1332,11 @@ function createOrbitLine(radius, color, planetKey) {
   }
   geo.setAttribute('alpha', new THREE.BufferAttribute(alphas, 1));
 
-  const colorHex = color || 0x4488cc;
-  const c = new THREE.Color(colorHex);
+  const baseOpacity = Math.max(0.08, 0.5 - (radius / 150) * 0.45);
   const mat = new THREE.LineBasicMaterial({
-    color: colorHex,
+    color: 0xffffff,
     transparent: true,
-    opacity: 0.3,
+    opacity: baseOpacity,
     blending: THREE.AdditiveBlending,
     depthWrite: false,
   });
@@ -1345,7 +1344,7 @@ function createOrbitLine(radius, color, planetKey) {
 
   const group = new THREE.Group();
   group.add(line);
-  group.userData = { isOrbitLine: true, planetKey, radius, line, color: colorHex };
+  group.userData = { isOrbitLine: true, planetKey, radius, line, color: 0xffffff, baseOpacity };
 
   orbitLines.push(group);
   return group;
@@ -1355,11 +1354,11 @@ function createOrbitLine(radius, color, planetKey) {
 function updateOrbitLines(time) {
   orbitLines.forEach(og => {
     if (!og.userData || !og.visible) return;
-    const { planetKey, radius, line } = og.userData;
+    const { planetKey, radius, line, baseOpacity } = og.userData;
     if (!planetKey) return;
 
-    const pulse = Math.sin(time * 1.5 + radius * 0.1) * 0.15 + 0.25;
-    line.material.opacity = pulse;
+    const pulse = Math.sin(time * 1.5 + radius * 0.1) * 0.05;
+    line.material.opacity = baseOpacity + pulse;
   });
 }
 
@@ -2747,43 +2746,102 @@ function drawHeroBg(d) {
 // Selection particle burst
 let selectionParticles = null;
 function spawnSelectionParticles(position, color) {
-  if (selectionParticles) { scene.remove(selectionParticles); selectionParticles.geometry.dispose(); selectionParticles.material.dispose(); }
-
-  // Circular particle texture
-  const pCanvas = document.createElement('canvas');
-  pCanvas.width = pCanvas.height = 64;
-  const pCtx = pCanvas.getContext('2d');
-  const pGrad = pCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
-  pGrad.addColorStop(0, 'rgba(255,255,255,1)');
-  pGrad.addColorStop(0.2, 'rgba(255,255,255,0.8)');
-  pGrad.addColorStop(0.5, 'rgba(255,255,255,0.3)');
-  pGrad.addColorStop(1, 'rgba(255,255,255,0)');
-  pCtx.fillStyle = pGrad;
-  pCtx.fillRect(0, 0, 64, 64);
-  const pTex = new THREE.CanvasTexture(pCanvas);
+  if (selectionParticles) {
+    scene.remove(selectionParticles);
+    selectionParticles.geometry.dispose();
+    selectionParticles.material.dispose();
+  }
 
   const count = 60;
   const pos = new Float32Array(count * 3);
   const vel = new Float32Array(count * 3);
+  const randoms = new Float32Array(count * 4);
+  const sizes = new Float32Array(count);
+
   for (let i = 0; i < count; i++) {
     pos[i * 3] = position.x; pos[i * 3 + 1] = position.y; pos[i * 3 + 2] = position.z;
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.acos(2 * Math.random() - 1);
-    const speed = 0.2 + Math.random() * 0.6;
+    const speed = 0.15 + Math.random() * 0.5;
     vel[i * 3] = Math.sin(phi) * Math.cos(theta) * speed;
     vel[i * 3 + 1] = Math.sin(phi) * Math.sin(theta) * speed;
     vel[i * 3 + 2] = Math.cos(phi) * speed;
+    randoms[i * 4]     = Math.random();
+    randoms[i * 4 + 1] = Math.random();
+    randoms[i * 4 + 2] = Math.random();
+    randoms[i * 4 + 3] = Math.random();
+    sizes[i] = Math.random() * 10 + 4;
   }
+
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  const mat = new THREE.PointsMaterial({
-    color: color || 0x4fc3f7, map: pTex, size: 0.5, transparent: true, opacity: 1.0,
-    blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true,
+  geo.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 4));
+  geo.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
+
+  const mat = new THREE.ShaderMaterial({
+    uniforms: {
+      uTime: { value: 0 },
+      uProgress: { value: 0 }   // 0→1 as particles die
+    },
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    vertexShader: `
+      attribute vec4 aRandom;
+      attribute float aSize;
+      uniform float uTime;
+      uniform float uProgress;
+      varying vec4 vRandom;
+      void main() {
+        vRandom = aRandom;
+        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+        gl_Position = projectionMatrix * mvPosition;
+        float fade = 1.0 - uProgress;
+        gl_PointSize = (aSize * fade) * (300.0 / -mvPosition.z);
+      }
+    `,
+    fragmentShader: `
+      uniform float uTime;
+      uniform float uProgress;
+      varying vec4 vRandom;
+      void main() {
+        vec2 center = gl_PointCoord - 0.5;
+        float d = length(center);
+        float dx = length(center * vec2(8.0, 0.4));
+        float dy = length(center * vec2(0.4, 8.0));
+        float dDiag1 = length(mat2(0.707,-0.707,0.707,0.707) * center * vec2(8.0,0.4));
+        float dDiag2 = length(mat2(0.707, 0.707,-0.707,0.707) * center * vec2(8.0,0.4));
+
+        float intensity = 0.0;
+        intensity += 0.05 / d;
+        intensity += 0.02 / dx;
+        intensity += 0.02 / dy;
+        intensity += 0.01 / dDiag1;
+        intensity += 0.01 / dDiag2;
+
+        // White / silver / light-blue palette
+        vec3 col;
+        if(vRandom.x < 0.3)       col = vec3(1.0, 1.0, 1.0);
+        else if(vRandom.x < 0.6)  col = vec3(0.85, 0.88, 0.92);
+        else if(vRandom.x < 0.85) col = vec3(0.6, 0.8, 1.0);
+        else                       col = vec3(0.8, 0.9, 1.0);
+
+        float brightness = intensity * (vRandom.y * 0.5 + 0.5);
+        float twinkle = sin(uTime * (vRandom.z * 8.0 + 3.0) + vRandom.w * 10.0) * 0.5 + 0.5;
+        brightness *= mix(0.4, 1.0, twinkle);
+        brightness *= (1.0 - uProgress);   // fade out as they spread
+
+        float alpha = smoothstep(0.5, 0.0, d);
+        gl_FragColor = vec4(col * brightness, alpha);
+      }
+    `
   });
+
   selectionParticles = new THREE.Points(geo, mat);
-  selectionParticles.userData = { vel, life: 0, maxLife: 50 };
+  selectionParticles.userData = { vel, life: 0, maxLife: 80 };
   scene.add(selectionParticles);
 }
+
 function updateSelectionParticles() {
   if (!selectionParticles) return;
   const sp = selectionParticles;
@@ -2796,8 +2854,8 @@ function updateSelectionParticles() {
     vel[i] *= 0.96; vel[i + 1] *= 0.96; vel[i + 2] *= 0.96;
   }
   sp.geometry.attributes.position.needsUpdate = true;
-  sp.material.opacity = 1 - t;
-  sp.material.size = 0.5 * (1 - t * 0.4);
+  sp.material.uniforms.uTime.value += 0.05;
+  sp.material.uniforms.uProgress.value = t;
   if (sp.userData.life >= sp.userData.maxLife) {
     scene.remove(sp); sp.geometry.dispose(); sp.material.dispose();
     selectionParticles = null;
