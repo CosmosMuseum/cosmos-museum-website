@@ -3003,7 +3003,7 @@ function animate() {
       });
   });
 
-  // Sun pulse
+  // Sun update — billboard toward camera + shader uniforms
   const sunPO = planetObjects['Sun'];
   if (sunPO && sunPO.group.userData.sunUniforms) {
     const su = sunPO.group.userData.sunUniforms;
@@ -3011,7 +3011,8 @@ function animate() {
     const tempMatrix = new THREE.Matrix3();
     tempMatrix.getNormalMatrix(camera.matrixWorld);
     su.uCameraRotation.value.copy(tempMatrix);
-    su.iResolution.value.set(window.innerWidth, window.innerHeight, 1);
+    // Billboard: make the plane always face the camera
+    sunPO.mesh.quaternion.copy(camera.quaternion);
   }
 
   // Camera animation
@@ -4686,7 +4687,7 @@ function cinematicIntro() {
       const tmpMat = new THREE.Matrix3();
       tmpMat.getNormalMatrix(camera.matrixWorld);
       su.uCameraRotation.value.copy(tmpMat);
-      su.iResolution.value.set(window.innerWidth, window.innerHeight, 1);
+      if (sunPO.mesh) sunPO.mesh.quaternion.copy(camera.quaternion);
     }
     composer.render();
     requestAnimationFrame(introStep);
