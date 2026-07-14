@@ -69,7 +69,7 @@ const shootingStars = [];
 function spawnShootingStar() {
   const group = new THREE.Group();
 
-  const geo = new THREE.PlaneGeometry(120, 40);
+  const geo = new THREE.PlaneGeometry(200, 65);
   const mat = new THREE.ShaderMaterial({
     uniforms: {
       time: { value: 0.0 },
