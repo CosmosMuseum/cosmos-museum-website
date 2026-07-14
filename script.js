@@ -1654,12 +1654,6 @@ fragColor.xyz-=vec3(ring(ray,pos,1.03,11.0))*2.0;
 fragColor=max(vec4(0.0),fragColor);
 float s3=ringRayNoise(ray,pos,0.96,1.0,mr,time);
 fragColor.xyz+=mix(vec3(1.0,0.6,0.1),vec3(1.0,0.95,1.0),pow(s3,3.0))*s3;
-float zero=sphereZero(ray,pos,0.9);
-if(zero>0.0){
-vec4 s4=noiseSpace(ray,pos,100.0,mr,0.05,vec3(1.0,2.0,4.0),0.0);
-s4.x=pow(s4.x,3.0);
-fragColor.xyz+=mix(mix(vec3(1.0,0.0,0.0),vec3(0.0,0.0,1.0),s4.y*1.9),vec3(0.9,1.0,0.1),s4.w*0.75)*s4.x*pow(s4.z*2.5,3.0)*0.2*zero;
-}
 fragColor=max(vec4(0.0),fragColor);
 fragColor=min(vec4(1.0),fragColor);
 gl_FragColor=fragColor;
