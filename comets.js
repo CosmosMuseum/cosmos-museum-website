@@ -49,9 +49,9 @@ const cometFragSrc = `
     
     vec4 O = vec4(0.0);
     O += (cos(sin(seed)*vec4(1.0,2.0,3.0,0.0))+1.0)
-        * exp(sin(seed+0.1*seed*t))
+        * 1.0
         / length(max(q,
-            q / vec2(texture2D(u_channel0, q/exp(sin(seed)+5.0)+vec2(t,seed)/8.0).r*40.0, 2.0))
+            q / vec2(texture2D(u_channel0, q/exp(sin(seed)+5.0)+vec2(0.0,seed)/8.0).r*40.0, 2.0))
         );
         
     vec4 final = O*O/1e4;
@@ -130,16 +130,7 @@ function updateShootingStars() {
 
     const progress = s.userData.life / s.userData.maxLife;
     
-    let currentOpacity = 1.0;
-    if (progress < 0.3) {
-        currentOpacity = 1.0 - (progress / 0.3) * 0.2;  // 1.0 → 0.8
-    } else if (progress < 0.7) {
-        currentOpacity = 0.8;  // mínimo 0.8
-    } else {
-        currentOpacity = 0.8 - ((progress - 0.7) / 0.3) * 0.8;  // 0.8 → 0
-    }
-    
-    s.userData.mat.uniforms.opacity.value = currentOpacity;
+    s.userData.mat.uniforms.opacity.value = 1.0;
 
     if (s.userData.life >= s.userData.maxLife) {
       scene.remove(s);
