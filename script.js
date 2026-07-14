@@ -1255,6 +1255,7 @@ scene.add(createStarfield());
 const planetObjects = {};
 const orbitLines = [];
 let animationTime = 0;
+const sunClock = new THREE.Clock();
 
 // Orbit path helper — luminous pulsating lines with direction comet head
 function createOrbitLine(radius, color, planetKey) {
@@ -3007,7 +3008,7 @@ function animate() {
   const sunPO = planetObjects['Sun'];
   if (sunPO && sunPO.group.userData.sunUniforms) {
     const su = sunPO.group.userData.sunUniforms;
-    su.iTime.value = animationTime;
+    su.iTime.value = sunClock.getElapsedTime();
     const tempMatrix = new THREE.Matrix3();
     tempMatrix.getNormalMatrix(camera.matrixWorld);
     su.uCameraRotation.value.copy(tempMatrix);
@@ -4683,7 +4684,7 @@ function cinematicIntro() {
     const sunPO = planetObjects['Sun'];
     if (sunPO && sunPO.group.userData.sunUniforms) {
       const su = sunPO.group.userData.sunUniforms;
-      su.iTime.value = t;
+      su.iTime.value = sunClock.getElapsedTime();
       const tmpMat = new THREE.Matrix3();
       tmpMat.getNormalMatrix(camera.matrixWorld);
       su.uCameraRotation.value.copy(tmpMat);
