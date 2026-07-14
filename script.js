@@ -1531,14 +1531,16 @@ function buildSun() {
   group.userData = { planetName: 'Sun' };
 
   const vertexShader = `
+varying vec2 vUv;
 void main(){
-  gl_Position = vec4(position.xy, 0.0, 1.0);
+  vUv = uv;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 }`;
   const fragmentShader = `
 precision highp float;
 uniform float iTime;
-uniform vec3 iResolution;
 uniform mat3 uCameraRotation;
+varying vec2 vUv;
 vec4 hash4(vec4 n){return fract(sin(n)*1399763.5453123);}
 float noise4q(vec4 x){
 vec4 n3=vec4(0,0.25,0.5,0.75);
@@ -1636,8 +1638,7 @@ float c=dot(pos,pos)-b*b;
 return c<r*r?0.0:1.0;
 }
 void main(){
-vec2 fragCoord=gl_FragCoord.xy;
-vec2 p=(-iResolution.xy+2.0*fragCoord.xy)/iResolution.y;
+vec2 p=(vUv*2.0-1.0)*1.6;
 float time=iTime;
 vec3 ray=normalize(vec3(p,2.0));
 vec3 pos=vec3(0.0,0.0,3.0);
@@ -1665,14 +1666,13 @@ gl_FragColor=fragColor;
 
   const sunUniforms = {
     iTime: { value: 0 },
-    iResolution: { value: new THREE.Vector3(window.innerWidth, window.innerHeight, 1) },
     uCameraRotation: { value: new THREE.Matrix3() }
   };
   
   group.userData.sunUniforms = sunUniforms;
 
   const sunMesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(2, 2),
+    new THREE.PlaneGeometry(13, 13),
     new THREE.ShaderMaterial({
       vertexShader,
       fragmentShader,
@@ -1680,11 +1680,11 @@ gl_FragColor=fragColor;
       depthTest: false,
       depthWrite: false,
       transparent: true,
-      blending: THREE.AdditiveBlending // Helps blend the black background if needed
+      blending: THREE.AdditiveBlending
     })
   );
   sunMesh.frustumCulled = false;
-  sunMesh.renderOrder = -50; 
+  sunMesh.renderOrder = -50;
   group.add(sunMesh);
 
   scene.add(group);
