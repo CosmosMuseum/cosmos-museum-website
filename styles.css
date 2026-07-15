@@ -168,6 +168,15 @@ p {
   z-index: 0;
   will-change: transform;
   backface-visibility: hidden;
+  transform: scale(1.3);
+}
+
+.welcome-bg-image::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(rgba(0, 0, 0, 0.086), rgba(0, 0, 0, 0.356), rgb(0, 0, 0));
+  pointer-events: none;
 }
 
 .welcome-bg-gradient {
@@ -204,6 +213,7 @@ p {
   margin-bottom: 15vh;
   will-change: transform;
   backface-visibility: hidden;
+
 }
 
 .welcome-bg-stars {
@@ -275,7 +285,7 @@ p {
 .welcome-description {
   font-size: 16px;
 
-  color: rgba(255, 255, 255, 0.531);
+  color: rgba(255, 255, 255, 0.9);
   max-width: 450px;
   margin: 0 auto 3rem;
   font-weight: 100;
@@ -288,6 +298,7 @@ p {
   justify-content: center;
   margin-bottom: 2rem;
   flex-wrap: wrap;
+  opacity: 0.9;
 }
 
 .welcome-key {
@@ -295,16 +306,17 @@ p {
   align-items: center;
   gap: 0.5rem;
   font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.938);
+  opacity: 0.9;
 }
 
 .welcome-kbd {
   display: inline-block;
   padding: 0.15rem 0.4rem;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.255);
   border-radius: 4px;
   font-size: 0.6rem;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.924);
   min-width: 1.4rem;
   text-align: center;
 }
@@ -343,14 +355,14 @@ p {
   margin-top: 2.5rem;
   font-size: 14px;
   font-weight: 200;
-  color: rgba(255, 255, 255, 0.34);
+  color: rgba(255, 255, 255, 0.748);
 
 }
 
 .welcome-footer a {
   font-size: 14px;
   font-weight: 200;
-  color: rgba(255, 255, 255, 0.34);
+  color: rgba(255, 255, 255, 0.861);
 
   transition: color 0.2s;
 }
@@ -2520,7 +2532,7 @@ a.ctrl-btn {
 .welcome-earth-wrap {
   position: absolute;
   right: 8%;
-  top: 38%;
+  top: 18%;
   z-index: 2;
   pointer-events: none;
   will-change: transform;
@@ -2553,7 +2565,7 @@ a.ctrl-btn {
 .welcome-telescope-wrap {
   position: absolute;
   right: 3%;
-  top: 33%;
+  top: 13%;
   z-index: 2;
   pointer-events: none;
   will-change: transform;
