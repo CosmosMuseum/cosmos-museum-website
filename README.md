@@ -1,4 +1,5 @@
-<div align="center">
+![Cosmic Explorer Preview](img/preview.png)
+<div>
 
 # ✦ Cosmos Museum
 
@@ -8,16 +9,9 @@
 
 ---
 
-![Cosmic Explorer Preview](img/preview.png)
 
 <br />
 
-[![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
-[![Three.js](https://img.shields.io/badge/Three.js-r128-black?logo=threedotjs)](https://threejs.org/)
-[![GLSL](https://img.shields.io/badge/GLSL-Shaders-green)]()
-[![JavaScript](https://img.shields.io/badge/Vanilla-JS-yellow?logo=javascript)]()
-
-<br />
 
 *"Let yourself be carried away by the faint light of the stars and feel the heartbeat of the universe."*
 
@@ -291,5 +285,7 @@ You are free to share, adapt, and use this project even for commercial purposes,
 <div align="center">
 
 *Built with curiosity and starlight*
+</br>
+Made with ❤️ by <a href="https://sebas-dev.vercel.app/" target="_blank" rel="noopener noreferrer">Sebastián V</a>
 
 </div>
