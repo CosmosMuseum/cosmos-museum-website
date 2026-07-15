@@ -1,68 +1,295 @@
-# ✦ Cosmic Explorer — The Museum of the Cosmos
+<div align="center">
+
+# ✦ Cosmos Museum
+
+### The Art of the Universe
+
+*An interactive 3D journey through the solar system*
+
+---
 
 ![Cosmic Explorer Preview](img/preview.png)
 
-Welcome to the **Museum of the Cosmos**, a digital sanctuary and a visual ode to the universe. This project is an interactive 3D experience designed to inspire peace, awe, and disconnection from the busy world. 
+<br />
 
-Through the intersection of code, art, and science, the Museum of the Cosmos invites its visitors on a serene journey across our solar system. Every line of code has been meticulously crafted as a brushstroke of light in the void, creating a space of profound stellar contemplation where the immensity of the universe feels closer to home.
+[![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
+[![Three.js](https://img.shields.io/badge/Three.js-r128-black?logo=threedotjs)](https://threejs.org/)
+[![GLSL](https://img.shields.io/badge/GLSL-Shaders-green)]()
+[![JavaScript](https://img.shields.io/badge/Vanilla-JS-yellow?logo=javascript)]()
 
-## ✨ Features & Experience
+<br />
 
-- **Immersive 3D Exploration**: Freely navigate through beautifully rendered, high-fidelity planets using an intuitive set of controls.
-- **Spaceship Flight Mode**: Pilot your own invisible spacecraft through the void using keyboard controls (WASD) and mouse aiming, giving you total freedom of movement.
-- **Cinematic Interstellar Travel**: Double-click on any celestial body to engage the warp drive, triggering a stunning visual wormhole transition.
-- **Contemplative Atmosphere**: Features a carefully crafted visual aesthetic with bloom effects, custom shaders, and an ambient soundtrack to transmit the serenity of infinite space.
-- **Interactive Atlas & Planet Data**: Discover detailed astronomical statistics for each planet (Mass, Radius, Surface Temperature, Moons, Atmospheric Composition, and prominent space missions).
-- **Screensaver Mode**: Let the universe flow by itself with a cinematic auto-orbit mode, perfect for ambient display.
-- **Photo Mode**: Capture your favorite views of the cosmos with a built-in screenshot tool.
+*"Let yourself be carried away by the faint light of the stars and feel the heartbeat of the universe."*
 
-## 🛠️ Technology Stack
+</div>
 
-This pocket universe was hand-forged without heavy web frameworks, focusing purely on performance, raw WebGL capabilities, and real-time rendering beauty:
+---
 
-- **Three.js & WebGL**: Core 3D rendering engine.
-- **GLSL Shaders**: Custom vertex and fragment shaders for procedural generation and post-processing effects.
-- **Vanilla JavaScript**: Pure JS for game logic, UI interactions, and state management.
-- **HTML5 & CSS3**: Elegant, responsive, and glassmorphic user interface.
-- **GSAP**: Industry-standard animation library for buttery-smooth UI and camera transitions.
-- **Lucide**: Clean and modern iconography.
+## Table of Contents
 
-## 🎮 Controls
+1. [About the Project](#about-the-project)
+2. [Features](#features)
+3. [Technologies](#technologies)
+4. [Project Structure](#project-structure)
+5. [Architecture](#architecture)
+6. [Controls](#controls)
+7. [Installation](#installation)
+8. [Easter Eggs](#easter-eggs)
+9. [Performance](#performance)
+10. [Author](#author)
+11. [License](#license)
 
-- **Mouse Drag / Touch**: Orbit around the current celestial body.
-- **Scroll Wheel**: Zoom in and out.
-- **Click**: Select and focus on a planet.
-- **Double Click**: Warp travel to the selected planet.
-- **F**: Toggle Spaceship Flight Mode (Use WASD to move, Mouse to look).
-- **T**: Start Auto-Tour Mode.
-- **M**: Toggle Cosmic Melody (Background Music).
-- **P**: Capture a photo (Screenshot).
-- **1-9**: Quick-jump to planets.
+---
 
-## 🚀 Running Locally
+## About the Project
 
-This project requires no build steps or bundlers. However, to bypass CORS restrictions when loading textures in WebGL, you must run it through a local web server.
+**Cosmos Museum** is not a simple digital planetarium. It is a visual sanctuary, an interactive ode to the universe conceived to inspire awe and disconnection from the everyday world.
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/sebastianvasquezechavarria1234/cosmos-museum.git
-   ```
-2. Navigate to the directory:
-   ```bash
-   cd cosmos-museum
-   ```
-3. Start a local server. If you have Node.js installed, you can use `npx`:
-   ```bash
-   npx serve .
-   ```
-   Or using Python:
-   ```bash
-   python -m http.server 8000
-   ```
-4. Open your browser and navigate to `http://localhost:3000` (or the port provided by your server).
+Every planet has been modeled with procedurally generated textures created in real time through 3D noise systems, custom GLSL shaders, and a carefully optimized rendering pipeline. From Mercury's craters to Neptune's winds, each surface tells a story written in code and light.
 
-## 👨‍💻 About the Author
+The result is an experience that lives at the intersection of science, art, and engineering — a place where the immensity of the cosmos feels closer to home.
 
-Created by **Sebastian Vasquez**, a software developer and space enthusiast passionate about creating digital experiences that merge technical complexity with artistic vision. 
+---
 
-*"Let yourself be carried away by the faint light of the stars and feel the heartbeat of the universe as you travel from one world to another in silence and wonder."*
+## Features
+
+### Immersive Exploration
+
+Navigate freely through a complete solar system with fluid cameras, intuitive controls, and an interface that disappears to leave you alone with the universe.
+
+- **10 celestial bodies** — Sun, Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune, and the Moon
+- **Procedural textures** generated by 3D noise algorithms — no external image dependencies for surfaces
+- **Asteroid belts** — 8,000 asteroids in the main belt + 8,000 in the Kuiper belt + 30 asteroids with Keplerian elliptical orbits
+- **Comets** — random swarms with custom GLSL tails
+
+### Spaceship Flight
+
+Press **F** to enter ship mode. Control your spacecraft with WASD and mouse — speed, direction, and total freedom to traverse the solar system as a pilot.
+
+### Interstellar Travel
+
+Double-click any planet to engage the warp drive. A 4-phase cinematic transition (charge → jump → tunnel → exit) with gravitational distortion, lightning bolts, stretched stars, and a vortex tunnel will transport you to your destination.
+
+### Contemplative Mode
+
+Activate the screensaver with the pause button and let the universe flow on its own. The camera gently orbits between planets — perfect as ambient background.
+
+### Cosmic Capture
+
+Press **P** to capture your current view. The photo includes cinematic bars, a watermark, and the name of the focused planet.
+
+---
+
+## Technologies
+
+A universe built without heavy frameworks — pure code, pure performance.
+
+| Technology | Purpose |
+|:--|:--|
+| **Three.js r128** | 3D rendering engine and WebGL |
+| **GLSL Shaders** | Procedural generation, atmosphere effects, stars, comets, and sun |
+| **Vanilla JavaScript** | Application logic, interactions, and state |
+| **HTML5 / CSS3** | Responsive glassmorphic user interface |
+| **GSAP 3.12** | Smooth UI and camera animations |
+| **Lucide Icons** | Modern lightweight iconography |
+
+### Custom GLSL Shaders
+
+| Shader | Description |
+|:--|:--|
+| **Twinkling Starfield** | 3,000 stars with 6-point shape and twinkle animation |
+| **Sun Raymarcher** | Procedural sun surface with 4D noise, prominences, and rings |
+| **Fresnel Atmosphere** | Luminous rim effect on planets with atmosphere |
+| **Rayleigh Scattering** | Realistic atmospheric scattering with multi-scatter |
+| **Comet Tail** | Comet tails generated from noise textures |
+| **Nebula Stardust** | 800 stardust particles with animated sparkle |
+
+---
+
+## Project Structure
+
+```
+cosmos-museum/
+├── index.html              # Main entry point
+├── script.js               # Application core (~4,600 lines)
+├── styles.css              # Interface styles
+├── solar-effects.js        # Solar prominences and solar wind particles
+├── eccentric-asteroids.js  # Asteroids with Keplerian elliptical orbits
+├── comets.js               # Comets with custom GLSL shaders
+├── patch.js                # Runtime patches
+├── audio/
+│   └── piano.mp3           # Ambient soundtrack
+├── img/
+│   ├── textures/           # Background and asteroid textures
+│   └── *.jpg, *.webp       # Planet and interface textures
+└── models/                 # 3D models (reserved)
+```
+
+---
+
+## Architecture
+
+The application follows a **per-frame deferred loading** pattern — each celestial body is built on a separate frame to keep the loading animation smooth.
+
+```
+Deferred Loading
+    │
+    ├── Procedural textures (Canvas 2D + 3D noise)
+    ├── Background nebula (900u sphere + 800 particles)
+    ├── Sun (GLSL raymarcher shader on billboard)
+    ├── 8 planets (128-segment sphere + glow + orbit + label)
+    │     ├── Earth → clouds + Moon
+    │     ├── Jupiter → 4 Galilean moons
+    │     ├── Saturn → procedural rings (C/B/Cassini/A/Encke/F)
+    │     └── Uranus → thin dark rings
+    ├── Main asteroid belt (InstancedMesh × 8,000)
+    ├── Kuiper belt (InstancedMesh × 8,000)
+    ├── Keplerian asteroids (InstancedMesh × 30)
+    ├── Solar effects (prominences + solar wind × 600 particles)
+    └── Post-processing (EffectComposer + UnrealBloomPass)
+```
+
+### Rendering Pipeline
+
+1. **RenderPass** — Base scene
+2. **UnrealBloomPass** — Soft glow (strength: 0.05, radius: 0.5, threshold: 0.92)
+3. **Final composition** — UI overlay on WebGL canvas
+
+---
+
+## Controls
+
+### Basic Navigation
+
+| Action | Control |
+|:--|:--|
+| Orbit | Mouse drag |
+| Zoom in / out | Mouse wheel |
+| Select planet | Left click |
+| Interstellar travel | Double click |
+
+### Keyboard
+
+| Key | Action |
+|:--|:--|
+| `F` | Spaceship flight mode |
+| `T` | Auto-tour |
+| `M` | Ambient music |
+| `P` | Capture photo |
+| `1` - `9` | Quick-jump to planets |
+| `←` `→` | Navigate between planets |
+| `Esc` | Exit / close panel |
+
+### Spaceship Mode
+
+| Key | Action |
+|:--|:--|
+| `W` / `S` | Forward / Backward |
+| `A` / `D` | Turn left / right |
+| `Q` / `E` | Lateral roll |
+| `Space` | Ascend |
+| `Shift` | Descend |
+| `Esc` | Exit ship mode |
+
+---
+
+## Installation
+
+This project requires no build tools or bundlers. However, to avoid CORS restrictions when loading WebGL textures, it must be run through a local server.
+
+```bash
+# Clone the repository
+git clone https://github.com/sebastianvasquezechavarria1234/cosmos-museum.git
+
+# Enter the directory
+cd cosmos-museum
+```
+
+**Option A — Node.js:**
+
+```bash
+npx serve .
+```
+
+**Option B — Python:**
+
+```bash
+python -m http.server 8000
+```
+
+Open your browser at `http://localhost:3000` (or the port your server indicates).
+
+---
+
+## Easter Eggs
+
+The cosmos holds secrets for those who dare to look for them.
+
+### Konami Code
+
+```
+↑ ↑ ↓ ↓ ← → ← → B A
+```
+
+Activates **rainbow mode** for 10 seconds. All planets shine with the colors of the spectrum.
+
+### MURPH
+
+Type **MURPH** with your keyboard. A wormhole will take you to Earth accompanied by an *Interstellar* quote.
+
+### TARS
+
+Type **TARS** to receive a random quote from the TARS robot in *Interstellar*.
+
+---
+
+## Performance
+
+The project is optimized to maintain 60 FPS even with thousands of objects on screen.
+
+| Element | Count | Technique |
+|:--|:--|:--|
+| Main belt asteroids | 8,000 | `InstancedMesh` — single draw call |
+| Kuiper belt asteroids | 8,000 | `InstancedMesh` |
+| Keplerian asteroids | 30 | `InstancedMesh` with per-instance color |
+| Twinkling stars | 3,000 | Point sprites with vertex shader |
+| Solar wind particles | 600 | Points with custom fragment shader |
+| Stardust | 800 | Points with animated sparkle |
+| Comets | 3-5 per swarm | Cross-billboard dual plane |
+
+**Key optimizations:**
+
+- Per-frame deferred loading for smooth intro sequence
+- `InstancedMesh` for thousands of asteroids with a single draw call
+- `preserveDrawingBuffer: true` for screenshots without visual impact
+- `Math.min(devicePixelRatio, 2)` to prevent over-rendering on HiDPI screens
+- Pixel ratio capped at 2x across all devices
+
+---
+
+## Author
+
+Created by **Sebastian Vasquez** — software developer and space enthusiast.
+
+*"Every line of code has been meticulously crafted as a brushstroke of light in the void, creating a space of profound stellar contemplation where the immensity of the universe feels closer to home."*
+
+- **Portfolio:** [sebas-dev.vercel.app](https://sebas-dev.vercel.app/)
+- **GitHub:** [sebastianvasquezechavarria1234](https://github.com/sebastianvasquezechavarria1234)
+
+---
+
+## License
+
+This project is licensed under **Creative Commons Attribution 4.0 International (CC BY 4.0)**.
+
+You are free to share, adapt, and use this project even for commercial purposes, as long as you provide attribution to the original author.
+
+[Full License](https://creativecommons.org/licenses/by/4.0/)
+
+---
+
+<div align="center">
+
+*Built with curiosity and starlight*
+
+</div>
