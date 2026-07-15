@@ -4063,10 +4063,16 @@ window.takePhoto = function () {
     }
 
     // Download
-    const link = document.createElement('a');
-    link.download = `cosmic-explorer-${currentFocus || 'space'}-${Date.now()}.png`;
-    link.href = c.toDataURL('image/png');
-    link.click();
+    c.toBlob(function (blob) {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = `cosmic-explorer-${currentFocus || 'space'}-${Date.now()}.png`;
+      link.href = url;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 100);
+    }, 'image/png');
   };
   img.src = dataURL;
 

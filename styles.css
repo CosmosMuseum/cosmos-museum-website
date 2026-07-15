@@ -164,7 +164,7 @@ p {
   inset: -5%;
   width: 110%;
   height: 110%;
-  background: url('img/bg.jpg') center/cover no-repeat;
+  background: url('img/bg-preview.jpg') center/cover no-repeat;
   z-index: 0;
   will-change: transform;
   backface-visibility: hidden;
