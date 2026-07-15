@@ -2021,7 +2021,7 @@ function createRockGeometry() {
 }
 
 function buildAsteroidBelt() {
-  const count = 4000;
+  const count = 8000;
   const rockGeo = createRockGeometry();
   const rockMat = new THREE.MeshPhongMaterial({ color: 0x998877, shininess: 5 });
   const mesh = new THREE.InstancedMesh(rockGeo, rockMat, count);
@@ -2044,7 +2044,7 @@ function buildAsteroidBelt() {
 
 // ── KUIPER BELT ──
 function buildKuiperBelt() {
-  const count = 4000;
+  const count = 8000;
   const rockGeo = createRockGeometry();
   const rockMat = new THREE.MeshPhongMaterial({ color: 0x667788, shininess: 3 });
   const mesh = new THREE.InstancedMesh(rockGeo, rockMat, count);
