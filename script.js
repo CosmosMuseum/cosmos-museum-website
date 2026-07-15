@@ -1089,8 +1089,8 @@ camera.position.set(0, 40, 120);
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.06;
-controls.minDistance = 3;
-controls.maxDistance = 500;
+  controls.minDistance = 3;
+  controls.maxDistance = 850;
 controls.enablePan = true;
 controls.panSpeed = 1.2;
 controls.zoomSpeed = 2.5;
@@ -1311,6 +1311,14 @@ function createStarfield() {
 }
 scene.add(createStarfield());
 
+// ── GALAXY IMAGE (appears when zoomed out) ──
+const galaxyTexture = new THREE.TextureLoader().load('img/galaxia.jpg');
+const galaxyMat = new THREE.SpriteMaterial({ map: galaxyTexture, transparent: true, opacity: 0, depthWrite: false });
+const galaxySprite = new THREE.Sprite(galaxyMat);
+galaxySprite.scale.set(600, 600, 1);
+galaxySprite.position.set(0, 0, 0);
+scene.add(galaxySprite);
+
 // ── PLANETS & OBJECTS ──
 const solarSystemGroup = new THREE.Group();
 solarSystemGroup.rotation.y = 0;
@@ -1512,7 +1520,7 @@ function createAtmosphereScattering(radius, color, intensity) {
 // ── NEBULA BACKGROUND ──
 const nebulaParticles = [];
 function buildNebulaBackground() {
-  const tex = new THREE.TextureLoader().load('img/textures/8k_stars_milky_way.jpg', (loaded) => {
+  const tex = new THREE.TextureLoader().load('img/textures/bg.jpg', (loaded) => {
     loaded.generateMipmaps = true;
     loaded.minFilter = THREE.LinearMipmapLinearFilter;
     loaded.magFilter = THREE.LinearFilter;
@@ -2879,6 +2887,10 @@ function animate() {
 
   // Background galaxy follows camera
   if (window._bgMesh) window._bgMesh.position.copy(camera.position);
+
+  // Galaxy sprite fades in when zoomed out
+  const camDist = camera.position.length();
+  galaxyMat.opacity = Math.max(0, Math.min(1, (camDist - 750) / 100));
 
   // Update luminous orbit lines — stop when focused
   if (!currentFocus) updateOrbitLines(animationTime);
