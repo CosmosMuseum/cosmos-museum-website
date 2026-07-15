@@ -1090,7 +1090,7 @@ const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.06;
   controls.minDistance = 3;
-  controls.maxDistance = 950;
+  controls.maxDistance = 850;
 controls.enablePan = true;
 controls.panSpeed = 1.2;
 controls.zoomSpeed = 2.5;
@@ -1313,12 +1313,7 @@ const starfield = createStarfield();
 scene.add(starfield);
 
 // ── GALAXY IMAGE (appears when zoomed out) ──
-const galaxyTexture = new THREE.TextureLoader().load('img/galaxia.jpg');
-const galaxyMat = new THREE.SpriteMaterial({ map: galaxyTexture, transparent: true, opacity: 0, depthWrite: false });
-const galaxySprite = new THREE.Sprite(galaxyMat);
-galaxySprite.scale.set(600, 600, 1);
-galaxySprite.position.set(0, 0, 0);
-scene.add(galaxySprite);
+
 
 // ── PLANETS & OBJECTS ──
 const solarSystemGroup = new THREE.Group();
@@ -2888,17 +2883,6 @@ function animate() {
 
   // Background galaxy follows camera
   if (window._bgMesh) window._bgMesh.position.copy(camera.position);
-
-  // Galaxy sprite fades in when zoomed out
-  const camDist = camera.position.length();
-  galaxyMat.opacity = Math.max(0, Math.min(1, (camDist - 750) / 100));
-
-  // Hide stars, solar system, and bg when galaxy appears
-  const showSystem = camDist < 720;
-  if (window._bgMesh) window._bgMesh.visible = showSystem;
-  solarSystemGroup.visible = showSystem;
-  starfield.visible = showSystem;
-  nebulaParticles.forEach(p => { p.visible = showSystem; });
 
   // Update luminous orbit lines — stop when focused
   if (!currentFocus) updateOrbitLines(animationTime);
