@@ -1,4 +1,4 @@
-![Cosmic Explorer Preview](img/preview.png)
+![Cosmic Explorer Preview](img/preview.jpg)
 <div>
 
 # ✦ Cosmos Museum
@@ -7,10 +7,7 @@
 
 *An interactive 3D journey through the solar system*
 
----
 
-
-<br />
 
 
 *"Let yourself be carried away by the faint light of the stars and feel the heartbeat of the universe."*
