@@ -179,6 +179,17 @@ p {
   pointer-events: none;
 }
 
+#about-bg-image,
+#modal-bg-image {
+  background: url('img/bg.jpg') center/cover no-repeat;
+  transform: none;
+}
+
+#about-bg-image::after,
+#modal-bg-image::after {
+  background: radial-gradient(ellipse at center, transparent 20%, rgba(0, 0, 0, 0.95) 50%, #000 100%);
+}
+
 .welcome-bg-gradient {
   position: absolute;
   inset: 0;
